@@ -13,8 +13,8 @@ pub fn verify(
     leaf: [u8; 69],
     depth: u64,
 ) {
-    let key = keccak256(key, 32);
-    let nibbles = bytes_as_nibbles(key);
+    let key_hash = get_key_hash(key);
+    let nibbles = bytes_as_nibbles(key_hash);
 
     let mut key_index = 0;
     let mut curr_hash = storage_hash;
@@ -80,6 +80,11 @@ pub fn verify(
     for i in 0..32 {
         assert(leaf[leaf_value.offset + i] == value[i], "Value mismatch");
     }
+}
+
+unconstrained fn get_key_hash(key: [u8; 32]) -> [u8; 32] {
+    let key_hash = keccak256(key, 32);
+    key_hash
 }
 
 unconstrained fn get_node_hash<let NODE_LEN: u32>(
