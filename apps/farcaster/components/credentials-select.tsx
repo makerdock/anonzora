@@ -115,18 +115,18 @@ export function VerifyCredential({
 
   const handleVerify = async () => {
     setIsVerifying(true)
-    const credential = await credentials.addERC20Balance({
-      chainId: 8453,
-      tokenAddress: TOKEN_ADDRESS,
-      balanceSlot: 0,
-      verifiedBalance: parseEther(balance.toString()),
-    })
-    if (credential?.data) {
-      onVerify(credential.data)
+    try {
+      const credential = await credentials.addERC20Balance({
+        chainId: 8453,
+        tokenAddress: TOKEN_ADDRESS,
+        balanceSlot: 0,
+        verifiedBalance: parseEther(balance.toString()),
+      })
+      onVerify(credential)
       setIsVerifying(false)
       setOpen(false)
-    } else {
-      setError('Failed to verify credential')
+    } catch (e) {
+      setError((e as Error).message ?? 'Failed to verify credential')
       setIsVerifying(false)
     }
   }

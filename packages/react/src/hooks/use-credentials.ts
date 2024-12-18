@@ -37,7 +37,9 @@ export function useCredentials(sdk: AnonWorldSDK) {
     balanceSlot: number
     verifiedBalance: bigint
   }) => {
-    if (!address) return
+    if (!address) {
+      throw new Error('No address connected')
+    }
 
     const balanceSlot = pad(toHex(args.balanceSlot))
     const storageKey = keccak256(concat([pad(address), balanceSlot]))
@@ -48,42 +50,38 @@ export function useCredentials(sdk: AnonWorldSDK) {
       blockNumber: block.number,
     })
 
-    try {
-      const message = JSON.stringify({
-        chainId: args.chainId.toString(),
-        blockNumber: block.number.toString(),
-        storageHash: proof.storageHash,
-        tokenAddress: args.tokenAddress,
-        balanceSlot: args.balanceSlot.toString(),
-        balance: args.verifiedBalance.toString(),
-      })
-      const messageHash = hashMessage(message)
-      const signature = await signMessageAsync({ message })
+    const message = JSON.stringify({
+      chainId: args.chainId.toString(),
+      blockNumber: block.number.toString(),
+      storageHash: proof.storageHash,
+      tokenAddress: args.tokenAddress,
+      balanceSlot: args.balanceSlot.toString(),
+      balance: args.verifiedBalance.toString(),
+    })
+    const messageHash = hashMessage(message)
+    const signature = await signMessageAsync({ message })
 
-      const credential = await sdk.verifyERC20Balance({
-        address,
-        signature,
-        messageHash,
-        storageHash: proof.storageHash,
-        storageProof: proof.storageProof,
-        chainId: args.chainId,
-        blockNumber: block.number,
-        tokenAddress: args.tokenAddress,
-        balanceSlot,
-        verifiedBalance: args.verifiedBalance,
-        blockTimestamp: block.timestamp,
-      })
+    const credential = await sdk.verifyERC20Balance({
+      address,
+      signature,
+      messageHash,
+      storageHash: proof.storageHash,
+      storageProof: proof.storageProof,
+      chainId: args.chainId,
+      blockNumber: block.number,
+      tokenAddress: args.tokenAddress,
+      balanceSlot,
+      verifiedBalance: args.verifiedBalance,
+      blockTimestamp: block.timestamp,
+    })
 
-      if (credential.error) {
-        throw new Error(credential.error.message)
-      }
-
-      setCredentials((prev) => [...prev, credential.data!])
-
-      return credential
-    } catch (e) {
-      console.error('Failed to add credential:', e)
+    if (credential.error) {
+      throw new Error(credential.error.message)
     }
+
+    setCredentials((prev) => [...prev, credential.data])
+
+    return credential.data
   }
 
   const remove = (id: string) => {
