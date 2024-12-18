@@ -9,7 +9,7 @@ pub fn verify(
     key: [u8; 32],
     value: [u8; 32],
     storage_hash: [u8; 32],
-    nodes: [[u8; 532]; 7],
+    nodes: [[u8; 532]; 5],
     leaf: [u8; 69],
     depth: u64,
 ) {
@@ -18,7 +18,7 @@ pub fn verify(
 
     let mut key_index = 0;
     let mut curr_hash = storage_hash;
-    for i in 0..7 {
+    for i in 0..5 {
         if i < depth - 1 {
             let node = nodes[i];
 
@@ -58,9 +58,6 @@ pub fn verify(
     assert(rlp_list.len() == 2, "Invalid length");
 
     let leaf_key_item = rlp_list.get(0);
-    let (parity, _) = byte_to_nibbles(leaf[leaf_key_item.offset]);
-    assert((parity == 2) | (parity == 3), "Invalid parity");
-
     let mut leaf_key_part: [u8; 30] = [0; 30];
     for i in 0..30 {
         leaf_key_part[i] = leaf[leaf_key_item.offset + i];
@@ -95,11 +92,12 @@ unconstrained fn get_node_hash<let NODE_LEN: u32>(
 }
 
 pub fn get_storage_key<let N: u32>(values: [[u8; 32]; N]) -> [u8; 32] {
-    let mut input_slice = values[0].as_slice();
-    for i in 1..N {
-        input_slice = input_slice.append(values[i]);
+    let mut input: [u8; N * 32] = [0; N * 32];
+    for i in 0..N {
+        for j in 0..32 {
+            input[i * 32 + j] = values[i][j];
+        }
     }
-    let input: [u8; N * 32] = input_slice.as_array();
     let key = keccak256(input, input.len());
     key
 }

@@ -1,7 +1,7 @@
 export function formatArray(
   arr: string[],
   formatFn: (item: string) => string[],
-  { length = 7, pad = 'end' }: { length?: number; pad?: 'start' | 'end' } = {}
+  { length = 5, pad = 'end' }: { length?: number; pad?: 'start' | 'end' } = {}
 ) {
   const result: string[][] = []
   for (const item of arr) {

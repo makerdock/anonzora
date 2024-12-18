@@ -8,13 +8,6 @@ import { DeletePostTwitter } from '../actions/delete-post-twitter'
 import { DeletePostFarcaster } from '../actions/delete-post-farcaster'
 import { BaseAction } from '../actions/base'
 import { ActionRequest, ActionType } from '../actions/types'
-import { createPublicClient, http } from 'viem'
-import { base } from 'viem/chains'
-
-const client = createPublicClient({
-  chain: base,
-  transport: http(),
-})
 
 async function getActionInstance(request: ActionRequest) {
   const action = await getAction(request.actionId)

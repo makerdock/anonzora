@@ -50,8 +50,6 @@ async function main() {
     verified_balance: `0x${BigInt(1_000_000).toString(16)}`,
   }
 
-  console.log(input)
-
   console.time('generateProof')
   const proof = await erc20Balance.generate(input)
   console.timeEnd('generateProof')
