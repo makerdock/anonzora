@@ -5,20 +5,20 @@ use crate::rlp::{
 };
 use dep::std::hash::keccak256;
 
-pub fn verify(
+pub fn verify<let NODES_LEN: u32>(
     key: [u8; 32],
     value: [u8; 32],
     storage_hash: [u8; 32],
-    nodes: [[u8; 532]; 5],
+    nodes: [[u8; 532]; NODES_LEN],
     leaf: [u8; 69],
-    depth: u64,
+    depth: u32,
 ) {
     let key_hash = get_key_hash(key);
     let nibbles = bytes_as_nibbles(key_hash);
 
     let mut key_index = 0;
     let mut curr_hash = storage_hash;
-    for i in 0..5 {
+    for i in 0..NODES_LEN {
         if i < depth - 1 {
             let node = nodes[i];
 
@@ -37,9 +37,7 @@ pub fn verify(
                 let curr_nibble = nibbles[key_index] as u32;
                 let rlp_item = rlp_list.get(curr_nibble);
                 assert(rlp_item.length == 32, "Invalid length");
-                for i in 0..32 {
-                    curr_hash[i] = node[rlp_item.offset + i];
-                }
+                curr_hash = copy(node, rlp_item.offset);
                 key_index += 1;
             } else if rlp_list.len() == 2 {
                 // TODO: Extension Node
@@ -80,6 +78,14 @@ pub fn verify(
     for i in 0..32 {
         assert(leaf[leaf_value.offset + i] == value[i], "Value mismatch");
     }
+}
+
+unconstrained fn copy<let N: u32>(arr: [u8; N], offset: u32) -> [u8; 32] {
+    let mut result: [u8; 32] = [0; 32];
+    for i in 0..32 {
+        result[i] = arr[offset + i];
+    }
+    result
 }
 
 unconstrained fn get_key_hash(key: [u8; 32]) -> [u8; 32] {

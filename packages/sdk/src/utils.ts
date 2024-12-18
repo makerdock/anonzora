@@ -14,7 +14,7 @@ export async function getPublicKey(signature: `0x${string}`, messageHash: `0x${s
 export function formatArray(
   arr: string[],
   formatFn: (item: string) => string[],
-  { length = 5, pad = 'end' }: { length?: number; pad?: 'start' | 'end' } = {}
+  { length = 7, pad = 'end' }: { length?: number; pad?: 'start' | 'end' } = {}
 ) {
   const result: string[][] = []
   for (const item of arr) {

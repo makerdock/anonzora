@@ -1,6 +1,6 @@
 import { BaseCircuit } from './base'
-import erc20BalanceCircuit from '../circuits/erc20-balance/target/0.1.2/main.json'
-import erc20BalanceVkey from '../circuits/erc20-balance/target/0.1.2/vkey.json'
+import erc20BalanceCircuit from '../circuits/erc20-balance/target/0.1.3/main.json'
+import erc20BalanceVkey from '../circuits/erc20-balance/target/0.1.3/vkey.json'
 export type { ProofData } from '@aztec/bb.js'
 
 export type ERC20BalanceData = {
