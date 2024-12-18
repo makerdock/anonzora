@@ -107,7 +107,7 @@ export function Post({
   const canReveal = address && !!cast.reveal && !cast.reveal?.phrase
 
   const has2M = credentials.credentials.some(
-    (c) => BigInt(c.metadata.balance) >= parseEther('2000000')
+    (c) => c.metadata?.balance && BigInt(c.metadata.balance) >= parseEther('2000000')
   )
 
   const { setParent, setQuote } = useCreatePost()
@@ -151,15 +151,18 @@ export function Post({
                 <div className="text-sm font-medium text-zinc-400">
                   {timeAgo(cast.timestamp)}
                 </div>
-                {cast.credentials.map((c) => (
-                  <div
-                    key={c.id}
-                    className="text-xs font-medium border text-zinc-400 px-2 py-1 rounded-xl flex flex-row items-center gap-1"
-                  >
-                    <Coins size={12} />
-                    {`${formatNumber(Number.parseFloat(formatEther(BigInt(c.metadata.balance))))} ${c.metadata.tokenAddress === TOKEN_ADDRESS ? 'ANON' : c.metadata.tokenAddress}`}
-                  </div>
-                ))}
+                {cast.credentials.map((c) => {
+                  if (!c.metadata?.balance) return null
+                  return (
+                    <div
+                      key={c.id}
+                      className="text-xs font-medium border text-zinc-400 px-2 py-1 rounded-xl flex flex-row items-center gap-1"
+                    >
+                      <Coins size={12} />
+                      {`${formatNumber(Number.parseFloat(formatEther(BigInt(c.metadata.balance))))} ${c.metadata.tokenAddress === TOKEN_ADDRESS ? 'ANON' : c.metadata.tokenAddress}`}
+                    </div>
+                  )
+                })}
                 {cast.parent_hash && (
                   <>
                     <div className="w-1 h-1 bg-zinc-400" />

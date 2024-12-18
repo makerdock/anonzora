@@ -57,6 +57,7 @@ export const useExecuteActions = ({
           credentialToUse = credentials.credentials.find(
             (c) =>
               c.credential_id === requiredCredentialId &&
+              c.metadata?.balance &&
               BigInt(c.metadata.balance) >= requiredBalance
           )
           if (!credentialToUse) {

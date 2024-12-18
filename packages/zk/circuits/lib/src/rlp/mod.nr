@@ -1,7 +1,7 @@
 use dep::std::wrapping_sub;
 
-pub global RLP_HEADER_TYPE_STRING = 0;
-pub global RLP_HEADER_TYPE_LIST = 1;
+pub global RLP_DATA_TYPE_STRING = 0;
+pub global RLP_DATA_TYPE_LIST = 1;
 
 pub struct RlpFragment {
     pub offset: u32,
@@ -13,10 +13,11 @@ pub unconstrained fn decode_rlp_list_fragments<let NODE_LEN: u32, let MAX_FIELDS
     rlp_header: RlpFragment,
     node: [u8; NODE_LEN],
 ) -> BoundedVec<RlpFragment, MAX_FIELDS> {
+    let node_len = rlp_header.length + rlp_header.offset;
     let mut rlp_list = BoundedVec::new();
     let mut curr_offset = rlp_header.offset;
     for _ in 0..MAX_FIELDS {
-        if (curr_offset < node.len()) {
+        if (curr_offset < node_len) {
             let field_prefix = node[curr_offset];
 
             let field_offset = if field_prefix < 0x80 { 0 } else { 1 };
@@ -30,7 +31,7 @@ pub unconstrained fn decode_rlp_list_fragments<let NODE_LEN: u32, let MAX_FIELDS
                 RlpFragment {
                     offset: curr_offset + field_offset,
                     length: field_length,
-                    data_type: RLP_HEADER_TYPE_STRING,
+                    data_type: RLP_DATA_TYPE_STRING,
                 },
             );
 
@@ -46,34 +47,34 @@ pub unconstrained fn decode_rlp_header<let NODE_LEN: u32>(node: [u8; NODE_LEN]) 
 
     if (prefix < 0x80) {
         // 1 byte
-        RlpFragment { offset: 0 as u32, length: 1 as u32, data_type: RLP_HEADER_TYPE_STRING }
+        RlpFragment { offset: 0 as u32, length: 1 as u32, data_type: RLP_DATA_TYPE_STRING }
     } else if (prefix < 0xb8) {
         // 0-55 byte string
         RlpFragment {
             offset: 1,
             length: wrapping_sub(prefix, 0x80) as u32,
-            data_type: RLP_HEADER_TYPE_STRING,
+            data_type: RLP_DATA_TYPE_STRING,
         }
     } else if (prefix < 0xc0) {
         // > 55 byte string
         RlpFragment {
             offset: wrapping_sub(1 + prefix, 0xb7) as u32,
             length: extract_payload_len(data, wrapping_sub(prefix, 0xb7) as u32),
-            data_type: RLP_HEADER_TYPE_STRING,
+            data_type: RLP_DATA_TYPE_STRING,
         }
     } else if (prefix < 0xf8) {
         // 0-55 byte array
         RlpFragment {
             offset: 1,
             length: wrapping_sub(prefix, 0xc0) as u32,
-            data_type: RLP_HEADER_TYPE_LIST,
+            data_type: RLP_DATA_TYPE_LIST,
         }
     } else {
         // > 55 byte array
         RlpFragment {
             offset: wrapping_sub(1 + prefix, 0xf7) as u32,
             length: extract_payload_len(data, wrapping_sub(prefix, 0xf7) as u32),
-            data_type: RLP_HEADER_TYPE_LIST,
+            data_type: RLP_DATA_TYPE_LIST,
         }
     }
 }

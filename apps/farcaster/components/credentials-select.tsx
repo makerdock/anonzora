@@ -64,7 +64,7 @@ export function CredentialsSelect({
               <SelectItem key={credential.id} value={credential.id}>
                 <div className="flex flex-row items-center gap-2">
                   <span className="font-semibold">
-                    {`${Number.parseFloat(formatEther(BigInt(credential.metadata.balance))).toLocaleString()} ${
+                    {`${credential.metadata?.balance ? Number.parseFloat(formatEther(BigInt(credential.metadata.balance))).toLocaleString() : 'Unknown'} ${
                       credential.metadata.tokenAddress === TOKEN_ADDRESS
                         ? 'ANON'
                         : credential.metadata.tokenAddress

@@ -99,9 +99,10 @@ export class CreatePost extends BaseAction<CreatePostMetadata, CreatePostData> {
         continue
       }
 
-      const credentialMetadata = credential.metadata as { balance: string }
+      const credentialMetadata = credential.metadata as { balance: string } | undefined
 
       if (
+        credentialMetadata?.balance &&
         BigInt(credentialMetadata.balance) < BigInt(credentialRequirements.minimumBalance)
       ) {
         continue
