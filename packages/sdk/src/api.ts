@@ -86,17 +86,6 @@ export class Api {
     })
   }
 
-  async getMerkleTreeForCredential(credentialId: string) {
-    return await this.request<{ _nodes: string[][] }>(`/merkle-tree/${credentialId}`)
-  }
-
-  async getMerkleTree(chainId: number, tokenAddress: string, minBalance: bigint) {
-    return await this.request<{ _nodes: string[][] }>(`/merkle-tree`, {
-      method: 'POST',
-      body: JSON.stringify({ chainId, tokenAddress, minBalance }),
-    })
-  }
-
   async revealPost(args: {
     hash: string
     message: string
@@ -107,30 +96,6 @@ export class Api {
     return await this.request<{ success: boolean; hash?: string }>('/posts/reveal', {
       method: 'POST',
       body: JSON.stringify(args),
-    })
-  }
-
-  async getBulkPostMetadata(hashes: string[]) {
-    return await this.request<{
-      data: {
-        hash: string
-        revealHash: string | null
-        revealMetadata: {
-          input: string
-          phrase?: string
-          signature?: string
-          address?: string
-          revealedAt?: string
-        } | null
-        relationships: {
-          target: string
-          targetAccount: string
-          targetId: string
-        }[]
-      }[]
-    }>('/posts/bulk-metadata', {
-      method: 'POST',
-      body: JSON.stringify({ hashes }),
     })
   }
 
