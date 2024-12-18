@@ -1,6 +1,6 @@
 import { createElysia } from '../utils'
 import { t } from 'elysia'
-import { getAction } from '@anonworld/db'
+import { getAction, getCredentials } from '@anonworld/db'
 import { CreatePost } from '../actions/create-post'
 import { CopyPostFarcaster } from '../actions/copy-post-farcaster'
 import { CopyPostTwitter } from '../actions/copy-post-twitter'
@@ -8,11 +8,27 @@ import { DeletePostTwitter } from '../actions/delete-post-twitter'
 import { DeletePostFarcaster } from '../actions/delete-post-farcaster'
 import { BaseAction } from '../actions/base'
 import { ActionRequest, ActionType } from '../actions/types'
+import { createPublicClient, http } from 'viem'
+import { base } from 'viem/chains'
+
+const client = createPublicClient({
+  chain: base,
+  transport: http(),
+})
 
 async function getActionInstance(request: ActionRequest) {
   const action = await getAction(request.actionId)
 
   let actionInstance: BaseAction | undefined
+
+  if (
+    action.credential_id &&
+    !request.credentials.some(
+      (credential) => credential.credential_id === action.credential_id
+    )
+  ) {
+    throw new Error('Missing required credential')
+  }
 
   switch (action.type) {
     case ActionType.CREATE_POST: {
@@ -58,9 +74,14 @@ export const actionsRoutes = createElysia({ prefix: '/actions' })
     async ({ body }) => {
       const results: { success: boolean; error?: string }[] = []
       const nextActions: ActionRequest[] = []
+
       for (const action of body.actions) {
         try {
-          const actionInstance = await getActionInstance(action)
+          const credentials = await getCredentials(action.credentials)
+          const actionInstance = await getActionInstance({
+            ...action,
+            credentials,
+          })
           if (!actionInstance) {
             throw new Error('Invalid action')
           }
@@ -84,7 +105,7 @@ export const actionsRoutes = createElysia({ prefix: '/actions' })
             throw new Error('Invalid action')
           }
 
-          const response = await actionInstance.execute(true)
+          const response = await actionInstance.execute()
           results.push(response)
         } catch (error) {
           results.push({ success: false, error: (error as Error).message })
@@ -106,15 +127,7 @@ export const actionsRoutes = createElysia({ prefix: '/actions' })
           t.Object({
             actionId: t.String(),
             data: t.Any(),
-            credentials: t.Array(
-              t.Object({
-                id: t.String(),
-                proof: t.Object({
-                  proof: t.Array(t.Number()),
-                  publicInputs: t.Array(t.String()),
-                }),
-              })
-            ),
+            credentials: t.Array(t.String()),
           })
         ),
       }),

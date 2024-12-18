@@ -1,23 +1,18 @@
 import { useEffect, useState } from 'react'
-import { useAccount, useSignMessage } from 'wagmi'
-import { hashMessage } from 'viem'
+import { useAccount, useConfig, useSignMessage } from 'wagmi'
+import { concat, hashMessage, keccak256, pad, toHex } from 'viem'
 import { AnonWorldSDK } from '@anonworld/sdk'
+import { Credential } from '@anonworld/sdk/types'
+import { getBlock, getProof } from 'wagmi/actions'
 
-const LOCAL_STORAGE_KEY = 'anon:credentials:v0'
-
-export type Credential = {
-  id: string
-  proof: {
-    proof: number[]
-    publicInputs: string[]
-  }
-}
+const LOCAL_STORAGE_KEY = 'anon:credentials:v1'
 
 export function useCredentials(sdk: AnonWorldSDK) {
   const [isInitializing, setIsInitializing] = useState(true)
   const [credentials, setCredentials] = useState<Credential[]>([])
   const { signMessageAsync } = useSignMessage()
   const { address } = useAccount()
+  const config = useConfig()
 
   useEffect(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY)
@@ -36,26 +31,54 @@ export function useCredentials(sdk: AnonWorldSDK) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(credentials))
   }, [credentials])
 
-  const add = async (credentialId: string) => {
+  const addERC20Balance = async (args: {
+    chainId: number
+    tokenAddress: `0x${string}`
+    balanceSlot: number
+    verifiedBalance: bigint
+  }) => {
     if (!address) return
 
+    const balanceSlot = pad(toHex(args.balanceSlot))
+    const storageKey = keccak256(concat([pad(address), balanceSlot]))
+    const block = await getBlock(config, { chainId: args.chainId })
+    const proof = await getProof(config, {
+      address: args.tokenAddress,
+      storageKeys: [storageKey],
+      blockNumber: block.number,
+    })
+
     try {
-      const signature = await signMessageAsync({ message: credentialId })
-      const proof = await sdk.verifyCredential(credentialId, {
+      const message = JSON.stringify({
+        chainId: args.chainId.toString(),
+        blockNumber: block.number.toString(),
+        storageHash: proof.storageHash,
+        tokenAddress: args.tokenAddress,
+        balanceSlot: args.balanceSlot.toString(),
+        balance: args.verifiedBalance.toString(),
+      })
+      const messageHash = hashMessage(message)
+      const signature = await signMessageAsync({ message })
+
+      const credential = await sdk.verifyERC20Balance({
         address,
         signature,
-        messageHash: hashMessage(credentialId),
+        messageHash,
+        storageHash: proof.storageHash,
+        storageProof: proof.storageProof,
+        chainId: args.chainId,
+        blockNumber: block.number,
+        tokenAddress: args.tokenAddress,
+        balanceSlot,
+        verifiedBalance: args.verifiedBalance,
+        blockTimestamp: block.timestamp,
       })
 
-      const credential = {
-        id: credentialId,
-        proof: {
-          proof: Array.from(proof.proof),
-          publicInputs: proof.publicInputs,
-        },
+      if (credential.error) {
+        throw new Error(credential.error.message)
       }
 
-      setCredentials((prev) => [...prev, credential])
+      setCredentials((prev) => [...prev, credential.data!])
 
       return credential
     } catch (e) {
@@ -71,14 +94,10 @@ export function useCredentials(sdk: AnonWorldSDK) {
     return credentials.find((cred) => cred.id === id)
   }
 
-  const list = () => {
-    return credentials
-  }
-
   return {
-    list,
-    add,
+    credentials,
     remove,
     get,
+    addERC20Balance,
   }
 }
