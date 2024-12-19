@@ -8,7 +8,7 @@ import { Skeleton } from '../ui/skeleton'
 import { Post } from '../post'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { BEST_OF_FID, FID, LAUNCH_FID } from '@/lib/utils'
+import { BEST_OF_FID, LAUNCH_FID } from '@/lib/utils'
 import { useSDK } from '@anonworld/react'
 export function PostFeed({
   defaultTab = 'trending',
@@ -30,7 +30,7 @@ export function PostFeed({
   const { data: newPosts, isLoading: isNewLoading } = useQuery({
     queryKey: ['posts'],
     queryFn: async (): Promise<Cast[]> => {
-      const response = await sdk.getNewFeed(FID)
+      const response = await sdk.getNewFeed(BEST_OF_FID)
       return (response?.data?.data || [])?.filter(
         ({ text }) => !text.match(/.*@clanker.*(launch|deploy|make).*/is)
       )
@@ -88,7 +88,7 @@ export function PromotedFeed({
   const { data: newLaunches, isLoading: isNewLoading } = useQuery({
     queryKey: ['launches', 'new'],
     queryFn: async (): Promise<Cast[]> => {
-      const response = await sdk.getNewFeed(FID)
+      const response = await sdk.getNewFeed(BEST_OF_FID)
       return (response?.data?.data || [])?.filter(({ text }) =>
         text.toLowerCase().match(/.*@clanker.*(launch|deploy|make).*/is)
       )
