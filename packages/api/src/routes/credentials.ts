@@ -26,9 +26,7 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' }).post(
       publicInputs: body.publicInputs,
     })
     if (!verified) {
-      return {
-        error: 'Invalid proof',
-      }
+      throw new Error('Invalid proof')
     }
     const metadata = erc20Balance.parseData(body.publicInputs)
     const credentialId = `ERC20_BALANCE:${metadata.chainId}:${metadata.tokenAddress}`
@@ -45,9 +43,7 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' }).post(
       })
 
       if (ethProof.storageHash !== metadata.storageHash) {
-        return {
-          error: 'Invalid storage hash',
-        }
+        throw new Error('Invalid storage hash')
       }
 
       credential = await createCredentialInstance({
