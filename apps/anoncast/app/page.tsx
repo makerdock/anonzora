@@ -25,9 +25,9 @@ function Inner() {
           <ActionComponent
             variant="launch"
             title="Launch coins anonymously via @clanker"
-            description="To launch on anonfun, mention @clanker and tell it what you want to launch: token name and image. The raw suggestions will be posted from @rawanon. Anyone that meets the requirements can then launch it to @anonfun via @clanker."
+            description="To launch on anonfun, mention @clanker and tell it what you want to launch: token name and image. The raw suggestions will be posted from @anoncast. Anyone that meets the requirements can then launch it to @anonfun via @clanker."
             requirements={[
-              { amount: 5000, label: 'Suggest to @rawanon' },
+              { amount: 5000, label: 'Suggest to @anoncast' },
               { amount: 2000000, label: 'Launch to @anonfun' },
             ]}
           />
