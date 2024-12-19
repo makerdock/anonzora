@@ -32,25 +32,16 @@ pub fn verify<let NODES_LEN: u32>(
 
             // Create next hash
             let rlp_list: BoundedVec<RlpFragment, 17> = decode_rlp_list_fragments(rlp_header, node);
-            if rlp_list.len() == 17 {
-                // Branch Node
-                let curr_nibble = nibbles[key_index] as u32;
-                let rlp_item = rlp_list.get(curr_nibble);
-                assert(rlp_item.length == 32, "Invalid length");
-                curr_hash = copy(node, rlp_item.offset);
-                key_index += 1;
-            } else if rlp_list.len() == 2 {
-                let extension_key_item = rlp_list.get(0);
-                let (extension_key_prefix) = byte_to_nibbles(node[extension_key_item.offset]);
+            let index = if rlp_list.len() == 17 {
+                nibbles[key_index] as u32
+            } else {
+                1
+            };
 
-                assert(
-                    (extension_key_prefix == 0) | (extension_key_prefix == 1),
-                    "Extension key prefix must be 0 or 1",
-                );
-
-                curr_hash = copy(node, rlp_list.get(1).offset);
-                key_index += 1;
-            }
+            let rlp_item = rlp_list.get(index);
+            assert(rlp_item.length == 32, "Invalid length");
+            curr_hash = copy(node, rlp_item.offset);
+            key_index += 1;
         }
     }
 

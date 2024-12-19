@@ -3,7 +3,7 @@ name = "main"
 type = "bin"
 authors = ["slokh"]
 compiler_version = ">=0.38.0"
-version = "0.1.4"
+version = "0.1.5"
 
 [dependencies]
 lib = { path = "../lib" }
