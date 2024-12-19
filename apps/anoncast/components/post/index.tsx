@@ -27,7 +27,6 @@ import {
   COPY_TO_ANONFUN_ACTION_ID,
   DELETE_FROM_ANONCAST_ACTION_ID,
   DELETE_FROM_TWITTER_ACTION_ID,
-  COPY_TO_ANONCAST_ACTION_ID,
   COPY_TO_TWITTER_ACTION_ID,
   TOKEN_ADDRESS,
 } from '@/lib/utils'
@@ -480,12 +479,12 @@ function PromoteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }
 
   const handlePromote = async () => {
     await performAction([
-      {
-        actionId: COPY_TO_ANONCAST_ACTION_ID,
-        data: {
-          hash: cast.hash,
-        },
-      },
+      // {
+      //   actionId: COPY_TO_ANONCAST_ACTION_ID,
+      //   data: {
+      //     hash: cast.hash,
+      //   },
+      // },
       {
         actionId: COPY_TO_TWITTER_ACTION_ID,
         data: {
