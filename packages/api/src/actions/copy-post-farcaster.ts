@@ -3,6 +3,7 @@ import {
   createPostCredentials,
   createPostRelationship,
   getPost,
+  getPostParent,
   getPostRelationship,
   PostData,
 } from '@anonworld/db'
@@ -79,8 +80,10 @@ export class CopyPostFarcaster extends BaseAction<
       reveal_hash: post.reveal_hash,
     })
 
+    const parent = await getPostParent(this.data.hash)
+
     await createPostRelationship({
-      post_hash: this.data.hash,
+      post_hash: parent?.post_hash || this.data.hash,
       target: 'farcaster',
       target_account: this.action.metadata.fid.toString(),
       target_id: response.cast.hash,

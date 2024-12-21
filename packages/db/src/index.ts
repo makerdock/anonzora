@@ -98,6 +98,15 @@ export const getPostChildren = async (hashes: string[]) => {
     )
 }
 
+export const getPostParent = async (hash: string) => {
+  const [parent] = await db
+    .select()
+    .from(postRelationshipsTable)
+    .where(eq(postRelationshipsTable.target_id, hash))
+    .limit(1)
+  return parent
+}
+
 export const getPostParentAndSiblings = async (hashes: string[]) => {
   const parents = await db
     .select()

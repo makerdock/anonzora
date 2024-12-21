@@ -1,6 +1,7 @@
 import {
   createPostRelationship,
   getPost,
+  getPostParent,
   getPostRelationship,
   PostData,
 } from '@anonworld/db'
@@ -124,8 +125,10 @@ export class CopyPostTwitter extends BaseAction<
       return { success: false }
     }
 
+    const parent = await getPostParent(this.data.hash)
+
     await createPostRelationship({
-      post_hash: this.data.hash,
+      post_hash: parent?.post_hash || this.data.hash,
       target: 'twitter',
       target_account: this.action.metadata.twitter,
       target_id: response.tweetId,
