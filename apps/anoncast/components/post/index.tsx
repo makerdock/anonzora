@@ -25,7 +25,6 @@ import {
   LAUNCH_AMOUNT,
   LAUNCH_FID,
   COPY_TO_ANONFUN_ACTION_ID,
-  DELETE_FROM_ANONCAST_ACTION_ID,
   DELETE_FROM_TWITTER_ACTION_ID,
   COPY_TO_TWITTER_ACTION_ID,
   TOKEN_ADDRESS,
@@ -363,15 +362,6 @@ function DeleteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean })
 
   const handleDelete = async () => {
     const actions = []
-    const farcasterChild = cast.children.find((c) => c.target === 'farcaster')
-    if (farcasterChild) {
-      actions.push({
-        actionId: DELETE_FROM_ANONCAST_ACTION_ID,
-        data: {
-          hash: farcasterChild.targetId,
-        },
-      })
-    }
     const twitterChild = cast.children.find((c) => c.target === 'twitter')
     if (twitterChild) {
       actions.push({
@@ -479,12 +469,6 @@ function PromoteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }
 
   const handlePromote = async () => {
     await performAction([
-      // {
-      //   actionId: COPY_TO_ANONCAST_ACTION_ID,
-      //   data: {
-      //     hash: cast.hash,
-      //   },
-      // },
       {
         actionId: COPY_TO_TWITTER_ACTION_ID,
         data: {
