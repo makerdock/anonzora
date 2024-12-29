@@ -362,12 +362,14 @@ function DeleteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean })
 
   const handleDelete = async () => {
     const actions = []
-    const twitterChild = cast.children.find((c) => c.target === 'twitter')
-    if (twitterChild) {
+    const twitterSibling = cast.siblings.find((sibling) => sibling.target === 'twitter')
+    const twitterChild = cast.children.find((child) => child.target === 'twitter')
+    const tweetId = twitterSibling?.targetId || twitterChild?.targetId
+    if (tweetId) {
       actions.push({
         actionId: DELETE_FROM_TWITTER_ACTION_ID,
         data: {
-          tweetId: twitterChild.targetId,
+          tweetId,
         },
       })
     }
