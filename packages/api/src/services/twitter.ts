@@ -18,7 +18,7 @@ export class TwitterService {
       throw new Error('Twitter account not found')
     }
 
-    this.client = new TwitterApi(account.metadata as TwitterConfig)
+    this.client = new TwitterApi(account.secrets as TwitterConfig)
   }
 
   async uploadMedia(username: string, image: string) {

@@ -29,6 +29,7 @@ export const farcasterAccountsTable = pgTable('farcaster_accounts', {
 
 export const twitterAccountsTable = pgTable('twitter_accounts', {
   username: varchar({ length: 255 }).primaryKey(),
+  secrets: jsonb('secrets'),
   metadata: jsonb('metadata'),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),
