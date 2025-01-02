@@ -1,18 +1,75 @@
-import { augmentCasts, createElysia } from '../utils'
+import { createElysia, encodeJson } from '../utils'
 import { t } from 'elysia'
-import { verifyMessage } from 'viem'
+import { hashMessage, verifyMessage } from 'viem'
 import { neynar } from '../services/neynar'
-import { getPostChildren, getBulkPosts, getPost, revealPost } from '@anonworld/db'
+import {
+  getAllFarcasterAccounts,
+  getBulkPosts,
+  getPost,
+  getPostRelationships,
+  revealPost,
+} from '@anonworld/db'
+import { Cast, ConversationCast } from '../services/neynar/types'
+import { redis } from '../services/redis'
+import { feed } from '../services/feed'
 
 export const postsRoutes = createElysia({ prefix: '/posts' })
   .get(
     '/:hash',
-    async ({ params }) => {
-      const cast = await neynar.getCast(params.hash)
-      if (!cast) {
-        throw new Error('Cast not found')
+    async ({ params, passkeyId }) => {
+      let post: Cast | null = null
+      const cached = await redis.getPost(params.hash)
+      if (cached) {
+        post = JSON.parse(cached)
+      } else {
+        post = await feed.getFeedPost(params.hash)
       }
-      return (await augmentCasts([cast.cast]))[0]
+
+      if (!post) {
+        throw new Error('Post not found')
+      }
+
+      await redis.setPost(params.hash, JSON.stringify(post))
+
+      if (passkeyId) {
+        post = (await feed.addUserData(passkeyId, [post]))[0]
+      }
+
+      return post
+    },
+    {
+      params: t.Object({
+        hash: t.String(),
+      }),
+    }
+  )
+  .get(
+    '/:hash/conversations',
+    async ({ params }) => {
+      const relationships = await getPostRelationships([params.hash])
+      const hashes = [
+        params.hash,
+        ...relationships.filter((r) => r.target === 'farcaster').map((r) => r.target_id),
+      ]
+      const conversations = (
+        await Promise.all(
+          hashes.map(async (hash) => {
+            const conversation = await neynar.getConversation(hash)
+            return conversation.conversation.cast.direct_replies
+          })
+        )
+      )
+        .flat()
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+      const farcasterAccounts = await getAllFarcasterAccounts()
+      const relevantHashes = getRelevantPosts(farcasterAccounts, conversations)
+      const posts = await getBulkPosts(relevantHashes)
+      const formattedPosts = await feed.getFeed(posts)
+
+      return {
+        data: formatConversations(conversations, formattedPosts),
+      }
     },
     {
       params: t.Object({
@@ -39,37 +96,22 @@ export const postsRoutes = createElysia({ prefix: '/posts' })
         }
       }
 
-      const address = body.address.toLowerCase()
-      let username: string | undefined
-
-      try {
-        const users = await neynar.getBulkUsers([address])
-        username = users?.[address]?.[0]?.username
-      } catch (error) {
-        console.error(error)
+      const inputHash = hashMessage(encodeJson(post.data) + body.phrase)
+      if (inputHash !== post.reveal_hash) {
+        return {
+          success: false,
+        }
       }
 
-      await revealPost(body.hash, {
+      await revealPost(post.reveal_hash, {
         message: body.message,
         phrase: body.phrase,
         signature: body.signature,
         address: body.address,
       })
 
-      const response = await neynar.createCast({
-        fid: post.fid,
-        text: `REVEALED: Posted by ${username ? `@${username}` : `${address}`}`,
-        embeds: [`https://anoncast.org/posts/${body.hash}`],
-        quote: body.hash,
-      })
-
-      if (!response.success) {
-        throw new Error('Failed to create cast')
-      }
-
       return {
         success: true,
-        hash: response.cast.hash,
       }
     },
     {
@@ -82,64 +124,70 @@ export const postsRoutes = createElysia({ prefix: '/posts' })
       }),
     }
   )
-  .post(
-    '/bulk-metadata',
-    async ({ body }) => {
-      const [posts, relationships] = await Promise.all([
-        getBulkPosts(body.hashes),
-        getPostChildren(body.hashes),
-      ])
 
-      type RevealMetadata = {
-        input: string
-        phrase?: string
-        signature?: string
-        address?: string
-        revealedAt: string
-      } | null
+const getRelevantPosts = (
+  accounts: { fid: number }[],
+  conversations: ConversationCast[]
+): string[] => {
+  const hashes: string[] = []
 
-      const data: Record<
-        string,
-        {
-          hash: string
-          revealHash: string | null
-          revealMetadata: RevealMetadata
-          relationships: {
-            target: string
-            targetAccount: string
-            targetId: string
-          }[]
-        }
-      > = {}
+  const childConversations = conversations.flatMap((c) => c.direct_replies)
+  if (childConversations.length > 0) {
+    const childHashes = getRelevantPosts(accounts, childConversations)
+    hashes.push(...childHashes)
+  }
 
-      for (const post of posts) {
-        data[post.hash] = {
-          hash: post.hash,
-          revealHash: post.reveal_hash,
-          revealMetadata: {
-            input: JSON.stringify(post.data),
-            ...(post.reveal_metadata as RevealMetadata),
-            revealedAt: post.updated_at.toISOString(),
-          },
-          relationships: [],
-        }
-      }
-
-      for (const relationship of relationships) {
-        data[relationship.post_hash].relationships.push({
-          target: relationship.target,
-          targetAccount: relationship.target_account,
-          targetId: relationship.target_id,
-        })
-      }
-
-      return {
-        data: Object.values(data),
-      }
-    },
-    {
-      body: t.Object({
-        hashes: t.Array(t.String()),
-      }),
-    }
+  const relevantConversations = conversations.filter((c) =>
+    accounts.some((a) => a.fid === c.author.fid)
   )
+  if (relevantConversations.length > 0) {
+    const relevantHashes = relevantConversations.map((c) => c.hash)
+    hashes.push(...relevantHashes)
+  }
+
+  return hashes
+}
+
+const formatConversations = (
+  conversations: ConversationCast[],
+  formattedPosts: Cast[]
+) => {
+  const formattedConversations: ConversationCast[] = []
+
+  const copies: string[] = []
+  for (const conversation of conversations) {
+    const replies: ConversationCast[] = conversation.direct_replies
+
+    const formattedPost = formattedPosts.find((p) => p.hash === conversation.hash)
+    if (formattedPost?.relationships) {
+      const hashes = formattedPost.relationships.map((r) => r.targetId)
+      copies.push(...hashes)
+      for (const hash of hashes) {
+        const reply = conversations.find((c) => c.hash === hash)
+        if (reply) {
+          for (const r of reply.direct_replies) {
+            if (!replies.some((rr) => rr.hash === r.hash)) {
+              replies.push(r)
+            }
+          }
+        }
+      }
+    }
+
+    const formattedReplies = formatConversations(replies, formattedPosts)
+
+    formattedConversations.push({
+      ...formattedPost,
+      ...conversation,
+      direct_replies: formattedReplies,
+    })
+  }
+
+  return formattedConversations
+    .filter((c) => !copies.includes(c.hash))
+    .sort(
+      (a, b) =>
+        (b.aggregate?.likes || b.reactions.likes_count) -
+        (a.aggregate?.likes || a.reactions.likes_count)
+    )
+}

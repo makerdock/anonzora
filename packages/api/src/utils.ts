@@ -1,18 +1,29 @@
 import cors from '@elysiajs/cors'
+import jwt from '@elysiajs/jwt'
 import { Elysia } from 'elysia'
 import { Logestic } from 'logestic'
-import { Cast } from './services/neynar/types'
-import {
-  getPostChildren,
-  getPostCredentials,
-  getPostParentAndSiblings,
-} from '@anonworld/db'
-import { getBulkPosts } from '@anonworld/db'
 
 export const createElysia = (config?: ConstructorParameters<typeof Elysia>[0]) =>
   new Elysia(config)
     .use(cors())
+    .use(
+      jwt({
+        name: 'jwt',
+        secret: process.env.JWT_SECRET!,
+      })
+    )
     .use(Logestic.preset('common'))
+    .derive(async ({ jwt, headers }) => {
+      const auth = headers.authorization
+      const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
+      if (token) {
+        const payload = await jwt.verify(token)
+        if (payload) {
+          return { passkeyId: payload.passkeyId as string }
+        }
+      }
+      return { passkeyId: null }
+    })
     .onError(({ server, error, path }) => {
       console.error(path, error)
       if (error.message.toLowerCase().includes('out of memory')) {
@@ -21,47 +32,39 @@ export const createElysia = (config?: ConstructorParameters<typeof Elysia>[0]) =
       }
     })
 
-export const augmentCasts = async (casts: Cast[]) => {
-  const hashes = casts.map((cast) => cast.hash)
-  const [posts, children, relationships, credentials] = await Promise.all([
-    getBulkPosts(hashes),
-    getPostChildren(hashes),
-    getPostParentAndSiblings(hashes),
-    getPostCredentials(hashes),
-  ])
+export function encodeJson(obj: any): string {
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(encodeJson).join(',') + ']'
+  }
 
-  return casts.map((cast) => {
-    const post = posts.find((p) => p.hash === cast.hash)
-    const castChildren = children.filter((r) => r.post_hash === cast.hash)
-    const castRelationships = relationships[cast.hash]
-    const castCredentials = credentials.find((c) => c.hash === cast.hash)
+  if (typeof obj === 'object' && obj !== null) {
+    return (
+      '{' +
+      Object.keys(obj)
+        .sort()
+        .map((key) => `"${key}":${encodeJson(obj[key])}`)
+        .join(',') +
+      '}'
+    )
+  }
 
-    return {
-      ...cast,
-      reveal: post?.reveal_hash
-        ? {
-            ...(post?.reveal_metadata || {}),
-            revealHash: post.reveal_hash,
-            input: JSON.stringify(post?.data),
-            revealedAt: post?.updated_at.toISOString(),
-          }
-        : undefined,
-      children: castChildren.map((c) => ({
-        target: c.target,
-        targetAccount: c.target_account,
-        targetId: c.target_id,
-      })),
-      siblings:
-        castRelationships?.siblings.map((s) => ({
-          target: s.target,
-          targetAccount: s.target_account,
-          targetId: s.target_id,
-        })) ?? [],
-      parent: castRelationships?.parent?.post_hash,
-      credentials: castCredentials?.credentials.map((c) => ({
-        ...c,
-        proof: undefined,
-      })),
+  return JSON.stringify(obj)
+}
+
+export function formatHexId(hex: string) {
+  let str = ''
+  for (let i = 2; i < hex.length - 1; i += 2) {
+    const num = Number.parseInt(hex.slice(i, i + 2), 16)
+    if (!Number.isNaN(num)) {
+      const code = num % 62
+      if (code < 26) {
+        str += String.fromCharCode(97 + code)
+      } else if (code < 52) {
+        str += String.fromCharCode(65 + (code - 26))
+      } else {
+        str += String.fromCharCode(48 + (code - 52))
+      }
     }
-  })
+  }
+  return str.slice(0, 8)
 }

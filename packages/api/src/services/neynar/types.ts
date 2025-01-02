@@ -1,3 +1,5 @@
+import { Token } from '@anonworld/db'
+
 export type CreateCastResponse =
   | { success: false }
   | {
@@ -10,6 +12,14 @@ export type CreateCastResponse =
       }
       text: string
     }
+
+export type GetConversationResponse = {
+  conversation: { cast: ConversationCast }
+}
+
+export type ConversationCast = Cast & {
+  direct_replies: Array<ConversationCast>
+}
 
 export interface GetCastResponse {
   cast: Cast
@@ -412,6 +422,52 @@ export type Cast = {
     following: boolean
     role: string
   }
+  reveal?: Reveal
+  relationships: Array<Relationship>
+  credentials: Array<{
+    credential_id: string
+    metadata: {
+      chainId: string
+      tokenAddress: string
+      balance: string
+    }
+    verified_at: string
+    displayId: string
+    token: Token
+  }>
+  aggregate: {
+    likes: number
+    replies: number
+  }
+  user: {
+    liked: boolean
+  }
+}
+
+export type Reveal = {
+  revealHash: string
+  input: string
+  phrase?: string
+  signature?: string
+  address?: string
+  revealedAt: string
+}
+
+export type Relationship = {
+  target: string
+  targetAccount: string
+  targetId: string
+}
+
+export type Credential = {
+  id: string
+  credential_id: string
+  metadata: {
+    chainId: string
+    tokenAddress: `0x${string}`
+    balance: string
+  }
+  verified_at: string
 }
 
 export type GetChannelResponse = {
@@ -487,11 +543,15 @@ export type Channel = {
   }
 }
 
-export type GetUserResponse = {
-  user: User
+export type GetUserByUsernameResponse = {
+  user: FarcasterUser
 }
 
-export type User = {
+export type GetUsersResponse = {
+  users: Array<FarcasterUser>
+}
+
+export type FarcasterUser = {
   object: 'user'
   fid: number
   username: string
@@ -540,41 +600,4 @@ export type User = {
   }
 }
 
-export type GetBulkUsersResponse = Record<string, Array<Identity>>
-
-export type Identity = {
-  object: string
-  fid: number
-  username: string
-  display_name: string
-  pfp_url: string
-  custody_address: string
-  profile: {
-    bio: {
-      text: string
-    }
-    location: {
-      latitude: number
-      longitude: number
-      address: {
-        city: string
-        state: string
-        state_code: string
-        country: string
-        country_code: string
-      }
-    }
-  }
-  follower_count: number
-  following_count: number
-  verifications: Array<string>
-  verified_addresses: {
-    eth_addresses: Array<string>
-    sol_addresses: Array<any>
-  }
-  verified_accounts: Array<{
-    platform: string
-    username: string
-  }>
-  power_badge: boolean
-}
+export type GetBulkUsersResponse = Record<string, Array<FarcasterUser>>

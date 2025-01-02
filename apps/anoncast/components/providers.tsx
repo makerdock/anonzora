@@ -2,12 +2,15 @@
 
 import '@rainbow-me/rainbowkit/styles.css'
 
-import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit'
-import { WagmiProvider } from 'wagmi'
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+  useConnectModal,
+} from '@rainbow-me/rainbowkit'
 import { base } from 'wagmi/chains'
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
-import { SDKProvider } from '@anonworld/react'
+import { Provider, SDKProvider } from '@anonworld/react'
+import { ReactNode } from 'react'
 
 const config = getDefaultConfig({
   appName: 'anoncast',
@@ -15,8 +18,6 @@ const config = getDefaultConfig({
   chains: [base],
   ssr: true,
 })
-
-const queryClient = new QueryClient()
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -27,13 +28,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
       forcedTheme="dark"
       disableTransitionOnChange
     >
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          <SDKProvider apiUrl={process.env.NEXT_PUBLIC_API_URL}>
-            <RainbowKitProvider>{children}</RainbowKitProvider>
-          </SDKProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
+      <Provider wagmiConfig={config}>
+        <RainbowKitProvider>
+          <SDKInner>{children}</SDKInner>
+        </RainbowKitProvider>
+      </Provider>
     </ThemeProvider>
+  )
+}
+
+function SDKInner({ children }: { children: ReactNode }) {
+  const { connectModalOpen, openConnectModal } = useConnectModal()
+  return (
+    <SDKProvider
+      apiUrl={process.env.NEXT_PUBLIC_API_URL}
+      connectWallet={openConnectModal}
+      isConnecting={connectModalOpen}
+    >
+      {children}
+    </SDKProvider>
   )
 }

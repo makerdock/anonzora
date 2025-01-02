@@ -16,6 +16,7 @@ export type VerifyERC20Balance = {
   balanceSlot: `0x${string}`
   verifiedBalance: bigint
   blockTimestamp: bigint
+  parentId?: string
 }
 
 export class AnonWorldSDK extends Api {
@@ -27,8 +28,8 @@ export class AnonWorldSDK extends Api {
 
   async instantiate() {
     if (this.erc20Balance) return
-    const { erc20Balance } = await import('@anonworld/zk')
-    this.erc20Balance = erc20Balance
+    const { getCircuit, CircuitType } = await import('@anonworld/zk')
+    this.erc20Balance = getCircuit(CircuitType.ERC20_BALANCE)
   }
 
   async verifyERC20Balance(args: VerifyERC20Balance) {
@@ -52,7 +53,7 @@ export class AnonWorldSDK extends Api {
       storage_leaf: formatHexArray(leaf, { length: 69, pad: 'right' }),
       storage_depth: storageProof.proof.length,
       storage_value: `0x${storageProof.value.toString(16)}`,
-      chain_id: `0x${args.chainId.toString(16)}`,
+      chain_id: `0x${Number(args.chainId).toString(16)}`,
       block_number: `0x${args.blockNumber.toString(16)}`,
       token_address: args.tokenAddress,
       balance_slot: `0x${BigInt(args.balanceSlot).toString(16)}`,
@@ -62,8 +63,11 @@ export class AnonWorldSDK extends Api {
     const proof = await this.erc20Balance.generate(input)
 
     return await this.createCredential({
+      type: this.erc20Balance.type,
+      version: this.erc20Balance.version,
       proof: Array.from(proof.proof),
       publicInputs: proof.publicInputs,
+      parentId: args.parentId,
     })
   }
 }

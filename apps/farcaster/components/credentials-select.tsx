@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Credential, useSDK } from '@anonworld/react'
+import { Credential, useCredentials } from '@anonworld/react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -19,7 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from './ui/button'
 import { Loader2 } from 'lucide-react'
 import { Slider } from './ui/slider'
@@ -35,11 +35,19 @@ export function CredentialsSelect({
   selected: Credential | null
   onSelect: (credential: Credential | null) => void
 }) {
-  const { credentials } = useSDK()
+  const { credentials } = useCredentials()
   const [open, setOpen] = useState(false)
 
+  const anonCredentials = useMemo(
+    () =>
+      credentials.filter(
+        (credential) => credential.metadata.tokenAddress === TOKEN_ADDRESS
+      ),
+    [credentials]
+  )
+
   useEffect(() => {
-    onSelect(credentials.credentials[0] ?? null)
+    onSelect(anonCredentials[0] ?? null)
   }, [])
 
   return (
@@ -50,7 +58,7 @@ export function CredentialsSelect({
           if (id === 'new') {
             setOpen(true)
           } else {
-            onSelect(credentials.get(id) ?? null)
+            onSelect(anonCredentials.find((credential) => credential.id === id) ?? null)
           }
         }}
         key={open ? 'open' : 'closed'}
@@ -60,7 +68,7 @@ export function CredentialsSelect({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {credentials.credentials.map((credential) => (
+            {anonCredentials.map((credential) => (
               <SelectItem key={credential.id} value={credential.id}>
                 <div className="flex flex-row items-center gap-2">
                   <span className="font-semibold">
@@ -77,7 +85,7 @@ export function CredentialsSelect({
               </SelectItem>
             ))}
           </SelectGroup>
-          {credentials.credentials.length > 0 && <SelectSeparator />}
+          {anonCredentials.length > 0 && <SelectSeparator />}
           <SelectGroup>
             <SelectItem value="new" className="font-semibold">
               Add new credential...
@@ -110,16 +118,15 @@ export function VerifyCredential({
   const { data } = useBalance()
   const maxBalance = data ? Number.parseInt(formatUnits(data, 18)) : 0
   const [balance, setBalance] = useState(minBalance)
-  const { credentials } = useSDK()
+  const { add } = useCredentials()
   const [error, setError] = useState<string | null>(null)
 
   const handleVerify = async () => {
     setIsVerifying(true)
     try {
-      const credential = await credentials.addERC20Balance({
+      const credential = await add({
         chainId: 8453,
         tokenAddress: TOKEN_ADDRESS,
-        balanceSlot: 0,
         verifiedBalance: parseEther(balance.toString()),
       })
       onVerify(credential)
@@ -133,12 +140,13 @@ export function VerifyCredential({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-black">
         <AlertDialogHeader>
           <AlertDialogTitle>Add $ANON credential</AlertDialogTitle>
           <AlertDialogDescription>
             Credentials anonymously verify your onchain balance and add trusted tags to
-            your posts. Right now, we only support $ANON.
+            your posts. For now, we only support $ANON - 5K ANON to post, 2M ANON to
+            promote.
             <br />
             <br />
             Important: While you can verify any balance amount, please note that higher

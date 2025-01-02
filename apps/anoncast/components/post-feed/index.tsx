@@ -1,7 +1,6 @@
 'use client'
 
-import { Cast } from '@anonworld/react'
-import { useQuery } from '@tanstack/react-query'
+import { Cast, useTrendingPosts, useNewPosts } from '@anonworld/react'
 import { useState } from 'react'
 import AnimatedTabs from './animated-tabs'
 import { Skeleton } from '../ui/skeleton'
@@ -9,32 +8,22 @@ import { Post } from '../post'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { BEST_OF_FID, LAUNCH_FID } from '@/lib/utils'
-import { useSDK } from '@anonworld/react'
+
 export function PostFeed({
   defaultTab = 'trending',
 }: {
   defaultTab?: 'new' | 'trending'
 }) {
-  const { sdk } = useSDK()
   const [selected, setSelected] = useState<'new' | 'trending'>(defaultTab)
   const router = useRouter()
 
-  const { data: trendingPosts, isLoading: isTrendingLoading } = useQuery({
-    queryKey: ['trending'],
-    queryFn: async (): Promise<Cast[]> => {
-      const response = await sdk.getTrendingFeed(BEST_OF_FID)
-      return response?.data?.data || []
-    },
+  const { data: trendingPosts, isLoading: isTrendingLoading } = useTrendingPosts({
+    fid: BEST_OF_FID,
   })
 
-  const { data: newPosts, isLoading: isNewLoading } = useQuery({
-    queryKey: ['posts'],
-    queryFn: async (): Promise<Cast[]> => {
-      const response = await sdk.getNewFeed(BEST_OF_FID)
-      return (response?.data?.data || [])?.filter(
-        ({ text }) => !text.match(/.*@clanker.*(launch|deploy|make).*/is)
-      )
-    },
+  const { data: newPosts, isLoading: isNewLoading } = useNewPosts({
+    fid: BEST_OF_FID,
+    filter: ({ text }) => !text.match(/.*@clanker.*(launch|deploy|make).*/is),
   })
 
   return (
@@ -53,8 +42,8 @@ export function PostFeed({
       {selected === 'new' ? (
         isNewLoading ? (
           <SkeletonPosts />
-        ) : newPosts?.length && newPosts?.length > 0 ? (
-          <Posts casts={newPosts} />
+        ) : newPosts?.pages[0]?.length && newPosts?.pages[0]?.length > 0 ? (
+          <Posts casts={newPosts?.pages[0]} />
         ) : (
           <h1>Something went wrong. Please refresh the page.</h1>
         )
@@ -74,25 +63,16 @@ export function PromotedFeed({
 }: {
   defaultTab?: 'new' | 'promoted'
 }) {
-  const { sdk } = useSDK()
   const [selected, setSelected] = useState<'new' | 'promoted'>(defaultTab)
   const router = useRouter()
-  const { data: promotedLaunches, isLoading: isPromotedLoading } = useQuery({
-    queryKey: ['launches', 'promoted'],
-    queryFn: async (): Promise<Cast[]> => {
-      const response = await sdk.getNewFeed(LAUNCH_FID)
-      return response?.data?.data || []
-    },
+  const { data: promotedLaunches, isLoading: isPromotedLoading } = useNewPosts({
+    fid: LAUNCH_FID,
   })
 
-  const { data: newLaunches, isLoading: isNewLoading } = useQuery({
-    queryKey: ['launches', 'new'],
-    queryFn: async (): Promise<Cast[]> => {
-      const response = await sdk.getNewFeed(BEST_OF_FID)
-      return (response?.data?.data || [])?.filter(({ text }) =>
-        text.toLowerCase().match(/.*@clanker.*(launch|deploy|make).*/is)
-      )
-    },
+  const { data: newLaunches, isLoading: isNewLoading } = useNewPosts({
+    fid: BEST_OF_FID,
+    filter: ({ text }) =>
+      !!text.toLowerCase().match(/.*@clanker.*(launch|deploy|make).*/is),
   })
 
   return (
@@ -111,15 +91,15 @@ export function PromotedFeed({
       {selected === 'new' ? (
         isNewLoading ? (
           <SkeletonPosts />
-        ) : newLaunches?.length && newLaunches?.length > 0 ? (
-          <Posts casts={newLaunches} />
+        ) : newLaunches?.pages[0]?.length && newLaunches?.pages[0]?.length > 0 ? (
+          <Posts casts={newLaunches?.pages[0]} />
         ) : (
           <h1>Something went wrong. Please refresh the page.</h1>
         )
       ) : isPromotedLoading ? (
         <SkeletonPosts />
-      ) : promotedLaunches?.length && promotedLaunches?.length > 0 ? (
-        <Posts casts={promotedLaunches} />
+      ) : promotedLaunches?.pages[0]?.length && promotedLaunches?.pages[0]?.length > 0 ? (
+        <Posts casts={promotedLaunches?.pages[0]} />
       ) : (
         <h1>Something went wrong. Please refresh the page.</h1>
       )}

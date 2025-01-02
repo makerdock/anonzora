@@ -1,6 +1,5 @@
 'use client'
 
-import { Cast, Reveal } from '@anonworld/react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/lib/hooks/use-toast'
-import { Coins, Heart, Loader2, MessageSquare, RefreshCcw } from 'lucide-react'
+import { Coins, Heart, Loader2, MessageCircle, RefreshCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useCreatePost } from '../create-post/context'
 import { useAccount, useSignMessage } from 'wagmi'
@@ -24,18 +23,17 @@ import {
   PROMOTE_AMOUNT,
   LAUNCH_AMOUNT,
   LAUNCH_FID,
-  COPY_TO_ANONFUN_ACTION_ID,
-  DELETE_FROM_TWITTER_ACTION_ID,
-  COPY_TO_TWITTER_ACTION_ID,
   TOKEN_ADDRESS,
 } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { formatEther, hashMessage, parseEther } from 'viem'
 import { Input } from '../ui/input'
 import { useQuery } from '@tanstack/react-query'
-import { useExecuteActions, useSDK } from '@anonworld/react'
-import { ToastAction } from '@radix-ui/react-toast'
+import { Cast, Reveal, useCredentials, useSDK } from '@anonworld/react'
 import { VerifyCredential } from '../credentials-select'
+import { useDeletePost } from '@/hooks/use-delete-post'
+import { usePromotePost } from '@/hooks/use-promote-post'
+import { useLaunchPost } from '@/hooks/use-launch-post'
 
 function formatNumber(num: number): string {
   if (num < 1000) return num.toString()
@@ -55,17 +53,16 @@ export function Post({
   const { address } = useAccount()
   const { data: balance } = useBalance()
   const [reveal, setReveal] = useState(cast.reveal)
-  const { credentials } = useSDK()
+  const { credentials } = useCredentials()
 
-  const twitterSibling = cast.siblings.find((sibling) => sibling.target === 'twitter')
-  const twitterChild = cast.children.find((child) => child.target === 'twitter')
-  const tweetId = twitterSibling?.targetId || twitterChild?.targetId
+  const twitter = cast.relationships.find((r) => r.target === 'twitter')
+  const tweetId = twitter?.targetId
 
-  const farcasterChild = cast.children.find((child) => child.target === 'farcaster')
-  const farcasterHash = farcasterChild?.targetId || cast.hash
+  const farcaster = cast.relationships.find((r) => r.target === 'farcaster')
+  const farcasterHash = farcaster?.targetId || cast.hash
 
-  const launchChild = cast.children.find(
-    (child) => child.target === 'farcaster' && Number(child.targetAccount) === LAUNCH_FID
+  const launchChild = cast.relationships.find(
+    (r) => r.target === 'farcaster' && Number(r.targetAccount) === LAUNCH_FID
   )
   const unableToPromoteRegex = [
     /.*@clanker.*(launch|deploy|make).*/,
@@ -104,7 +101,7 @@ export function Post({
 
   const canReveal = address && !!cast.reveal && !cast.reveal?.phrase
 
-  const has2M = credentials.credentials.some(
+  const has2M = credentials.some(
     (c) => c.metadata?.balance && BigInt(c.metadata.balance) >= parseEther('2000000')
   )
 
@@ -258,7 +255,7 @@ export function Post({
           <div className="flex flex-col gap-4 sm:flex-row justify-between">
             <div className="flex flex-row items-center gap-2 mt-2">
               <div className="flex flex-row items-center gap-1.5 ">
-                <MessageSquare size={16} className="text-zinc-400" />
+                <MessageCircle size={16} className="text-zinc-400" />
                 <p className="text-sm font-medium">{formatNumber(cast.replies.count)}</p>
               </div>
               <div className="flex flex-row items-center gap-1.5 ">
@@ -308,7 +305,7 @@ export function Post({
                   Launched
                 </a>
               )}
-              {canDelete && <DeleteButton cast={cast} isVerified={has2M} />}
+              {canDelete && <DeleteButton tweetId={tweetId} isVerified={has2M} />}
             </div>
           </div>
         </div>
@@ -341,42 +338,13 @@ function timeAgo(timestamp: string): string {
   return 'just now'
 }
 
-function DeleteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }) {
+function DeleteButton({ tweetId, isVerified }: { tweetId: string; isVerified: boolean }) {
   const [open, setOpen] = useState(false)
   const [verifyOpen, setVerifyOpen] = useState(false)
-  const { toast } = useToast()
-  const { executeActions: performAction, status } = useExecuteActions({
-    onSuccess: () => {
-      toast({
-        title: 'Post deleted',
-      })
-    },
-    onError: (error) => {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to delete',
-        description: error,
-      })
-    },
-  })
+  const { mutateAsync, isPending } = useDeletePost({ tweetId })
 
   const handleDelete = async () => {
-    const actions = []
-    const twitterSibling = cast.siblings.find((sibling) => sibling.target === 'twitter')
-    const twitterChild = cast.children.find((child) => child.target === 'twitter')
-    const tweetId = twitterSibling?.targetId || twitterChild?.targetId
-    if (tweetId) {
-      actions.push({
-        actionId: DELETE_FROM_TWITTER_ACTION_ID,
-        data: {
-          tweetId,
-        },
-      })
-    }
-
-    if (actions.length > 0) {
-      await performAction(actions)
-    }
+    await mutateAsync()
     setOpen(false)
   }
 
@@ -409,7 +377,7 @@ function DeleteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean })
           Delete
         </p>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-black">
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -418,12 +386,8 @@ function DeleteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean })
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={!['idle', 'success', 'error'].includes(status.status)}
-          >
-            {status.status === 'loading' ? (
+          <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+            {isPending ? (
               <div className="flex flex-row items-center gap-2">
                 <Loader2 className="animate-spin" />
                 <p>Generating proof</p>
@@ -442,43 +406,10 @@ function PromoteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }
   const [open, setOpen] = useState(false)
   const [verifyOpen, setVerifyOpen] = useState(false)
   const [asReply, setAsReply] = useState(false)
-  const { toast } = useToast()
-  const { executeActions: performAction, status } = useExecuteActions({
-    onSuccess: (response) => {
-      toast({
-        title: 'Post promoted',
-        action: (
-          <ToastAction
-            altText="View post"
-            onClick={() => {
-              const tweetId = response.findLast((r) => r.tweetId)?.tweetId
-              window.open(`https://x.com/i/status/${tweetId}`, '_blank')
-            }}
-          >
-            View on X
-          </ToastAction>
-        ),
-      })
-    },
-    onError: (error) => {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to promote',
-        description: error,
-      })
-    },
-  })
+  const { mutateAsync, isPending } = usePromotePost({ hash: cast.hash, reply: asReply })
 
   const handlePromote = async () => {
-    await performAction([
-      {
-        actionId: COPY_TO_TWITTER_ACTION_ID,
-        data: {
-          hash: cast.hash,
-          reply: asReply,
-        },
-      },
-    ])
+    await mutateAsync()
     setOpen(false)
   }
 
@@ -515,7 +446,7 @@ function PromoteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }
           Promote
         </p>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-black">
         <AlertDialogHeader>
           <AlertDialogTitle>Promote to X/Twitter?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -539,11 +470,8 @@ function PromoteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }
         )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button
-            onClick={handlePromote}
-            disabled={!['idle', 'success', 'error'].includes(status.status)}
-          >
-            {status.status === 'loading' ? (
+          <Button onClick={handlePromote} disabled={isPending}>
+            {isPending ? (
               <div className="flex flex-row items-center gap-2">
                 <Loader2 className="animate-spin" />
                 <p>Generating proof</p>
@@ -561,42 +489,10 @@ function PromoteButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }
 function LaunchButton({ cast, isVerified }: { cast: Cast; isVerified: boolean }) {
   const [open, setOpen] = useState(false)
   const [verifyOpen, setVerifyOpen] = useState(false)
-  const { toast } = useToast()
-  const { executeActions: performAction, status } = useExecuteActions({
-    onSuccess: (response) => {
-      toast({
-        title: 'Post launched',
-        action: (
-          <ToastAction
-            altText="View post"
-            onClick={() => {
-              const hash = response.findLast((r) => r.hash)?.hash
-              window.open(`https://warpcast.com/~/conversations/${hash}`, '_blank')
-            }}
-          >
-            View on Warpcast
-          </ToastAction>
-        ),
-      })
-    },
-    onError: (error) => {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to launch',
-        description: error,
-      })
-    },
-  })
+  const { mutateAsync, isPending } = useLaunchPost({ hash: cast.hash })
 
   const handleLaunch = async () => {
-    await performAction([
-      {
-        actionId: COPY_TO_ANONFUN_ACTION_ID,
-        data: {
-          hash: cast.hash,
-        },
-      },
-    ])
+    await mutateAsync()
     setOpen(false)
   }
 
@@ -629,7 +525,7 @@ function LaunchButton({ cast, isVerified }: { cast: Cast; isVerified: boolean })
           Launch
         </p>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-black">
         <AlertDialogHeader>
           <AlertDialogTitle>Launch token</AlertDialogTitle>
           <AlertDialogDescription>
@@ -638,11 +534,8 @@ function LaunchButton({ cast, isVerified }: { cast: Cast; isVerified: boolean })
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button
-            onClick={handleLaunch}
-            disabled={!['idle', 'success', 'error'].includes(status.status)}
-          >
-            {status.status === 'loading' ? (
+          <Button onClick={handleLaunch} disabled={isPending}>
+            {isPending ? (
               <div className="flex flex-row items-center gap-2">
                 <Loader2 className="animate-spin" />
                 <p>Generating proof</p>
@@ -718,7 +611,7 @@ function RevealButton({
           Reveal
         </p>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-black">
         <AlertDialogHeader>
           <AlertDialogTitle>Reveal your post</AlertDialogTitle>
           <AlertDialogDescription>
