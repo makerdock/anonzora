@@ -1,6 +1,10 @@
 import { useToast } from '@/lib/hooks/use-toast'
-import { useActions, useCredentials, useExecuteActions } from '@anonworld/react'
-import { getUsableCredential } from '../../../packages/react/src/utils'
+import {
+  useActions,
+  useCredentials,
+  useExecuteActions,
+  getUsableCredential,
+} from '@anonworld/react'
 import { useMemo } from 'react'
 import { DELETE_FROM_TWITTER_ACTION_ID } from '@/lib/utils'
 

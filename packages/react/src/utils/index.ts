@@ -1,8 +1,7 @@
 import { base } from 'viem/chains'
-import { Action, Credential, CredentialWithId } from '@anonworld/common'
+import { Action, CredentialWithId } from '@anonworld/common'
 
 export const CREDENTIAL_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7 // 7 days
-// export const CREDENTIAL_EXPIRATION_TIME = 1000 * 60 * 60 * 24 // 1 day
 
 export const chains = [base]
 

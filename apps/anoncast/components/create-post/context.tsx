@@ -4,15 +4,15 @@ import { useToast } from '@/lib/hooks/use-toast'
 import {
   FarcasterCast,
   FarcasterChannel,
-  Credential,
+  CredentialWithId,
   useExecuteActions,
+  encodeJson,
 } from '@anonworld/react'
 import { useRouter } from 'next/navigation'
 import { createContext, useContext, useState, ReactNode } from 'react'
 import { hashMessage } from 'viem'
 import { ToastAction } from '../ui/toast'
 import { CREATE_POST_ACTION_ID } from '@/lib/utils'
-import { encodeJson } from '../../../../packages/react/src/utils'
 
 type Variant = 'anoncast' | 'anonfun' | 'anon'
 
@@ -37,8 +37,8 @@ interface CreatePostContextProps {
   setRevealPhrase: (revealPhrase: string | null) => void
   variant: Variant
   setVariant: (variant: Variant) => void
-  credential: Credential | null
-  setCredential: (credential: Credential | null) => void
+  credential: CredentialWithId | null
+  setCredential: (credential: CredentialWithId | null) => void
   isPending: boolean
 }
 
@@ -61,7 +61,7 @@ export const CreatePostProvider = ({
   const [confetti, setConfetti] = useState(false)
   const { toast } = useToast()
   const [variant, setVariant] = useState<Variant>(initialVariant || 'anoncast')
-  const [credential, setCredential] = useState<Credential | null>(null)
+  const [credential, setCredential] = useState<CredentialWithId | null>(null)
   const router = useRouter()
   const { mutateAsync, isPending } = useExecuteActions({
     credentials: credential ? [credential] : [],
