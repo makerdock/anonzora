@@ -16,20 +16,21 @@ async function getActionInstance(request: ActionRequest) {
 
   let actionInstance: BaseAction | undefined
 
+  const validCredentials = request.credentials.filter(
+    (c) => new Date(c.verified_at).getTime() + CREDENTIAL_EXPIRATION_TIME > Date.now()
+  )
+
+  if (validCredentials.length === 0) {
+    throw new Error('No valid credentials provided')
+  }
+
   if (action.credential_id) {
-    const credential = request.credentials.find(
+    const credential = validCredentials.find(
       (credential) => credential.credential_id === action.credential_id
     )
 
     if (!credential) {
       throw new Error('Missing required credential')
-    }
-
-    if (
-      new Date(credential.verified_at).getTime() + CREDENTIAL_EXPIRATION_TIME <
-      Date.now()
-    ) {
-      throw new Error('Credential expired')
     }
   }
 

@@ -32,9 +32,9 @@ const updateTokens = async () => {
     const zerionToken = await zerion.getFungible(token.chain_id, token.address)
     const simpleHashToken = await simplehash.getFungible(token.chain_id, token.address)
     await updateToken(token.id, {
-      price_usd: zerionToken.attributes.market_data.price.toFixed(8),
-      market_cap: Math.round(zerionToken.attributes.market_data.market_cap),
-      total_supply: Math.round(zerionToken.attributes.market_data.total_supply),
+      price_usd: zerionToken.attributes.market_data.price?.toFixed(8) ?? '0',
+      market_cap: Math.round(zerionToken.attributes.market_data.market_cap ?? 0),
+      total_supply: Math.round(zerionToken.attributes.market_data.total_supply ?? 0),
       holders: simpleHashToken.holder_count ?? 0,
     })
   }
