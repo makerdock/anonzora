@@ -1,3 +1,3 @@
 # anonworld
 
-https://anoncast.org
+https://anon.world
