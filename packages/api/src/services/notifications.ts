@@ -25,8 +25,16 @@ export class NotificationsService {
       this.getPosts(replies),
     ])
 
+    const skipHashes = new Set(
+      posts.flatMap((p) => p.relationships.map((r) => r.targetId))
+    )
+
     const data: Post[] = []
     for (const cast of casts) {
+      if (skipHashes.has(cast.hash)) {
+        continue
+      }
+
       const reply = vaultReplies.find((r) => r.hash === cast.hash)
       const post = posts.find((p) => p.hash === cast.hash)
       if (post) {
