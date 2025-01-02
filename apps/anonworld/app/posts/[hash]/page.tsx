@@ -8,6 +8,7 @@ import {
   usePostConversation,
 } from '@anonworld/react'
 import { View, YStack, Spinner } from '@anonworld/ui'
+import { Content } from '@/components/content'
 
 export default function PostPage({ params }: { params: { hash: string } }) {
   const { data: post } = usePost({ hash: params.hash })
@@ -16,7 +17,7 @@ export default function PostPage({ params }: { params: { hash: string } }) {
   })
 
   return (
-    <View maxWidth={700} mx="auto" my="$3" gap="$6">
+    <Content gap="$6">
       <YStack gap="$3">
         {post && (
           <View $xs={{ bbw: '$0.5', bc: '$borderColor' }}>
@@ -27,6 +28,6 @@ export default function PostPage({ params }: { params: { hash: string } }) {
       </YStack>
       {conversationLoading && <Spinner color="$color12" />}
       {conversation && <PostConversation conversation={conversation} />}
-    </View>
+    </Content>
   )
 }

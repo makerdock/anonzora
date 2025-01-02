@@ -5,11 +5,21 @@ import { Separator, Text, View, XStack, YStack } from '@anonworld/ui'
 import { NewCommunity } from '@anonworld/react'
 import { UsersRound } from '@tamagui/lucide-icons'
 import { TextLink } from 'solito/link'
+import { Content } from '@/components/content'
 
 export default function CommunitiesPage() {
   return (
-    <View maxWidth={700} mx="auto" my="$3" gap="$3">
-      <YStack bg="$green1" px="$4" py="$3" br="$4" bc="$green8" bw="$0.5" gap="$2">
+    <Content>
+      <YStack
+        bg="$green1"
+        px="$4"
+        py="$3"
+        br="$4"
+        bc="$green8"
+        bw="$0.5"
+        gap="$2"
+        $xs={{ mx: '$3' }}
+      >
         <XStack ai="center" gap="$2">
           <UsersRound size={16} color="$green12" strokeWidth={2.5} />
           <Text fos="$2" fow="600" color="$green12">
@@ -45,6 +55,6 @@ export default function CommunitiesPage() {
         <NewCommunity />
       </XStack>
       <CommunityFeed sort="popular" />
-    </View>
+    </Content>
   )
 }

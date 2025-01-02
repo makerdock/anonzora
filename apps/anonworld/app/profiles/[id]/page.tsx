@@ -1,5 +1,6 @@
 'use client'
 
+import { Content } from '@/components/content'
 import { VaultDisplay, VaultPosts, useVault } from '@anonworld/react'
 import { Text, View, XStack } from '@anonworld/ui'
 
@@ -11,7 +12,7 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <View maxWidth={700} mx="auto" my="$3" gap="$3">
+    <Content>
       <VaultDisplay vault={vault} />
       <XStack gap="$2" $xs={{ px: '$2' }}>
         <View bg="$color12" py="$2" px="$3" br="$12">
@@ -21,6 +22,6 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
         </View>
       </XStack>
       <VaultPosts id={vault.id} />
-    </View>
+    </Content>
   )
 }

@@ -6,7 +6,8 @@ import {
   NewFeed,
   useCommunity,
 } from '@anonworld/react'
-import { View, XStack, YStack } from '@anonworld/ui'
+import { View, XStack } from '@anonworld/ui'
+import { Content } from '@/components/content'
 
 export default function CommunityPage({ params }: { params: { id: string } }) {
   const { data: community } = useCommunity({ id: params.id })
@@ -16,15 +17,13 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <View maxWidth={700} mx="auto" my="$3" gap="$3">
-      <YStack gap="$3">
-        <CommunityDisplay community={community} />
-      </YStack>
+    <Content>
+      <CommunityDisplay community={community} />
       <XStack ai="center" jc="space-between" $xs={{ px: '$2' }}>
         <View />
         <NewCommunityPost community={community} />
       </XStack>
       <NewFeed fid={community.fid} />
-    </View>
+    </Content>
   )
 }

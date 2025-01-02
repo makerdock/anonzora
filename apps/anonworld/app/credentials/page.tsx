@@ -1,7 +1,8 @@
 'use client'
 
 import { CredentialDisplay, NewCredential, useCredentials } from '@anonworld/react'
-import { Text, View, XStack, YStack } from '@anonworld/ui'
+import { Text, XStack, YStack } from '@anonworld/ui'
+import { Content } from '@/components/content'
 
 export default function Credentials() {
   const { credentials } = useCredentials()
@@ -11,7 +12,7 @@ export default function Credentials() {
   })
 
   return (
-    <View maxWidth={700} mx="auto" my="$3" gap="$3">
+    <Content>
       <XStack ai="center" jc="space-between" $xs={{ px: '$2' }}>
         <Text fos="$2" fow="400" color="$color11">
           {`${sortedCredentials.length} Credential${sortedCredentials.length === 1 ? '' : 's'}`}
@@ -23,6 +24,6 @@ export default function Credentials() {
           <CredentialDisplay key={credential.id} credential={credential} />
         ))}
       </YStack>
-    </View>
+    </Content>
   )
 }

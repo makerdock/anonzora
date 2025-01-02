@@ -1,10 +1,11 @@
 import '../public/tamagui.css'
 
 import type { Metadata } from 'next'
-import { Header } from '@/components/header'
 import { GeistSans } from 'geist/font/sans'
 import { Providers } from '@/components/providers'
 import Head from 'next/head'
+import { Header } from '@/components/header'
+import { Tabs } from '@/components/tabs'
 
 export const metadata: Metadata = {
   title: 'anon.world',
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <Header />
           {children}
+          <Tabs />
         </Providers>
       </body>
     </html>

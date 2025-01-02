@@ -2,11 +2,11 @@
 
 import { About, Auth } from '@anonworld/react'
 import { Image, Text, View } from '@anonworld/ui'
-import { UsersRound, WalletMinimal } from '@tamagui/lucide-icons'
+import { WalletMinimal } from '@tamagui/lucide-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-enum Pathname {
+export enum Pathname {
   HOME = '/',
   NEW = '/new',
   POST = '/posts',
@@ -14,6 +14,7 @@ enum Pathname {
   CREDENTIALS = '/credentials',
   ABOUT = '/about',
   NOT_FOUND = '/404',
+  NOTIFICATIONS = '/notifications',
 }
 
 export function Header() {
@@ -124,35 +125,7 @@ export function Header() {
             </Link>
           </View>
         </View>
-        <View fd="row" gap="$3" ai="center" $xs={{ gap: '$2' }}>
-          <View display="none" $xs={{ display: 'flex' }}>
-            <Link href="/communities" style={{ textDecoration: 'none' }}>
-              <View
-                bg={pathname.startsWith(Pathname.COMMUNITIES) ? '$color12' : '$color1'}
-                br="$12"
-                disabledStyle={{
-                  opacity: 0.5,
-                  bg: pathname.startsWith(Pathname.COMMUNITIES) ? '$color12' : '$color1',
-                }}
-                hoverStyle={{
-                  opacity: 0.9,
-                  bg: pathname.startsWith(Pathname.COMMUNITIES) ? '$color12' : '$color5',
-                }}
-                w={32}
-                h={32}
-                jc="center"
-                ai="center"
-              >
-                <UsersRound
-                  size={20}
-                  strokeWidth={2.5}
-                  color={
-                    pathname.startsWith(Pathname.COMMUNITIES) ? '$color1' : '$color12'
-                  }
-                />
-              </View>
-            </Link>
-          </View>
+        <View fd="row" gap="$3" ai="center">
           <View $xs={{ display: 'none' }}>
             <About />
           </View>
@@ -177,6 +150,7 @@ export function Header() {
               h={32}
               jc="center"
               ai="center"
+              $xs={{ display: 'none' }}
             >
               <WalletMinimal
                 size={20}
