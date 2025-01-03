@@ -196,7 +196,9 @@ export function PostDisplay({
             </div>
           </div>
           {reveal?.phrase && <RevealBadge reveal={reveal} />}
-          <div className="font-medium whitespace-pre-wrap">{sanitizedText}</div>
+          <div className="font-medium whitespace-pre-wrap text-foreground">
+            {sanitizedText}
+          </div>
           {cast.embeds.map((embed) => {
             if (embed.metadata?.image) {
               return (
@@ -256,17 +258,19 @@ export function PostDisplay({
             <div className="flex flex-row items-center gap-2 mt-2">
               <div className="flex flex-row items-center gap-1.5 ">
                 <MessageCircle size={16} className="text-zinc-400" />
-                <p className="text-sm font-medium">{formatNumber(cast.replies.count)}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {formatNumber(cast.replies.count)}
+                </p>
               </div>
               <div className="flex flex-row items-center gap-1.5 ">
                 <RefreshCcw size={16} className="text-zinc-400" />
-                <p className="text-sm font-medium ">
+                <p className="text-sm font-medium text-foreground">
                   {formatNumber(cast.reactions.recasts_count)}
                 </p>
               </div>
               <div className="flex flex-row items-center gap-1.5 w-16">
                 <Heart size={16} className="text-zinc-400" />
-                <p className="text-sm font-medium">
+                <p className="text-sm font-medium text-foreground">
                   {formatNumber(cast.reactions.likes_count)}
                 </p>
               </div>
@@ -278,7 +282,7 @@ export function PostDisplay({
             >
               {address && (
                 <p
-                  className="text-sm underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
+                  className="text-sm text-foreground underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
                   onClick={quote}
                 >
                   Quote
@@ -286,7 +290,7 @@ export function PostDisplay({
               )}
               {address && (
                 <p
-                  className="text-sm underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
+                  className="text-sm text-foreground underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
                   onClick={reply}
                 >
                   Reply
@@ -421,7 +425,7 @@ function PromoteButton({ cast, isVerified }: { cast: Post; isVerified: boolean }
     return (
       <>
         <p
-          className="text-sm underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
+          className="text-sm text-foreground underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
           onClick={() => setVerifyOpen(true)}
         >
           Promote
@@ -442,7 +446,7 @@ function PromoteButton({ cast, isVerified }: { cast: Post; isVerified: boolean }
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <p className="text-sm underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400">
+        <p className="text-sm text-foreground underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400">
           Promote
         </p>
       </AlertDialogTrigger>
@@ -500,7 +504,7 @@ function LaunchButton({ cast, isVerified }: { cast: Post; isVerified: boolean })
     return (
       <>
         <p
-          className="text-sm underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
+          className="text-sm text-foreground underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400"
           onClick={() => setVerifyOpen(true)}
         >
           Launch
@@ -521,7 +525,7 @@ function LaunchButton({ cast, isVerified }: { cast: Post; isVerified: boolean })
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <p className="text-sm text-green-500 underline decoration-dotted font-semibold cursor-pointer hover:text-green-400">
+        <p className="text-sm text-foreground underline decoration-dotted font-semibold cursor-pointer hover:text-green-400">
           Launch
         </p>
       </AlertDialogTrigger>
@@ -607,7 +611,7 @@ function RevealButton({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <p className="text-sm underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400">
+        <p className="text-sm text-foreground underline decoration-dotted font-semibold cursor-pointer hover:text-zinc-400">
           Reveal
         </p>
       </AlertDialogTrigger>
@@ -659,7 +663,7 @@ function RevealBadge({ reveal }: { reveal: Reveal }) {
           href={`https://warpcast.com/${data.data.username}`}
           target="_blank"
           rel="noreferrer"
-          className="text-sm font-semibold cursor-pointer hover:text-zinc-400 flex flex-row items-center gap-1 text-green-400 hover:text-green-200"
+          className="text-sm font-semibold cursor-pointer hover:text-zinc-400 flex flex-row items-center gap-1 text-foreground hover:text-green-200"
         >
           <span>{`revealed as `}</span>
           <img src={data.data.pfp_url} className="w-4 h-4 rounded-full" alt="pfp" />

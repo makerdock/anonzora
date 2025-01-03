@@ -21,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${GeistSans.className} antialiased min-h-screen w-full`}>
+      <body
+        className={`${GeistSans.className} antialiased min-h-screen w-full bg-background`}
+      >
         <Providers>{children}</Providers>
         <Toaster />
       </body>

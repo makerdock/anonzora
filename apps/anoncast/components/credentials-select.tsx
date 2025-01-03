@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Credential, useCredentials } from '@anonworld/react'
+import { CredentialWithId, useCredentials } from '@anonworld/react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -32,8 +32,8 @@ export function CredentialsSelect({
   selected,
   onSelect,
 }: {
-  selected: Credential | null
-  onSelect: (credential: Credential | null) => void
+  selected: CredentialWithId | null
+  onSelect: (credential: CredentialWithId | null) => void
 }) {
   const { credentials } = useCredentials()
   const [open, setOpen] = useState(false)
@@ -79,7 +79,7 @@ export function CredentialsSelect({
                     }`}
                   </span>
                   <span className="text-sm text-zinc-400">
-                    {` • ${timeAgo(credential.verified_at)}`}
+                    {` • ${timeAgo(credential.verified_at.toString())}`}
                   </span>
                 </div>
               </SelectItem>
@@ -111,7 +111,7 @@ export function VerifyCredential({
 }: {
   open: boolean
   setOpen: (open: boolean) => void
-  onVerify: (credential: Credential) => void
+  onVerify: (credential: CredentialWithId) => void
   minBalance: number
 }) {
   const [isVerifying, setIsVerifying] = useState(false)

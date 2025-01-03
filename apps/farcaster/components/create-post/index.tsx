@@ -322,7 +322,7 @@ function EmbedLink() {
       </DialogTrigger>
       <DialogContent className="bg-black">
         <DialogHeader>
-          <DialogTitle>Embed link</DialogTitle>
+          <DialogTitle className="text-foreground">Embed link</DialogTitle>
           <DialogDescription>You can embed any website.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col  gap-4 py-4 ">
@@ -425,7 +425,7 @@ function ParentCast() {
       </DialogTrigger>
       <DialogContent className="bg-black">
         <DialogHeader>
-          <DialogTitle>Reply to post</DialogTitle>
+          <DialogTitle className="text-foreground">Reply to post</DialogTitle>
           <DialogDescription>
             You can only reply to posts from Warpcast.
           </DialogDescription>
@@ -540,7 +540,7 @@ function Channel() {
           )}
         </TooltipButton>
       </DialogTrigger>
-      <DialogContent className="bg-black">
+      <DialogContent className="text-foreground bg-background">
         <DialogHeader>
           <DialogTitle>Channel</DialogTitle>
           <DialogDescription>You can set a channel for your post.</DialogDescription>

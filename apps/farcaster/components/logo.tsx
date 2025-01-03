@@ -11,7 +11,7 @@ export function Logo() {
       onClick={handleClick}
     >
       <img src="/anon.webp" alt="ANON" className="w-8 h-8 mr-3 rounded-full" />
-      <span className="hidden sm:block">anoncast</span>
+      <span className="hidden sm:block text-foreground">anoncast</span>
     </div>
   )
 }

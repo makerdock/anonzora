@@ -22,7 +22,7 @@ function Inner() {
       <div className="flex flex-col gap-4">
         <NavTabs />
         <div className="flex flex-col gap-2 bg-zinc-900 border border-zinc-700 p-4 rounded-lg">
-          <span className="font-semibold text-xl">$ANON</span>
+          <span className="font-semibold text-xl text-foreground">$ANON</span>
           <div className="flex flex-row gap-2 justify-between ">
             <div className="flex flex-row gap-2 flex-wrap text-zinc-400">
               <a
@@ -125,14 +125,16 @@ function BuyBurn() {
 
   return (
     <div className="flex flex-col gap-2 mt-4">
-      <span className="font-bold text-md">Burn $ANON via @anonfun fees</span>
+      <span className="font-bold text-md text-foreground">
+        Burn $ANON via @anonfun fees
+      </span>
       <p className="text-sm text-zinc-400">
         @anonfun ETH rewards are used to buy $ANON on Uniswap and burn it. Anyone can
         trigger this process, once per minute, 0.1 ETH of rewards at a time.
       </p>
       <p className="text-sm text-zinc-400">You only pay for the gas fees.</p>
       <div className="flex flex-row justify-between mt-2">
-        <p className="text-sm ">
+        <p className="text-sm text-foreground">
           Burnable:{' '}
           {data ? `${Number.parseFloat(formatUnits(data, 18)).toFixed(4)} ETH` : '0 ETH'}
         </p>

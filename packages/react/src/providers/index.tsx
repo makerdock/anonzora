@@ -1,4 +1,4 @@
-import { TamaguiProvider, config } from '@anonworld/ui'
+import { TamaguiProvider, Theme, config } from '@anonworld/ui'
 import { QueryClient } from '@tanstack/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider } from 'wagmi'
@@ -25,7 +25,9 @@ export function Provider({
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <TamaguiProvider config={config} defaultTheme="dark" disableRootThemeClass>
-          <ToastProvider>{children}</ToastProvider>
+          <Theme name="dark">
+            <ToastProvider>{children}</ToastProvider>
+          </Theme>
         </TamaguiProvider>
       </QueryClientProvider>
     </WagmiProvider>

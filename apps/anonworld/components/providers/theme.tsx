@@ -39,7 +39,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   })
 
   return (
-    <NextThemeProvider skipNextHead defaultTheme="dark">
+    <NextThemeProvider
+      skipNextHead
+      defaultTheme="dark"
+      enableSystem={false}
+      enableColorScheme={false}
+      forcedTheme="dark"
+      disableTransitionOnChange
+    >
       {children}
     </NextThemeProvider>
   )
