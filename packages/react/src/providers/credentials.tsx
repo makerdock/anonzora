@@ -1,12 +1,11 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { useAccount, useConfig, useSignMessage } from 'wagmi'
-import { concat, hashMessage, keccak256, pad, toHex } from 'viem'
-import { CredentialWithId, getChain } from '@anonworld/common'
-import { getBlock, getProof } from 'wagmi/actions'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { useSignMessage } from 'wagmi'
+import { CredentialType, CredentialWithId } from '@anonworld/common'
 import { useSDK } from './sdk'
 import { useVaults } from '../hooks/use-vaults'
+import { CredentialsManager } from '@anonworld/credentials'
 
 const LOCAL_STORAGE_KEY = 'anon:credentials:v1'
 
@@ -28,12 +27,7 @@ type CredentialsContextType = {
   credentials: CredentialWithId[]
   delete: (id: string) => Promise<void>
   get: (id: string) => CredentialWithId | undefined
-  add: (args: {
-    chainId: number
-    tokenAddress: string
-    verifiedBalance: bigint
-    parentId?: string
-  }) => Promise<CredentialWithId>
+  add: (type: CredentialType, args: any, parentId?: string) => Promise<CredentialWithId>
   addToVault: (vaultId: string, credentialId: string) => Promise<void>
   removeFromVault: (vaultId: string, credentialId: string) => Promise<void>
 }
@@ -45,13 +39,13 @@ export const CredentialsProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const { sdk, connectWallet } = useSDK()
+  const manager = useMemo(() => new CredentialsManager(), [])
+
+  const { sdk } = useSDK()
   const [credentials, setCredentials] = useState<CredentialWithId[]>(
     getInitialCredentials()
   )
   const { signMessageAsync } = useSignMessage()
-  const { address } = useAccount()
-  const config = useConfig()
   const { data: vaults } = useVaults()
 
   useEffect(() => {
@@ -67,57 +61,20 @@ export const CredentialsProvider = ({
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(credentials))
   }, [credentials])
 
-  const addERC20Balance = async (args: {
-    chainId: number
-    tokenAddress: string
-    verifiedBalance: bigint
-    parentId?: string
-  }) => {
-    if (!address) {
-      connectWallet?.()
-      throw new Error('No address connected')
-    }
+  const addCredential = async (type: CredentialType, args: any, parentId?: string) => {
+    const verifier = manager.getVerifier(type)
 
-    const chain = getChain(args.chainId)
+    const { input, message } = await verifier.buildInput(args)
 
-    const response = await sdk.getBalanceStorageSlot(args.chainId, args.tokenAddress)
-    if (!response.data) {
-      throw new Error('Failed to find balance storage slot')
-    }
-
-    const balanceSlot = response.data.slot
-    const balanceSlotHex = pad(toHex(balanceSlot))
-    const storageKey = keccak256(concat([pad(address), balanceSlotHex]))
-    const block = await chain.client.getBlock()
-    const proof = await chain.client.getProof({
-      address: args.tokenAddress as `0x${string}`,
-      storageKeys: [storageKey],
-      blockNumber: block.number,
-    })
-
-    const message = JSON.stringify({
-      chainId: args.chainId,
-      blockNumber: block.number.toString(),
-      storageHash: proof.storageHash,
-      tokenAddress: args.tokenAddress,
-      balanceSlot: balanceSlot,
-      balance: args.verifiedBalance.toString(),
-    })
-    const messageHash = hashMessage(message)
     const signature = await signMessageAsync({ message })
 
-    const credential = await sdk.verifyERC20Balance({
-      address,
+    const proof = await verifier.generateProof({
+      ...input,
       signature,
-      messageHash,
-      storageHash: proof.storageHash,
-      storageProof: proof.storageProof,
-      chainId: args.chainId,
-      blockNumber: block.number,
-      tokenAddress: args.tokenAddress as `0x${string}`,
-      balanceSlot: balanceSlotHex,
-      verifiedBalance: args.verifiedBalance,
-      blockTimestamp: block.timestamp,
+    })
+
+    const credential = await sdk.createCredential({
+      ...proof,
       parentId: args.parentId,
     })
 
@@ -125,24 +82,14 @@ export const CredentialsProvider = ({
       throw new Error(credential.error.message)
     }
 
-    return credential.data
-  }
-
-  const addCredential = async (args: {
-    chainId: number
-    tokenAddress: string
-    verifiedBalance: bigint
-    parentId?: string
-  }) => {
-    const credential = await addERC20Balance(args)
     if (args.parentId) {
       setCredentials((prev) =>
-        prev.map((cred) => (cred.id === args.parentId ? credential : cred))
+        prev.map((cred) => (cred.id === args.parentId ? credential.data : cred))
       )
     } else {
-      setCredentials((prev) => [...prev, credential])
+      setCredentials((prev) => [...prev, credential.data])
     }
-    return credential
+    return credential.data
   }
 
   const deleteCredential = async (id: string) => {
