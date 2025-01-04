@@ -1,7 +1,6 @@
-import { FarcasterCast, Post } from '@anonworld/common'
+import { FarcasterCast, Post, encodeJson } from '@anonworld/common'
 import { db } from '../db'
 import { neynar } from './neynar'
-import { encodeJson } from '../utils'
 import { DBCredential, DBPost, DBPostRelationship, DBToken } from '../db/types'
 
 export class FeedService {

@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "@anonworld/common": "*",
-    "@anonworld/zk": "*",
-    "@zk-kit/lean-imt": "^2.2.2",
+    "@anonworld/credentials": "*",
     "viem": "^2.21.53"
   }
 }

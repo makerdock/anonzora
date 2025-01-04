@@ -1,6 +1,6 @@
 import { createElysia } from '../utils'
 import { t } from 'elysia'
-import { CircuitType, getCircuit } from '@anonworld/zk'
+import { CircuitType, getCircuit } from '@anonworld/credentials'
 import { keccak256, zeroAddress, pad, concat, toHex } from 'viem'
 import { Credential, getChain } from '@anonworld/common'
 import { db } from '../db'

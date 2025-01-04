@@ -1,4 +1,4 @@
-import type { ERC20Balance } from '@anonworld/zk'
+import type { ERC20Balance } from '@anonworld/credentials'
 import { formatArray, formatHexArray } from './utils'
 import { Api } from './api'
 import { getPublicKey } from './utils'
@@ -28,7 +28,7 @@ export class AnonWorldSDK extends Api {
 
   async instantiate() {
     if (this.erc20Balance) return
-    const { getCircuit, CircuitType } = await import('@anonworld/zk')
+    const { getCircuit, CircuitType } = await import('@anonworld/credentials')
     this.erc20Balance = getCircuit(CircuitType.ERC20_BALANCE)
   }
 

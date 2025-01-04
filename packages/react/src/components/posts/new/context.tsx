@@ -6,11 +6,10 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { Action, CredentialWithId } from '@anonworld/common'
+import { Action, CredentialWithId, encodeJson } from '@anonworld/common'
 import { useExecuteActions } from '../../../hooks/use-execute-actions'
 import { useToastController } from '@anonworld/ui'
 import { hashMessage } from 'viem'
-import { encodeJson } from '../../../utils'
 import { useRouter } from 'solito/navigation'
 
 const ACTION_ID = 'b6ec8ee8-f8bf-474f-8b28-f788f37e4066'
