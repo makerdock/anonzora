@@ -71,6 +71,8 @@ async function getStorageSlot(
 ) {
   const chain = getChain(chainId)
 
+  let slotWithData = null
+
   for (let slot = 0; slot < 200; slot++) {
     const storageKey = keccak256(
       concat([pad(walletAddress as `0x${string}`), pad(toHex(slot))])
@@ -79,10 +81,19 @@ async function getStorageSlot(
       address: contractAddress as `0x${string}`,
       slot: storageKey,
     })
-    if (data && BigInt(data) === value) {
+    if (!data) continue
+
+    const dataValue = BigInt(data)
+    if (dataValue === BigInt(0)) continue
+
+    if (slotWithData === null) {
+      slotWithData = slot
+    }
+
+    if (dataValue === value) {
       return slot
     }
   }
 
-  return null
+  return slotWithData
 }

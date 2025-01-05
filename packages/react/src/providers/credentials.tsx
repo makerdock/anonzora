@@ -9,12 +9,21 @@ import { CredentialsManager } from '@anonworld/credentials'
 
 const LOCAL_STORAGE_KEY = 'anon:credentials:v1'
 
+const fixCredential = (credential: CredentialWithId) => {
+  const [type, ...rest] = credential.credential_id.split(':')
+  return {
+    ...credential,
+    type,
+    credential_id: `${type.toUpperCase()}:${rest.join(':')}`,
+  }
+}
+
 const getInitialCredentials = () => {
   if (typeof window === 'undefined') return []
   const stored = localStorage.getItem(LOCAL_STORAGE_KEY)
   if (stored) {
     try {
-      return JSON.parse(stored)
+      return JSON.parse(stored).map(fixCredential)
     } catch (error) {
       localStorage.removeItem(LOCAL_STORAGE_KEY)
       return []
@@ -60,12 +69,7 @@ export const CredentialsProvider = ({
   useEffect(() => {
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      JSON.stringify(
-        credentials.map((c) => ({
-          ...c,
-          type: c.credential_id.split(':')[0],
-        }))
-      )
+      JSON.stringify(credentials.map(fixCredential))
     )
   }, [credentials])
 

@@ -1,12 +1,6 @@
 import { Adapt, Label, Select, Sheet, Spinner, Text, XStack, YStack } from '@anonworld/ui'
 import { useNewCredential } from '../context'
-import {
-  getChain,
-  getSimplehashChain,
-  getZerionChain,
-  NFTPosition,
-  SimplehashNFT,
-} from '@anonworld/common'
+import { getChain, getSimplehashChain, SimplehashNFT } from '@anonworld/common'
 import { useAccount } from 'wagmi'
 import { useEffect, useMemo, useState } from 'react'
 import { TokenImage } from '../../../tokens/image'
@@ -32,15 +26,19 @@ function TokenField() {
 
   const { data } = useWalletNFTs()
 
-  useEffect(() => {
-    if (!data || data.length === 0) return
+  const tokens = useMemo(() => {
+    return data?.filter((t) => t.token_count === 1)
+  }, [data])
 
-    let selectedToken = data[0]
+  useEffect(() => {
+    if (!tokens || tokens.length === 0) return
+
+    let selectedToken = tokens[0]
 
     if (tokenId) {
       const chain = getChain(tokenId.chainId)
       if (!chain.simplehashId) return
-      const foundToken = data.find((t) => {
+      const foundToken = tokens.find((t) => {
         return (
           t.contract_address.toLowerCase() === tokenId.address.toLowerCase() &&
           t.chain === chain.simplehashId
@@ -52,10 +50,10 @@ function TokenField() {
     }
 
     handleSelect(selectedToken.nft_id)
-  }, [data])
+  }, [tokens])
 
   const handleSelect = (id: string) => {
-    const token = data?.find((t) => t.nft_id === id)
+    const token = tokens?.find((t) => t.nft_id === id)
     if (!token) {
       setToken(null)
       setTokenId(undefined)
@@ -109,7 +107,7 @@ function TokenField() {
               <Select.Label $xs={{ bg: '$color2' }}>Select a token</Select.Label>
               {useMemo(
                 () =>
-                  data?.map((token, index) => (
+                  tokens?.map((token, index) => (
                     <Select.Item
                       key={token.nft_id}
                       index={index}
@@ -119,7 +117,7 @@ function TokenField() {
                       <TokenValue token={token} />
                     </Select.Item>
                   )),
-                [data]
+                [tokens]
               )}
             </Select.Group>
           </Select.Viewport>

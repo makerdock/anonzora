@@ -1,16 +1,21 @@
-import { Button, Spinner, Text, YStack } from '@anonworld/ui'
+import { Button, Spinner, Text, XStack, YStack } from '@anonworld/ui'
 import { useAccount } from 'wagmi'
 import { useNewCredential } from '../../context'
 
 export function SubmitButton() {
   const { address } = useAccount()
-  const { handleAddCredential, isLoading, error, balance } = useNewCredential()
+  const { handleAddCredential, balance, isLoading, error } = useNewCredential()
 
   return (
     <YStack mt="$4" gap="$2">
       {error && (
-        <Text color="$red11" textAlign="center" mt="$-2">
+        <Text color="$red11" fos="$1" textAlign="center" mt="$-2">
           {error}
+        </Text>
+      )}
+      {isLoading && (
+        <Text color="$color11" fos="$1" textAlign="center" mt="$-2">
+          Please wait. This may take a few seconds.
         </Text>
       )}
       <Button
@@ -27,7 +32,12 @@ export function SubmitButton() {
             {address ? 'Add Credential' : 'Connect Wallet'}
           </Text>
         ) : (
-          <Spinner color="$color1" />
+          <XStack gap="$2" alignItems="center">
+            <Spinner color="$color1" />
+            <Text fos="$2" fow="600" color="$color1">
+              Adding Credential
+            </Text>
+          </XStack>
         )}
       </Button>
     </YStack>
