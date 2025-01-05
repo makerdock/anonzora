@@ -68,29 +68,8 @@ export default function ActionComponent({
           <p className="font-bold">{'You are not fully signed in. Sign in to post.'}</p>
         </div>
       )}
-      {address && !isLoading ? (
-        FARCASTER_POST > BALANCE ? (
-          <a
-            href={`https://app.uniswap.org/swap?exactAmount=5000&exactField=output&inputCurrency=ETH&outputCurrency=0x0db510e79909666d6dec7f5e49370838c16d950f&chain=base`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded flex flex-row items-center justify-between gap-2">
-              <p className="font-bold flex flex-row items-center gap-2">
-                {`You need 5000 $ANON to post. Click here to buy.`}
-                <ExternalLink size={16} />
-              </p>
-            </div>
-          </a>
-        ) : (
-          <>
-            <Separator />
-            <CreatePost variant={variant} />
-          </>
-        )
-      ) : (
-        <></>
-      )}
+      <Separator />
+      <CreatePost variant={variant} />
     </Alert>
   )
 }

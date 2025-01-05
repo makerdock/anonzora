@@ -5,6 +5,7 @@ import { useAccount, useReadContract } from 'wagmi'
 export function useBalance() {
   const { address } = useAccount()
   return useReadContract({
+    chainId: 8453,
     address: TOKEN_ADDRESS as `0x${string}`,
     abi: erc20Abi,
     functionName: 'balanceOf',

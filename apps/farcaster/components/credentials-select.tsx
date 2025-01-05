@@ -9,7 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { base, CredentialWithId, useCredentials } from '@anonworld/react'
+import {
+  base,
+  ContractType,
+  CREDENTIAL_EXPIRATION_TIME,
+  CredentialType,
+  StorageType,
+  CredentialWithId,
+  useCredentials,
+  useSDK,
+} from '@anonworld/react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -27,6 +36,7 @@ import { useBalance } from '@/lib/hooks/use-balance'
 import { formatEther, formatUnits, parseEther } from 'viem'
 import { Input } from './ui/input'
 import { timeAgo, TOKEN_ADDRESS } from '@/lib/utils'
+import { useAccount } from 'wagmi'
 
 export function CredentialsSelect({
   selected,
@@ -41,7 +51,10 @@ export function CredentialsSelect({
   const anonCredentials = useMemo(
     () =>
       credentials.filter(
-        (credential) => credential.metadata.tokenAddress === TOKEN_ADDRESS
+        (credential) =>
+          credential.metadata.tokenAddress === TOKEN_ADDRESS &&
+          new Date(credential.verified_at).getTime() + CREDENTIAL_EXPIRATION_TIME >
+            Date.now()
       ),
     [credentials]
   )
@@ -120,14 +133,32 @@ export function VerifyCredential({
   const [balance, setBalance] = useState(minBalance)
   const { add } = useCredentials()
   const [error, setError] = useState<string | null>(null)
+  const { address } = useAccount()
+  const { sdk } = useSDK()
 
   const handleVerify = async () => {
     setIsVerifying(true)
     try {
-      const credential = await add({
-        chainId: base.id,
+      if (!address) {
+        throw new Error('No address connected')
+      }
+
+      const response = await sdk.getStorageSlot(
+        8453,
+        TOKEN_ADDRESS,
+        ContractType.ERC20,
+        StorageType.BALANCE
+      )
+      if (!response.data) {
+        throw new Error('Failed to find balance storage slot')
+      }
+
+      const credential = await add(CredentialType.ERC20_BALANCE, {
+        address,
+        chainId: 8453,
         tokenAddress: TOKEN_ADDRESS,
         verifiedBalance: parseEther(balance.toString()),
+        balanceSlot: response.data.slot,
       })
       onVerify(credential)
       setIsVerifying(false)

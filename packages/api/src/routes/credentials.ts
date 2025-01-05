@@ -26,7 +26,7 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
       }
 
       const metadata = circuit.parseData(body.publicInputs)
-      const credentialId = `${body.type}:${metadata.chainId}:${metadata.tokenAddress}`
+      const credentialId = `${body.type}:${metadata.chainId}:${metadata.tokenAddress.toLowerCase()}`
       const id = keccak256(new Uint8Array(body.proof))
       const existingCredential = await db.credentials.get(id)
       if (existingCredential) {
@@ -62,7 +62,7 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
       const credential = await db.credentials.create({
         id,
         type: credentialType,
-        credential_id: credentialId.toLowerCase(),
+        credential_id: credentialId,
         metadata,
         version: circuit.version,
         proof: {
