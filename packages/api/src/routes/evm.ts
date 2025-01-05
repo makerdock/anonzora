@@ -71,7 +71,7 @@ async function getStorageSlot(
 ) {
   const chain = getChain(chainId)
 
-  for (let slot = 0; slot < 50; slot++) {
+  for (let slot = 0; slot < 200; slot++) {
     const storageKey = keccak256(
       concat([pad(walletAddress as `0x${string}`), pad(toHex(slot))])
     )
