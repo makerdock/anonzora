@@ -49,7 +49,12 @@ export function getUsableCredential(credentials: CredentialWithId[], action: Act
   }
 
   const potentialCredentials = credentials
-    .filter((credential) => credential.credential_id === action.credential_id)
+    .filter(
+      (credential) =>
+        credential.credential_id.toLowerCase() === action.credential_id?.toLowerCase() &&
+        new Date(credential.verified_at).getTime() + CREDENTIAL_EXPIRATION_TIME >
+          Date.now()
+    )
     .sort((a, b) => {
       const aBalance = BigInt(a.metadata.balance)
       const bBalance = BigInt(b.metadata.balance)
