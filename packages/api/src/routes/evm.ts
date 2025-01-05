@@ -12,7 +12,7 @@ export const evmRoutes = createElysia({ prefix: '/evm' }).post(
   '/storage-slot',
   async ({ body, error }) => {
     const chainId = body.chainId
-    const contractAddress = body.contractAddress
+    const contractAddress = body.contractAddress.toLowerCase()
     const contractType = body.contractType as ContractType
     const storageType = body.storageType as StorageType
 
