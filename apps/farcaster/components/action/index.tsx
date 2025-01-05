@@ -1,6 +1,6 @@
 import { useBalance } from '@/lib/hooks/use-balance'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
-import { CircleCheckIcon, ExternalLink } from 'lucide-react'
+import { CircleCheckIcon } from 'lucide-react'
 import { CircleXIcon } from 'lucide-react'
 import { CircleMinusIcon } from 'lucide-react'
 import { CreatePost } from '../create-post'
@@ -22,7 +22,6 @@ export default function ActionComponent({
   const { address } = useAccount()
   const { data, isLoading } = useBalance()
 
-  const BALANCE = data ? data / BigInt(10 ** 18) : BigInt(0)
   const FARCASTER_POST = BigInt(POST_AMOUNT) / BigInt(10 ** 18)
   const TWITTER_PROMOTE = BigInt(PROMOTE_AMOUNT) / BigInt(10 ** 18)
   const DELETE_POST = BigInt(DELETE_AMOUNT) / BigInt(10 ** 18)

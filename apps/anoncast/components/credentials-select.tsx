@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  base,
   ContractType,
   CREDENTIAL_EXPIRATION_TIME,
   CredentialType,

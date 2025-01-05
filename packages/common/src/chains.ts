@@ -63,7 +63,12 @@ export const zora: Chain = {
   zerionId: 'zora',
   simplehashId: 'zora',
   imageUrl: 'https://chain-icons.s3.amazonaws.com/zora',
-  client: createClient(viemZora),
+  client: createClient(
+    viemZora,
+    process.env.ALCHEMY_API_KEY
+      ? `https://zora-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+      : undefined
+  ),
 }
 
 export const chains = [base, mainnet, arbitrum, optimism, zora] as const
