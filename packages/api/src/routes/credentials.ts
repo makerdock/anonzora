@@ -61,7 +61,8 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
 
       const credential = await db.credentials.create({
         id,
-        credential_id: credentialId,
+        type: credentialType,
+        credential_id: credentialId.toLowerCase(),
         metadata,
         version: circuit.version,
         proof: {
