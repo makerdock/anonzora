@@ -26,7 +26,8 @@ async function getActionInstance(request: ActionRequest) {
 
   if (action.credential_id) {
     const credential = validCredentials.find(
-      (credential) => credential.credential_id === action.credential_id
+      (credential) =>
+        credential.credential_id.toLowerCase() === action.credential_id?.toLowerCase()
     )
 
     if (!credential) {

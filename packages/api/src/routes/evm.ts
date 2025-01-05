@@ -79,7 +79,6 @@ async function getStorageSlot(
       address: contractAddress as `0x${string}`,
       slot: storageKey,
     })
-    console.log(data, value)
     if (data && BigInt(data) === value) {
       return slot
     }
