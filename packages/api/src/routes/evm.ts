@@ -1,5 +1,5 @@
 import { createElysia } from '../utils'
-import { concat, hexToNumber, keccak256, pad, toHex } from 'viem'
+import { concat, erc20Abi, hexToNumber, keccak256, pad, toHex, zeroAddress } from 'viem'
 import { simplehash } from '../services/simplehash'
 import { t } from 'elysia'
 import { redis } from '../services/redis'
@@ -25,15 +25,34 @@ export const evmRoutes = createElysia({ prefix: '/evm' }).post(
 
     let holder: { address: string; balance: bigint } | null = null
 
+    const chain = getChain(chainId)
+
     let slot: number | null = null
     if (contractType === ContractType.ERC20) {
-      holder = await simplehash.getTopTokenHolder(chainId, contractAddress)
+      if (!chain.simplehashSupportsTokens) {
+        const balance = await chain.client.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [zeroAddress],
+        })
+        if (balance !== BigInt(0)) {
+          holder = {
+            address: zeroAddress,
+            balance: balance,
+          }
+        }
+      } else {
+        holder = await simplehash.getTopTokenHolder(chainId, contractAddress)
+      }
     }
     if (contractType === ContractType.ERC721) {
       holder = await simplehash.getTopNFTHolder(chainId, contractAddress)
     }
 
     if (!holder) return error(404, 'Failed to find balance storage slot')
+
+    console.log(holder)
 
     slot = await getStorageSlot(chainId, contractAddress, holder.address, holder.balance)
 

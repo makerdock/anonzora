@@ -7,7 +7,7 @@ export function Field({
   value,
   image,
   imageFallbackText,
-  minWidth = '$14',
+  minWidth = '$12',
   ai = 'flex-start',
 }: {
   label: string
@@ -26,7 +26,7 @@ export function Field({
       ai={ai}
       $xs={{ flexDirection: 'row-reverse', gap: '$2', jc: 'flex-end' }}
     >
-      <XStack ai={ai} gap="$2">
+      <XStack ai={ai} gap="$2" f={1} maxWidth={minWidth}>
         {image && <Image src={image} w={16} h={16} br="$12" />}
         {!image && imageFallbackText && (
           <LinearGradient
@@ -39,7 +39,7 @@ export function Field({
             br="$12"
           />
         )}
-        <Text fow="600" $xs={{ fontSize: '$1' }}>
+        <Text fow="600" $xs={{ fontSize: '$1' }} numberOfLines={1}>
           {value}
         </Text>
       </XStack>

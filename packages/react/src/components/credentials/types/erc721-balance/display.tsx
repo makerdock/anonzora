@@ -12,7 +12,7 @@ export function ERC721BalanceDisplay({ credential }: { credential: CredentialWit
   const chain = getChain(Number(credential.metadata.chainId))
 
   return (
-    <XStack $xs={{ flexDirection: 'column', gap: '$2', ai: 'flex-start' }}>
+    <XStack gap="$4" $xs={{ flexDirection: 'column', gap: '$2', ai: 'flex-start' }}>
       {[
         {
           label: 'NFT',
@@ -23,6 +23,7 @@ export function ERC721BalanceDisplay({ credential }: { credential: CredentialWit
         {
           label: 'Chain',
           value: chain.name,
+          image: chain.imageUrl,
         },
       ].map(({ label, value, image, imageFallbackText }) => (
         <Field

@@ -17,7 +17,7 @@ export function ERC20BalanceDisplay({ credential }: { credential: CredentialWith
   const chain = getChain(Number(credential.metadata.chainId))
 
   return (
-    <XStack $xs={{ flexDirection: 'column', gap: '$2', ai: 'flex-start' }}>
+    <XStack gap="$4" $xs={{ flexDirection: 'column', gap: '$2', ai: 'flex-start' }}>
       {[
         {
           label: 'Token',
@@ -25,11 +25,12 @@ export function ERC20BalanceDisplay({ credential }: { credential: CredentialWith
           image: data?.image_url ?? undefined,
           imageFallbackText: credential.metadata.tokenAddress,
         },
-        { label: 'Balance', value: amount.toLocaleString() },
         {
           label: 'Chain',
           value: chain.name,
+          image: chain.imageUrl,
         },
+        { label: 'Balance', value: amount.toLocaleString() },
       ].map(({ label, value, image, imageFallbackText }) => (
         <Field
           key={label}

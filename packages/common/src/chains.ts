@@ -4,8 +4,16 @@ import {
   arbitrum as viemArbitrum,
   optimism as viemOptimism,
   zora as viemZora,
+  polygon as viemPolygon,
 } from 'viem/chains'
 import { createPublicClient, http, Transport, Chain as ViemChain } from 'viem'
+
+const getAlchemyRpcUrl = (subdomain: string) => {
+  const alchemyApiKey =
+    process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || process.env.ALCHEMY_API_KEY || undefined
+  if (!alchemyApiKey) return undefined
+  return `https://${subdomain}.g.alchemy.com/v2/${alchemyApiKey}`
+}
 
 const createClient = (chain: ViemChain, rpcUrl?: string) => {
   return createPublicClient({
@@ -19,6 +27,7 @@ type Chain = ViemChain & {
   simplehashId: string
   imageUrl: string
   client: ReturnType<typeof createClient>
+  simplehashSupportsTokens?: boolean
 }
 
 export const mainnet: Chain = {
@@ -26,12 +35,7 @@ export const mainnet: Chain = {
   zerionId: 'ethereum',
   simplehashId: 'ethereum',
   imageUrl: 'https://chain-icons.s3.amazonaws.com/ethereum.png',
-  client: createClient(
-    viemMainnet,
-    process.env.ALCHEMY_API_KEY
-      ? `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-      : undefined
-  ),
+  client: createClient(viemMainnet, getAlchemyRpcUrl('eth-mainnet')),
 }
 
 export const base: Chain = {
@@ -39,7 +43,7 @@ export const base: Chain = {
   zerionId: 'base',
   simplehashId: 'base',
   imageUrl: 'https://chain-icons.s3.amazonaws.com/base.png',
-  client: createClient(viemBase),
+  client: createClient(viemBase, getAlchemyRpcUrl('base-mainnet')),
 }
 
 export const arbitrum: Chain = {
@@ -47,7 +51,7 @@ export const arbitrum: Chain = {
   zerionId: 'arbitrum',
   simplehashId: 'arbitrum',
   imageUrl: 'https://chain-icons.s3.amazonaws.com/arbitrum.png',
-  client: createClient(viemArbitrum),
+  client: createClient(viemArbitrum, getAlchemyRpcUrl('arb-mainnet')),
 }
 
 export const optimism: Chain = {
@@ -55,7 +59,7 @@ export const optimism: Chain = {
   zerionId: 'optimism',
   simplehashId: 'optimism',
   imageUrl: 'https://chain-icons.s3.amazonaws.com/optimism.png',
-  client: createClient(viemOptimism),
+  client: createClient(viemOptimism, getAlchemyRpcUrl('opt-mainnet')),
 }
 
 export const zora: Chain = {
@@ -63,15 +67,19 @@ export const zora: Chain = {
   zerionId: 'zora',
   simplehashId: 'zora',
   imageUrl: 'https://chain-icons.s3.amazonaws.com/zora',
-  client: createClient(
-    viemZora,
-    process.env.ALCHEMY_API_KEY
-      ? `https://zora-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-      : undefined
-  ),
+  client: createClient(viemZora, getAlchemyRpcUrl('zora-mainnet')),
 }
 
-export const chains = [base, mainnet, arbitrum, optimism, zora] as const
+export const polygon: Chain = {
+  ...viemPolygon,
+  zerionId: 'polygon',
+  simplehashId: 'polygon',
+  imageUrl: 'https://chain-icons.s3.amazonaws.com/polygon.png',
+  client: createClient(viemPolygon, getAlchemyRpcUrl('polygon-mainnet')),
+  simplehashSupportsTokens: false,
+}
+
+export const chains = [base, mainnet, arbitrum, optimism, zora, polygon] as const
 
 export const viemConfig = {
   chains,
