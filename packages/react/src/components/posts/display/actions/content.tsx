@@ -5,14 +5,12 @@ import { Action, ActionType, Post } from '@anonworld/common'
 import { getUsableCredential } from '@anonworld/common'
 import { Farcaster } from '../../../svg/farcaster'
 import { X } from '../../../svg/x'
-import { NamedExoticComponent } from 'react'
+import { NamedExoticComponent, useMemo } from 'react'
 import { useFarcasterUser } from '../../../../hooks/use-farcaster-user'
 import { useExecuteActions } from '../../../../hooks'
-import { useNewERC20Credential } from '../../../credentials/new/forms/erc20-balance/context'
 import { useCredentials } from '../../../../providers'
-import { NewCredentialDialog } from '../../../credentials/new/dialog'
-import { NewERC20CredentialProvider } from '../../../credentials/new/forms/erc20-balance/context'
 import { CredentialTypeRequirement } from '../../../credentials/types'
+import { useRouter } from 'solito/navigation'
 
 export function PostActionsContent({
   post,
@@ -22,55 +20,56 @@ export function PostActionsContent({
   setPostRevealOpen: (open: boolean) => void
 }) {
   const { data } = useActions()
-  const actions = data
-    ?.sort((a, b) => a.type.localeCompare(b.type))
-    .filter((action) =>
-      post.credentials.some(
-        (credential) => credential.credential_id === action.credential_id
+  const { credentials } = useCredentials()
+
+  const actions = useMemo(() => {
+    return data
+      ?.sort((a, b) => a.type.localeCompare(b.type))
+      .filter((action) =>
+        credentials.some(
+          (credential) => credential.credential_id === action.credential_id
+        )
       )
-    )
+  }, [data, credentials])
 
   const hasActions = actions && actions.length > 0
   const hasReveal = post.reveal && !post.reveal.phrase
 
   return (
-    <NewERC20CredentialProvider>
-      <YGroup>
-        {!hasActions && !hasReveal && (
-          <YGroup.Item>
-            <View fd="row" gap="$2" px="$3.5" py="$2.5">
-              <Text fos="$2" fow="400" color="$color11">
-                No actions
+    <YGroup>
+      {!hasActions && !hasReveal && (
+        <YGroup.Item>
+          <View fd="row" gap="$2" px="$3.5" py="$2.5">
+            <Text fos="$2" fow="400" color="$color11">
+              No actions
+            </Text>
+          </View>
+        </YGroup.Item>
+      )}
+      {hasActions &&
+        actions?.map((action) => (
+          <PostAction key={action.id} post={post} action={action} />
+        ))}
+      {hasReveal && (
+        <YGroup.Item>
+          <View
+            fd="row"
+            gap="$2"
+            px="$3.5"
+            py="$2.5"
+            hoverStyle={{ bg: '$color5' }}
+            onPress={() => setPostRevealOpen(true)}
+          >
+            <Eye size={16} />
+            <YStack ai="flex-start" gap="$1">
+              <Text fos="$2" fow="400">
+                Reveal Post
               </Text>
-            </View>
-          </YGroup.Item>
-        )}
-        {hasActions &&
-          actions?.map((action) => (
-            <PostAction key={action.id} post={post} action={action} />
-          ))}
-        {hasReveal && (
-          <YGroup.Item>
-            <View
-              fd="row"
-              gap="$2"
-              px="$3.5"
-              py="$2.5"
-              hoverStyle={{ bg: '$color5' }}
-              onPress={() => setPostRevealOpen(true)}
-            >
-              <Eye size={16} />
-              <YStack ai="flex-start" gap="$1">
-                <Text fos="$2" fow="400">
-                  Reveal Post
-                </Text>
-              </YStack>
-            </View>
-          </YGroup.Item>
-        )}
-      </YGroup>
-      <NewCredentialDialog />
-    </NewERC20CredentialProvider>
+            </YStack>
+          </View>
+        </YGroup.Item>
+      )}
+    </YGroup>
   )
 }
 
@@ -266,10 +265,10 @@ function BasePostAction({
   destructive?: boolean
   successMessage: string
 }) {
-  const { setIsOpen } = useNewERC20Credential()
   const { credentials } = useCredentials()
   const credential = getUsableCredential(credentials, action)
   const toast = useToastController()
+  const router = useRouter()
   const { mutate, isPending } = useExecuteActions({
     credentials: credential ? [credential] : [],
     actions: [
@@ -293,7 +292,7 @@ function BasePostAction({
           if (credential) {
             mutate()
           } else {
-            setIsOpen(true)
+            router.push('/credentials')
           }
         }}
         fd="row"
