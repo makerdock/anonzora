@@ -37,12 +37,13 @@ function FidField() {
   const { fid, setFid, farcasterAuth } = useNewFarcasterFid()
 
   const minFid = useMemo(() => {
-    return farcasterAuth?.profile?.fid ?? 0
+    if (!farcasterAuth?.profile?.fid) return 0
+    return farcasterAuth.profile.fid + 1
   }, [farcasterAuth])
 
   useEffect(() => {
     if (farcasterAuth?.profile?.fid) {
-      setFid(farcasterAuth.profile.fid)
+      setFid(Math.ceil(farcasterAuth.profile.fid / 1000) * 1000)
     }
   }, [farcasterAuth])
 
@@ -69,7 +70,7 @@ function FidField() {
           }
         }}
       >
-        <Slider.Track>
+        <Slider.Track bg="$color5">
           <Slider.TrackActive bg="$color12" />
         </Slider.Track>
         <Slider.Thumb size="$1" index={0} circular />

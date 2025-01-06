@@ -250,7 +250,7 @@ function BalanceField() {
         max={maxBalance}
         onValueChange={(value) => setBalance(value[0])}
       >
-        <Slider.Track>
+        <Slider.Track bg="$color5">
           <Slider.TrackActive bg="$color12" />
         </Slider.Track>
         <Slider.Thumb size="$1" index={0} circular />

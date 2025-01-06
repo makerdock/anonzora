@@ -68,7 +68,9 @@ function SiwfUser({ farcasterAuth }: { farcasterAuth: FarcasterAuth | undefined 
     <XStack gap="$2.5" ai="center" mx="$2">
       <Circle size={8} bg={farcasterAuth ? '$green11' : '$red11'} />
       <Text fos="$2" fow="400" color={farcasterAuth ? '$color12' : '$color11'}>
-        {farcasterAuth ? farcasterAuth.profile.username : 'No account connected.'}
+        {farcasterAuth
+          ? `@${farcasterAuth.profile.username} (${farcasterAuth.profile.fid})`
+          : 'No account connected.'}
       </Text>
     </XStack>
   )
