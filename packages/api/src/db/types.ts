@@ -3,6 +3,7 @@ import {
   CredentialProof,
   CredentialType,
   PostData,
+  FarcasterFidMetadata,
 } from '@anonworld/common'
 import {
   communitiesTable,
@@ -32,9 +33,16 @@ export type DBPostCredential = typeof postCredentialsTable.$inferSelect
 export type DBActionExecution = typeof actionExecutionsTable.$inferSelect
 export type DBCredential = typeof credentialsTable.$inferSelect & {
   proof: CredentialProof
-  metadata: TokenBalanceMetadata
-  type: CredentialType
-}
+} & (
+    | {
+        type: CredentialType.ERC20_BALANCE | CredentialType.ERC721_BALANCE
+        metadata: TokenBalanceMetadata
+      }
+    | {
+        type: CredentialType.FARCASTER_FID
+        metadata: FarcasterFidMetadata
+      }
+  )
 export type DBCommunity = typeof communitiesTable.$inferSelect
 export type DBToken = typeof tokensTable.$inferSelect
 export type DBVault = typeof vaultsTable.$inferSelect

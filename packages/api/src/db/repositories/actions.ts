@@ -33,13 +33,13 @@ export class ActionsRepository {
     return response as DBAction[]
   }
 
-  async list() {
+  async list(showHidden = false) {
     const actions = await this.db
       .select()
       .from(actionsTable)
       .leftJoin(communitiesTable, eq(actionsTable.community_id, communitiesTable.id))
       .leftJoin(tokensTable, eq(communitiesTable.token_id, tokensTable.id))
-      .where(eq(actionsTable.hidden, false))
+      .where(showHidden ? undefined : eq(actionsTable.hidden, false))
 
     const response = actions.map((action) => ({
       ...action.actions,

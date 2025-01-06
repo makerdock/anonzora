@@ -10,7 +10,7 @@ import { COPY_TO_ANONFUN_ACTION_ID } from '@/lib/utils'
 import { ToastAction } from '@radix-ui/react-toast'
 
 export function useLaunchPost({ hash }: { hash: string }) {
-  const { data: actions } = useActions()
+  const { data: actions } = useActions({ showHidden: true })
   const { toast } = useToast()
   const { credentials } = useCredentials()
 

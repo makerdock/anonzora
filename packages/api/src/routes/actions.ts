@@ -62,12 +62,20 @@ async function getActionInstance(request: ActionRequest) {
 }
 
 export const actionsRoutes = createElysia({ prefix: '/actions' })
-  .get('/', async () => {
-    const data = await db.actions.list()
-    return {
-      data,
+  .get(
+    '/',
+    async ({ query }) => {
+      const data = await db.actions.list(query.showHidden)
+      return {
+        data,
+      }
+    },
+    {
+      query: t.Object({
+        showHidden: t.Optional(t.Boolean()),
+      }),
     }
-  })
+  )
   .get(
     '/:actionId',
     async ({ params }) => {

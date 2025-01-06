@@ -24,6 +24,7 @@ export function PostFeed({
   const { data: newPosts, isLoading: isNewLoading } = useNewPosts({
     fid: BEST_OF_FID,
     filter: ({ text }) => !text.match(/.*@clanker.*(launch|deploy|make).*/is),
+    queryKey: 'new-posts',
   })
 
   return (
@@ -73,6 +74,7 @@ export function PromotedFeed({
     fid: BEST_OF_FID,
     filter: ({ text }) =>
       !!text.toLowerCase().match(/.*@clanker.*(launch|deploy|make).*/is),
+    queryKey: 'promoted-new',
   })
 
   return (

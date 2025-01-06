@@ -164,8 +164,10 @@ export class AnonWorldSDK {
     return await this.request<Action>(`/actions/${actionId}`)
   }
 
-  async getActions() {
-    return await this.request<{ data: Action[] }>('/actions')
+  async getActions(showHidden = false) {
+    return await this.request<{ data: Action[] }>(
+      `/actions${showHidden ? '?showHidden=true' : ''}`
+    )
   }
 
   async createCredential({
