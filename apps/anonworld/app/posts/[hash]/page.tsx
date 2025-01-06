@@ -41,7 +41,7 @@ export async function generateMetadata({
     other: {
       ['fc:frame']: JSON.stringify({
         version: 'next',
-        imageUrl: `https://anon.world/posts/${params.hash}/opengraph-image`,
+        imageUrl: `https://anon.world/posts/${params.hash}/frame-image`,
         button: {
           title: 'View Post',
           action: {
