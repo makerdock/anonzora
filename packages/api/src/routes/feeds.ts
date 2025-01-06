@@ -64,7 +64,7 @@ export const feedsRoutes = createElysia({ prefix: '/feeds' })
 
 const getFormattedPosts = async (fid: number) => {
   const response = await db.posts.getFeed(fid, {
-    limit: 200,
+    limit: 100,
     offset: 0,
   })
 
