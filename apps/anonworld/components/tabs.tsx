@@ -6,10 +6,16 @@ import { usePathname, useRouter } from 'next/navigation'
 import { NamedExoticComponent, ReactNode } from 'react'
 import { Pathname } from './header'
 import { NotificationsCount } from '@anonworld/react'
+import { useFrames } from './providers/frames'
 
 export function Tabs() {
   const pathname = usePathname() as Pathname
   const router = useRouter()
+  const { isFrame } = useFrames()
+
+  if (isFrame) {
+    return null
+  }
 
   return (
     <XStack

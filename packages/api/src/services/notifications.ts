@@ -20,6 +20,10 @@ export class NotificationsService {
       .map(({ hash }) => hash)
       .slice(0, 100)
 
+    if (replies.length === 0) {
+      return []
+    }
+
     const [casts, posts] = await Promise.all([
       this.getCasts(replies),
       this.getPosts(replies),

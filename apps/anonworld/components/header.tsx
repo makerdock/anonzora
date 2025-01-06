@@ -5,6 +5,7 @@ import { Image, Text, View } from '@anonworld/ui'
 import { Bell, WalletMinimal } from '@tamagui/lucide-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useFrames } from './providers/frames'
 
 export enum Pathname {
   HOME = '/',
@@ -20,6 +21,7 @@ export enum Pathname {
 export function Header() {
   const pathname = usePathname() as Pathname
   const { passkeyId } = useAuth()
+  const { isFrame } = useFrames()
 
   return (
     <View
@@ -43,7 +45,7 @@ export function Header() {
         }}
       >
         <View fd="row" gap="$8" ai="center">
-          <Link href="/" style={{ textDecoration: 'none' }}>
+          <Link href={isFrame ? '#' : '/'} style={{ textDecoration: 'none' }}>
             <View fd="row" gap="$2" ai="center">
               <Image src="/logo.svg" alt="anon.world" width={32} height={32} />
               <Text fow="600" fos="$3">
@@ -197,7 +199,7 @@ export function Header() {
               />
             </View>
           </Link>
-          <Auth />
+          {!isFrame && <Auth />}
         </View>
       </View>
     </View>

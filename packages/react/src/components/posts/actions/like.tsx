@@ -10,9 +10,11 @@ import { ActionButton, variants } from './button'
 export function LikeButton({
   post,
   variant = 'default',
+  disableActions,
 }: {
   post: Post
   variant?: keyof typeof variants
+  disableActions?: boolean
 }) {
   const { sdk } = useSDK()
   const { passkeyId } = useAuth()
@@ -46,7 +48,7 @@ export function LikeButton({
     return formatAmount(likes + offset)
   }, [post.aggregate?.likes, post.reactions.likes_count, isLiked])
 
-  if (!passkeyId) {
+  if (!passkeyId && !disableActions) {
     return (
       <View onPress={(e) => e.stopPropagation()}>
         <AuthLogin>

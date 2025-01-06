@@ -36,6 +36,23 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
+      images: [`https://anon.world/posts/${params.hash}/opengraph-image`],
+    },
+    other: {
+      ['fc:frame']: JSON.stringify({
+        version: 'next',
+        imageUrl: `https://anon.world/posts/${params.hash}/opengraph-image`,
+        button: {
+          title: 'View Post',
+          action: {
+            type: 'launch_frame',
+            name: 'anon.world',
+            url: `https://anon.world/posts/${params.hash}`,
+            splashImageUrl: 'https://anon.world/logo-background.png',
+            splashBackgroundColor: '#000000',
+          },
+        },
+      }),
     },
   }
 }

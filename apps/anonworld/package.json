@@ -13,6 +13,8 @@
   "dependencies": {
     "@anonworld/react": "*",
     "@anonworld/ui": "*",
+    "@farcaster/frame-sdk": "^0.0.25",
+    "@farcaster/frame-wagmi-connector": "^0.0.12",
     "@rainbow-me/rainbowkit": "^2.2.1",
     "@tamagui/config": "^1.120.0",
     "@tamagui/lucide-icons": "^1.116.12",

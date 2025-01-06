@@ -6,10 +6,11 @@ import {
   RainbowKitProvider,
   useConnectModal,
 } from '@rainbow-me/rainbowkit'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { ThemeProvider } from './theme'
 import '@rainbow-me/rainbowkit/styles.css'
-
+import sdk from '@farcaster/frame-sdk'
+import { FramesProvider } from './frames'
 const config = getDefaultConfig({
   ...viemConfig,
   appName: 'anoncast',
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <Provider wagmiConfig={config}>
         <RainbowKitProvider>
-          <SDKInner>{children}</SDKInner>
+          <SDKInner>
+            <FramesProvider>{children}</FramesProvider>
+          </SDKInner>
         </RainbowKitProvider>
       </Provider>
     </ThemeProvider>

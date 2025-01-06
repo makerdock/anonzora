@@ -21,7 +21,15 @@ import { LikeButton } from '../actions/like'
 import { Link, TextLink } from 'solito/link'
 import { Reply } from '@tamagui/lucide-icons'
 
-export function PostDisplay({ post, hoverable }: { post: Post; hoverable?: boolean }) {
+export function PostDisplay({
+  post,
+  hoverable,
+  disableActions,
+}: {
+  post: Post
+  hoverable?: boolean
+  disableActions?: boolean
+}) {
   let text = post.text
   if (post.embeds) {
     for (const embed of post.embeds) {
@@ -108,12 +116,12 @@ export function PostDisplay({ post, hoverable }: { post: Post; hoverable?: boole
       ))}
       <XStack jc="space-between" ai="flex-end">
         <XStack ai="center" gap="$2">
-          <LikeButton post={post} />
-          <ReplyButton post={post} showCount />
+          <LikeButton post={post} disableActions={disableActions} />
+          <ReplyButton post={post} showCount disableActions={disableActions} />
           {post.reveal?.phrase && <RevealBadge reveal={post.reveal} />}
         </XStack>
         <XStack ai="center" gap="$2">
-          {post.relationships.length > 0 && (
+          {!disableActions && post.relationships.length > 0 && (
             <View onPress={(e) => e.preventDefault()}>
               <PostCommunities post={post} />
             </View>
@@ -121,9 +129,11 @@ export function PostDisplay({ post, hoverable }: { post: Post; hoverable?: boole
           <Badge>{timeAgo(post.timestamp)}</Badge>
         </XStack>
       </XStack>
-      <View position="absolute" top="$2" right="$3" onPress={(e) => e.preventDefault()}>
-        <PostActions post={post} />
-      </View>
+      {!disableActions && (
+        <View position="absolute" top="$2" right="$3" onPress={(e) => e.preventDefault()}>
+          <PostActions post={post} />
+        </View>
+      )}
     </YStack>
   )
 }

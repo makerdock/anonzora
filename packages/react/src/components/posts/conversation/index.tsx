@@ -11,8 +11,10 @@ import { CredentialTypeBadge } from '../../credentials/types'
 
 export function PostConversation({
   conversation,
+  disableActions,
 }: {
   conversation: Array<ConversationPost>
+  disableActions?: boolean
 }) {
   return (
     <YStack gap="$4" $xs={{ px: '$2' }}>
@@ -25,6 +27,7 @@ export function PostConversation({
               ? ['continue']
               : ['empty']
           }
+          disableActions={disableActions}
         />
       ))}
     </YStack>
@@ -34,9 +37,11 @@ export function PostConversation({
 function Post({
   post,
   arr,
+  disableActions,
 }: {
   post: ConversationPost
   arr: Array<'continue' | 'empty'>
+  disableActions?: boolean
 }) {
   let text = post.text
   if (post.embeds) {
@@ -140,9 +145,13 @@ function Post({
             <PostEmbed key={embed.url} embed={embed} />
           ))}
           <XStack ai="center" ml="$-3" gap="$2">
-            <LikeButton post={post} variant="conversation" />
-            <ReplyButton post={post} variant="conversation" />
-            <PostActions post={post} />
+            <LikeButton
+              post={post}
+              variant="conversation"
+              disableActions={disableActions}
+            />
+            {!disableActions && <ReplyButton post={post} variant="conversation" />}
+            {!disableActions && <PostActions post={post} />}
           </XStack>
         </YStack>
       </XStack>

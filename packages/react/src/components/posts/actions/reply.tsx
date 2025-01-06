@@ -9,9 +9,29 @@ import { ActionButton, variants } from './button'
 export function ReplyButton({
   post,
   variant = 'default',
-}: { post: Post; showCount?: boolean; variant?: keyof typeof variants }) {
+  disableActions,
+}: {
+  post: Post
+  showCount?: boolean
+  variant?: keyof typeof variants
+  disableActions?: boolean
+}) {
+  if (disableActions) {
+    return (
+      <ActionButton variant={variant} Icon={MessageCircle}>
+        {variant === 'default'
+          ? formatAmount(post.aggregate?.replies ?? post.replies.count)
+          : 'Reply'}
+      </ActionButton>
+    )
+  }
+
   return (
-    <View onPress={(e) => e.preventDefault()}>
+    <View
+      onPress={(e) => {
+        e.preventDefault()
+      }}
+    >
       <NewPostProvider
         initialReply={{
           url: `https://warpcast.com/${post.author.username}/${post.hash.slice(0, 10)}`,
