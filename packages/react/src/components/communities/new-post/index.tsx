@@ -1,7 +1,7 @@
 import { ActionType, Community } from '@anonworld/common'
 import { useActions } from '../../../hooks/use-actions'
 import { useCredentials } from '../../../providers'
-import { getUsableCredential } from '../../../utils'
+import { getUsableCredential } from '@anonworld/common'
 import { NewPostProvider } from '../../posts/new/context'
 import { NewPostDialog } from '../../posts/new/dialog'
 import { NewPostButton } from '../../posts/new'

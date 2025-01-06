@@ -1,7 +1,7 @@
 import { Action } from '@anonworld/common'
 import { CredentialRequirement } from '@anonworld/common'
 import { Text } from '@anonworld/ui'
-import { formatAmount } from '../../../../utils'
+import { formatAmount } from '@anonworld/common'
 import { formatUnits } from 'viem/utils'
 
 export function ERC721BalanceRequirement({

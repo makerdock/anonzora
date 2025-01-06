@@ -14,7 +14,7 @@ import {
 import { useNewCredential } from '../context'
 import { FungiblePosition, getChain, getZerionChain } from '@anonworld/common'
 import { useAccount } from 'wagmi'
-import { formatAddress } from '../../../../utils'
+import { formatAddress } from '@anonworld/common'
 import { useEffect, useMemo, useState } from 'react'
 import { useWalletFungibles } from '../../../../hooks/use-wallet-fungibles'
 import { TokenImage } from '../../../tokens/image'

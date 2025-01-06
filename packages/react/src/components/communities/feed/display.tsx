@@ -1,6 +1,6 @@
 import { Image, Text, XStack, YStack } from '@anonworld/ui'
 import { Field } from '../../field'
-import { formatAmount, timeAgo } from '../../../utils'
+import { formatAmount, timeAgo } from '@anonworld/common'
 import { Badge } from '../../badge'
 import { Farcaster } from '../../svg/farcaster'
 import { X } from '../../svg/x'

@@ -1,20 +1,13 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import {
-  credentialInstancesTable,
+  credentialsTable,
   postCredentialsTable,
   postLikesTable,
   postRelationshipsTable,
   postsTable,
 } from '../schema'
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
-import {
-  DBCredential,
-  DBPost,
-  DBPostCredential,
-  DBPostLike,
-  DBPostRelationship,
-  DBVault,
-} from '../types'
+import { DBCredential, DBPost, DBPostLike, DBPostRelationship } from '../types'
 import { alias } from 'drizzle-orm/pg-core'
 import { RevealArgs } from '@anonworld/common'
 
@@ -159,16 +152,23 @@ export class PostsRepository {
       .select()
       .from(postCredentialsTable)
       .innerJoin(
-        credentialInstancesTable,
-        eq(postCredentialsTable.credential_id, credentialInstancesTable.id)
+        credentialsTable,
+        eq(postCredentialsTable.credential_id, credentialsTable.id)
       )
       .where(inArray(postCredentialsTable.post_hash, hashes))
 
-    return credentials as {
-      credential_instances: DBCredential
-      post_credentials: DBPostCredential
-      vaults: DBVault | null
-    }[]
+    const credentialsByHash = credentials.reduce(
+      (acc, c) => {
+        if (!acc[c.post_credentials.post_hash]) {
+          acc[c.post_credentials.post_hash] = []
+        }
+        acc[c.post_credentials.post_hash].push(c.credential_instances as DBCredential)
+        return acc
+      },
+      {} as Record<string, DBCredential[]>
+    )
+
+    return credentialsByHash
   }
 
   async addCredentials(hash: string, credentialIds: string[]) {

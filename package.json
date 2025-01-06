@@ -12,6 +12,7 @@
     "credentials:build": "bun run --filter @anonworld/credentials build-circuits",
     "credentials:test": "bun run --filter @anonworld/credentials test-circuits",
     "db:push": "bun run --filter @anonworld/api db:push",
-    "updates": "bun run --filter @anonworld/api updates"
+    "updates": "bun run --filter @anonworld/api updates",
+    "post-creds": "bun run --filter @anonworld/api post-creds"
   }
 }

@@ -1,5 +1,5 @@
 import { Post, Reveal } from '@anonworld/common'
-import { formatAddress, timeAgo } from '../../../utils'
+import { formatAddress, timeAgo } from '@anonworld/common'
 import {
   Avatar,
   AvatarFallback,

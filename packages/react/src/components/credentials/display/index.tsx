@@ -1,6 +1,6 @@
 import { CredentialWithId, getCredential } from '@anonworld/common'
 import { View, XStack, YStack } from '@anonworld/ui'
-import { CREDENTIAL_EXPIRATION_TIME, timeAgo } from '../../../utils'
+import { CREDENTIAL_EXPIRATION_TIME, timeAgo } from '@anonworld/common'
 import { Badge } from '../../badge'
 import { CredentialActions } from './actions'
 import { VaultBadge } from '../../vaults/badge'

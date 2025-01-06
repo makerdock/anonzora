@@ -3,7 +3,7 @@ import { NewPostProvider } from '../new/context'
 import { Post } from '@anonworld/common'
 import { XStack, Text, Dialog, View } from '@anonworld/ui'
 import { MessageCircle } from '@tamagui/lucide-icons'
-import { formatAmount } from '../../../utils'
+import { formatAmount } from '@anonworld/common'
 import { ActionButton, variants } from './button'
 
 export function ReplyButton({

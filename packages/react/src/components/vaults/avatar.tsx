@@ -1,4 +1,4 @@
-import { toHslColors } from '../../utils'
+import { toHslColors } from '@anonworld/common'
 import { LinearGradient } from '@tamagui/linear-gradient'
 
 export function VaultAvatar({ id, size = 16 }: { id: string; size?: number | string }) {

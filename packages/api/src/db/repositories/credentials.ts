@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { credentialInstancesTable } from '../schema'
+import { credentialsTable } from '../schema'
 import { DBCredential } from '../types'
 import { eq, inArray } from 'drizzle-orm'
 
@@ -10,11 +10,8 @@ export class CredentialsRepository {
     this.db = db
   }
 
-  async create(params: typeof credentialInstancesTable.$inferInsert) {
-    const [cred] = await this.db
-      .insert(credentialInstancesTable)
-      .values(params)
-      .returning()
+  async create(params: typeof credentialsTable.$inferInsert) {
+    const [cred] = await this.db.insert(credentialsTable).values(params).returning()
 
     return cred as DBCredential
   }
@@ -22,8 +19,8 @@ export class CredentialsRepository {
   async get(id: string) {
     const [cred] = await this.db
       .select()
-      .from(credentialInstancesTable)
-      .where(eq(credentialInstancesTable.id, id))
+      .from(credentialsTable)
+      .where(eq(credentialsTable.id, id))
       .limit(1)
 
     return cred as DBCredential | null
@@ -32,30 +29,30 @@ export class CredentialsRepository {
   async getBulk(ids: string[]) {
     const creds = await this.db
       .select()
-      .from(credentialInstancesTable)
-      .where(inArray(credentialInstancesTable.id, ids))
+      .from(credentialsTable)
+      .where(inArray(credentialsTable.id, ids))
 
     return creds as DBCredential[]
   }
 
   async reverify(id: string, reverifiedId: string) {
     await this.db
-      .update(credentialInstancesTable)
+      .update(credentialsTable)
       .set({ reverified_id: reverifiedId, updated_at: new Date() })
-      .where(eq(credentialInstancesTable.id, id))
+      .where(eq(credentialsTable.id, id))
   }
 
   async addToVault(credentialId: string, vaultId: string) {
     await this.db
-      .update(credentialInstancesTable)
+      .update(credentialsTable)
       .set({ vault_id: vaultId })
-      .where(eq(credentialInstancesTable.id, credentialId))
+      .where(eq(credentialsTable.id, credentialId))
   }
 
   async removeFromVault(credentialId: string) {
     await this.db
-      .update(credentialInstancesTable)
+      .update(credentialsTable)
       .set({ vault_id: null })
-      .where(eq(credentialInstancesTable.id, credentialId))
+      .where(eq(credentialsTable.id, credentialId))
   }
 }

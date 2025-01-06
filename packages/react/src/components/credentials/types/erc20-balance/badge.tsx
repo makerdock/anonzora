@@ -1,5 +1,5 @@
 import { Credential, Token } from '@anonworld/common'
-import { formatAmount } from '../../../../utils'
+import { formatAmount } from '@anonworld/common'
 import { Badge } from '../../../badge'
 import { formatUnits } from 'viem/utils'
 import { useToken } from '../../../../hooks'

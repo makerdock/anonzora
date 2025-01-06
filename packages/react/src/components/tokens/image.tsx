@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@anonworld/ui'
 import { LinearGradient } from '@tamagui/linear-gradient'
-import { toHslColors } from '../../utils'
+import { toHslColors } from '@anonworld/common'
 
 export function TokenImage({
   token,

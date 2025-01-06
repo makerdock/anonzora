@@ -1,7 +1,7 @@
 import { Post } from '@anonworld/common'
 import { View, Dialog, useTheme } from '@anonworld/ui'
 import { Heart } from '@tamagui/lucide-icons'
-import { formatAmount } from '../../../utils'
+import { formatAmount } from '@anonworld/common'
 import { AuthLogin } from '../../auth/login'
 import { useAuth, useSDK } from '../../..'
 import { useMemo, useState } from 'react'

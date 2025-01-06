@@ -1,5 +1,5 @@
 import { FarcasterEmbed } from '@anonworld/common'
-import { timeAgo } from '../../../utils'
+import { timeAgo } from '@anonworld/common'
 import { Avatar, Image, Text, View, XStack, YStack } from '@anonworld/ui'
 import { X } from '../../svg/x'
 import { useTwitterPost } from '../../../hooks/use-twitter-post'

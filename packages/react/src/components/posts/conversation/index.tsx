@@ -1,7 +1,7 @@
 import { ConversationPost, VaultBadge } from '@anonworld/react'
 import { Avatar, Text, View, XStack, YStack } from '@anonworld/ui'
 import { PostEmbed } from '../display/embeds'
-import { timeAgo } from '../../../utils'
+import { timeAgo } from '@anonworld/common'
 import { PostActions } from './actions'
 import { ReplyButton } from '../actions/reply'
 import { VaultAvatar } from '../../vaults/avatar'

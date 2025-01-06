@@ -1,7 +1,7 @@
 import { FarcasterCast, Post, encodeJson } from '@anonworld/common'
 import { db } from '../db'
 import { neynar } from './neynar'
-import { DBCredential, DBPost, DBPostRelationship, DBToken } from '../db/types'
+import { DBPost, DBPostRelationship, DBToken } from '../db/types'
 
 export class FeedService {
   async getFeedPost(hash: string) {
@@ -26,7 +26,7 @@ export class FeedService {
 
     const [relationships, credentials] = await Promise.all([
       this.getRelationships(posts),
-      this.getCredentials(posts),
+      db.posts.getCredentials(posts.map((p) => p.hash)),
     ])
 
     const tokenIds = new Set<string>()
@@ -48,7 +48,7 @@ export class FeedService {
 
     const [tokens, farcasterAccounts, twitterAccounts, communities, likes] =
       await Promise.all([
-        this.getRelatedTokens(Array.from(tokenIds)),
+        db.tokens.getBulk(Array.from(tokenIds)),
         this.getRelatedFarcasterAccounts(Array.from(fids)),
         this.getRelatedTwitterAccounts(Array.from(usernames)),
         this.getRelatedCommunities(Array.from(fids), Array.from(usernames)),
@@ -149,33 +149,6 @@ export class FeedService {
       {} as Record<string, DBPostRelationship[]>
     )
     return relationshipsByHash
-  }
-
-  private async getCredentials(posts: DBPost[]) {
-    const credentials = await db.posts.getCredentials(posts.map((p) => p.hash))
-    const credentialsByHash = credentials.reduce(
-      (acc, c) => {
-        if (!acc[c.post_credentials.post_hash]) {
-          acc[c.post_credentials.post_hash] = []
-        }
-        acc[c.post_credentials.post_hash].push(c.credential_instances)
-        return acc
-      },
-      {} as Record<string, DBCredential[]>
-    )
-    return credentialsByHash
-  }
-
-  private async getRelatedTokens(tokenIds: string[]) {
-    const tokens = await db.tokens.getBulk(tokenIds)
-    const tokensById = tokens.reduce(
-      (acc, t) => {
-        acc[t.id] = t
-        return acc
-      },
-      {} as Record<string, DBToken>
-    )
-    return tokensById
   }
 
   private async getRelatedFarcasterAccounts(fids: number[]) {

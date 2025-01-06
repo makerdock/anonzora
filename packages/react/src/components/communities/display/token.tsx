@@ -1,11 +1,11 @@
 import { Separator, Text, XStack, YStack } from '@anonworld/ui'
 import { Field } from '../../field'
-import { formatAddress, formatAmount } from '../../../utils'
+import { formatAddress, formatAmount } from '@anonworld/common'
 import { formatEther, formatUnits } from 'viem'
 import { useActions } from '../../../hooks/use-actions'
 import { Action, ActionType, Community, getChain } from '@anonworld/common'
 import { useCredentials } from '../../../providers'
-import { getUsableCredential } from '../../../utils'
+import { getUsableCredential } from '@anonworld/common'
 import { CircleCheck, CircleX } from '@tamagui/lucide-icons'
 import { TokenImage } from '../../tokens/image'
 

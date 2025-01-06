@@ -4,7 +4,7 @@ import { Label } from '@anonworld/ui'
 import { YStack } from '@anonworld/ui'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useNewCredential } from '../../context'
-import { formatAddress } from '../../../../../utils'
+import { formatAddress } from '@anonworld/common'
 
 export function WalletField() {
   const { address } = useAccount()

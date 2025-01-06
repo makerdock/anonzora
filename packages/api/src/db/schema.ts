@@ -109,7 +109,7 @@ export const actionExecutionsTable = pgTable('action_executions', {
   updated_at: timestamp().notNull().defaultNow(),
 })
 
-export const credentialInstancesTable = pgTable('credential_instances', {
+export const credentialsTable = pgTable('credential_instances', {
   id: varchar({ length: 255 }).primaryKey(),
   type: varchar({ length: 255 }).default('ERC20_BALANCE').notNull(),
   credential_id: varchar({ length: 255 }).notNull(),
@@ -176,6 +176,17 @@ export const vaultsTable = pgTable('vaults', {
 export const passkeysTable = pgTable('passkeys', {
   id: varchar({ length: 255 }).primaryKey(),
   public_key: jsonb('public_key').notNull(),
+  created_at: timestamp().notNull().defaultNow(),
+  updated_at: timestamp().notNull().defaultNow(),
+})
+
+export const credentialRepliesTable = pgTable('credential_replies', {
+  post_target: varchar({ length: 255 }).notNull(),
+  post_account: varchar({ length: 255 }).notNull(),
+  post_id: varchar({ length: 255 }).notNull(),
+  reply_target: varchar({ length: 255 }).notNull(),
+  reply_account: varchar({ length: 255 }).notNull(),
+  reply_id: varchar({ length: 255 }).notNull(),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),
 })

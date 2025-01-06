@@ -4,7 +4,7 @@ import { useNewPost } from './context'
 import { Badge } from '../../badge'
 import { useEffect, useMemo, useState } from 'react'
 import { useActions } from '../../../hooks/use-actions'
-import { formatAmount, getUsableCredential } from '../../../utils'
+import { formatAmount, getUsableCredential } from '@anonworld/common'
 import { VaultBadge } from '../../vaults/badge'
 
 export function NewPostCommunities() {

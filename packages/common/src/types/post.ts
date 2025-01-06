@@ -2,11 +2,12 @@ import { Community } from './community'
 import { Credential } from './credentials'
 import { FarcasterCast, FarcasterUser } from './farcaster'
 import { TwitterUser } from './twitter'
+import { Token } from './token'
 
 export type Post = FarcasterCast & {
   reveal?: Reveal
   relationships: Array<Relationship>
-  credentials: Array<Credential>
+  credentials: Array<Credential & { token: Token }>
   aggregate: {
     likes: number
     replies: number

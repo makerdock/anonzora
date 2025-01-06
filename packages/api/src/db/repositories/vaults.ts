@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import {
-  credentialInstancesTable,
+  credentialsTable,
   postCredentialsTable,
   postRelationshipsTable,
   postsTable,
@@ -40,15 +40,12 @@ export class VaultsRepository {
     const response = await this.db
       .select()
       .from(vaultsTable)
-      .leftJoin(
-        credentialInstancesTable,
-        eq(vaultsTable.id, credentialInstancesTable.vault_id)
-      )
+      .leftJoin(credentialsTable, eq(vaultsTable.id, credentialsTable.vault_id))
       .where(
         and(
           eq(vaultsTable.passkey_id, passkeyId),
-          isNull(credentialInstancesTable.deleted_at),
-          isNull(credentialInstancesTable.reverified_id)
+          isNull(credentialsTable.deleted_at),
+          isNull(credentialsTable.reverified_id)
         )
       )
 
@@ -70,8 +67,8 @@ export class VaultsRepository {
         eq(postsTable.hash, postCredentialsTable.post_hash)
       )
       .innerJoin(
-        credentialInstancesTable,
-        eq(postCredentialsTable.credential_id, credentialInstancesTable.id)
+        credentialsTable,
+        eq(postCredentialsTable.credential_id, credentialsTable.id)
       )
       .leftJoin(
         postRelationshipsTable,
@@ -79,7 +76,7 @@ export class VaultsRepository {
       )
       .where(
         and(
-          eq(credentialInstancesTable.vault_id, vaultId),
+          eq(credentialsTable.vault_id, vaultId),
           isNull(postRelationshipsTable.target_id)
         )
       )
@@ -104,8 +101,8 @@ export class VaultsRepository {
         eq(postsTable.hash, postCredentialsTable.post_hash)
       )
       .innerJoin(
-        credentialInstancesTable,
-        eq(postCredentialsTable.credential_id, credentialInstancesTable.id)
+        credentialsTable,
+        eq(postCredentialsTable.credential_id, credentialsTable.id)
       )
       .leftJoin(
         postRelationshipsTable,
@@ -113,7 +110,7 @@ export class VaultsRepository {
       )
       .where(
         and(
-          eq(credentialInstancesTable.vault_id, vaultId),
+          eq(credentialsTable.vault_id, vaultId),
           isNull(postRelationshipsTable.target_id)
         )
       )
@@ -132,11 +129,11 @@ export class VaultsRepository {
   async getCredentials(vaultId: string) {
     const response = await this.db
       .select()
-      .from(credentialInstancesTable)
+      .from(credentialsTable)
       .where(
         and(
-          eq(credentialInstancesTable.vault_id, vaultId),
-          isNull(credentialInstancesTable.reverified_id)
+          eq(credentialsTable.vault_id, vaultId),
+          isNull(credentialsTable.reverified_id)
         )
       )
 

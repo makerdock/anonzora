@@ -7,7 +7,7 @@ import {
 import {
   communitiesTable,
   actionsTable,
-  credentialInstancesTable,
+  credentialsTable,
   postCredentialsTable,
   postRelationshipsTable,
   postsTable,
@@ -30,7 +30,7 @@ export type DBPostLike = typeof postLikesTable.$inferSelect
 export type DBPostRelationship = typeof postRelationshipsTable.$inferSelect
 export type DBPostCredential = typeof postCredentialsTable.$inferSelect
 export type DBActionExecution = typeof actionExecutionsTable.$inferSelect
-export type DBCredential = typeof credentialInstancesTable.$inferSelect & {
+export type DBCredential = typeof credentialsTable.$inferSelect & {
   proof: CredentialProof
   metadata: CredentialMetadata
   type: CredentialType

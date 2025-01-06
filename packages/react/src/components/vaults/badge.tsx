@@ -1,4 +1,4 @@
-import { formatHexId } from '../../utils'
+import { formatHexId } from '@anonworld/common'
 import { Badge } from '../badge'
 import { LinearGradient } from '@tamagui/linear-gradient'
 import { VaultAvatar } from './avatar'

@@ -1,7 +1,7 @@
 import { Popover, XStack } from '@anonworld/ui'
 import { Credential, getCredential } from '@anonworld/common'
 import { useState } from 'react'
-import { timeAgo } from '../../../utils'
+import { timeAgo } from '@anonworld/common'
 import { Badge } from '../../badge'
 import { CredentialTypeBadge } from '../../credentials/types'
 

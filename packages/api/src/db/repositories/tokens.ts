@@ -30,12 +30,19 @@ export class TokensRepository {
   }
 
   async getBulk(ids: string[]) {
-    const response = await this.db
+    const tokens = await this.db
       .select()
       .from(tokensTable)
       .where(inArray(tokensTable.id, ids))
 
-    return response as DBToken[]
+    const tokensById = tokens.reduce(
+      (acc, t) => {
+        acc[t.id] = t
+        return acc
+      },
+      {} as Record<string, DBToken>
+    )
+    return tokensById
   }
 
   async list() {

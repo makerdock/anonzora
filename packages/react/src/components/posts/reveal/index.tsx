@@ -20,7 +20,7 @@ import { usePostReveal } from '../../../hooks/use-post-reveal'
 import { useAccount, useDisconnect, useSignMessage } from 'wagmi'
 import { hashMessage } from 'viem'
 import { useSDK } from '../../../providers'
-import { formatAddress } from '../../../utils'
+import { formatAddress } from '@anonworld/common'
 
 export function PostReveal({
   post,
