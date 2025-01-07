@@ -2,6 +2,7 @@ import { db } from '../src/db'
 import { buildFeeds } from '../src/routes/feeds'
 import { neynar } from '../src/services/neynar'
 import { tokens } from '../src/services/tokens'
+import { handleFarcasterPosts } from './post-links'
 
 const updateFeeds = async () => {
   const accounts = await db.socials.listFarcasterAccounts()
@@ -96,6 +97,7 @@ const main = async () => {
   let i = 0
   while (true) {
     try {
+      await handleFarcasterPosts()
       if (i % 2 === 0) {
         await updateFeeds()
         await updateCommunities()

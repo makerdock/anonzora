@@ -41,7 +41,7 @@ async function getTwitterPosts() {
     .orderBy(desc(postRelationshipsTable.created_at))
 }
 
-async function handleFarcasterPosts() {
+export async function handleFarcasterPosts() {
   const currentTimestamp = new Date().getTime() / 1000
   const farcasterPosts = await getFarcasterPosts()
   console.log(`[post-links] found ${farcasterPosts.length} farcaster posts missing links`)
@@ -140,12 +140,3 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 30_000))
   }
 }
-
-main()
-  .catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
-  .finally(() => {
-    process.exit(0)
-  })
