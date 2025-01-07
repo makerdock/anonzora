@@ -15,8 +15,8 @@ export function NewCredential({
     <AuthKitProvider
       config={{
         rpcUrl: 'https://mainnet.optimism.io',
-        domain: 'localhost:3000',
-        siweUri: 'http://localhost:3000',
+        domain: 'anon.world',
+        siweUri: 'https://anon.world',
         relay: 'https://relay.farcaster.xyz',
       }}
     >

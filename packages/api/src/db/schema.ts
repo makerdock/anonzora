@@ -180,13 +180,21 @@ export const passkeysTable = pgTable('passkeys', {
   updated_at: timestamp().notNull().defaultNow(),
 })
 
-export const credentialRepliesTable = pgTable('credential_replies', {
-  post_target: varchar({ length: 255 }).notNull(),
-  post_account: varchar({ length: 255 }).notNull(),
-  post_id: varchar({ length: 255 }).notNull(),
-  reply_target: varchar({ length: 255 }).notNull(),
-  reply_account: varchar({ length: 255 }).notNull(),
-  reply_id: varchar({ length: 255 }).notNull(),
-  created_at: timestamp().notNull().defaultNow(),
-  updated_at: timestamp().notNull().defaultNow(),
-})
+export const postLinksTable = pgTable(
+  'post_links',
+  {
+    post_target: varchar({ length: 255 }).notNull(),
+    post_account: varchar({ length: 255 }).notNull(),
+    post_id: varchar({ length: 255 }).notNull(),
+    reply_target: varchar({ length: 255 }).notNull(),
+    reply_account: varchar({ length: 255 }).notNull(),
+    reply_id: varchar({ length: 255 }).notNull(),
+    created_at: timestamp().notNull().defaultNow(),
+    updated_at: timestamp().notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({
+      columns: [table.reply_target, table.reply_account, table.reply_id],
+    }),
+  })
+)

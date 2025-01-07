@@ -127,12 +127,16 @@ class NeynarService {
   }
 
   async getCastFromURL(castURL: string) {
-    const url = new URL(castURL)
-    const isFarcaster =
-      url.hostname === 'warpcast.com' &&
-      (url.pathname.match(/^\/[^/]+\/0x[a-f0-9]+$/) || // /<username>/0x<hash>
-        url.pathname.match(/^\/~\/conversations\/0x[a-f0-9]+$/)) // /~/conversations/0x<hash>
-    if (isFarcaster) {
+    let isValid = castURL.startsWith('0x')
+    if (!isValid) {
+      const url = new URL(castURL)
+      const isValid =
+        url.hostname === 'warpcast.com' &&
+        (url.pathname.match(/^\/[^/]+\/0x[a-f0-9]+$/) || // /<username>/0x<hash>
+          url.pathname.match(/^\/~\/conversations\/0x[a-f0-9]+$/)) // /~/conversations/0x<hash>
+    }
+
+    if (isValid) {
       const response = await this.getCast(castURL)
       if (response.cast) {
         return {

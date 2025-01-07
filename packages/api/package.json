@@ -10,7 +10,7 @@
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "updates": "bun run scripts/updates.ts",
-    "post-creds": "bun run scripts/post-creds.ts",
+    "post-links": "bun run scripts/post-links.ts",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 import { FarcasterCast, Post, encodeJson } from '@anonworld/common'
 import { db } from '../db'
 import { neynar } from './neynar'
-import { DBPost, DBPostRelationship, DBToken } from '../db/types'
+import { DBPost, DBPostRelationship } from '../db/types'
 
 export class FeedService {
   async getFeedPost(hash: string) {
@@ -31,7 +31,9 @@ export class FeedService {
 
     const tokenIds = new Set<string>()
     for (const credential of Object.values(credentials).flat()) {
-      tokenIds.add(`${credential.metadata.chainId}:${credential.metadata.tokenAddress}`)
+      if ('chainId' in credential.metadata) {
+        tokenIds.add(`${credential.metadata.chainId}:${credential.metadata.tokenAddress}`)
+      }
     }
 
     const fids = new Set<number>()
@@ -81,7 +83,10 @@ export class FeedService {
       formattedPost.credentials =
         credentials[post.hash]?.map((c) => ({
           ...c,
-          token: tokens[`${c.metadata.chainId}:${c.metadata.tokenAddress}`],
+          token:
+            'chainId' in c.metadata
+              ? tokens[`${c.metadata.chainId}:${c.metadata.tokenAddress}`]
+              : undefined,
           id: undefined,
           proof: undefined,
           verified_at: c.verified_at.toISOString(),

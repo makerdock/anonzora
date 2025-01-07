@@ -7,6 +7,8 @@ import { redis } from '../services/redis'
 import { feed } from '../services/feed'
 import { db } from '../db'
 
+const IGNORE_FIDS = [937160]
+
 export const postsRoutes = createElysia({ prefix: '/posts' })
   .get(
     '/:hash',
@@ -62,7 +64,10 @@ export const postsRoutes = createElysia({ prefix: '/posts' })
       const formattedPosts = await feed.getFeed(posts)
 
       return {
-        data: formatConversations(conversations as ConversationPost[], formattedPosts),
+        data: formatConversations(
+          conversations as ConversationPost[],
+          formattedPosts
+        ).filter((c) => !IGNORE_FIDS.includes(c.author.fid)),
       }
     },
     {

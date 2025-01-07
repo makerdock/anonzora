@@ -7,7 +7,7 @@ import { Token } from './token'
 export type Post = FarcasterCast & {
   reveal?: Reveal
   relationships: Array<Relationship>
-  credentials: Array<Credential & { token: Token }>
+  credentials: Array<Credential & { token?: Token }>
   aggregate: {
     likes: number
     replies: number

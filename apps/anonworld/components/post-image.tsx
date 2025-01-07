@@ -14,6 +14,10 @@ export function PostImage({ post }: { post: Post }) {
   const vaultId = post.credentials?.[0]?.vault_id
   const maxCredentials = 5 + (vaultId ? 1 : 0)
 
+  const imageEmbed = post.embeds.find((embed) =>
+    embed.metadata?.content_type.startsWith('image')
+  )
+
   return (
     <div
       style={{
@@ -70,21 +74,44 @@ export function PostImage({ post }: { post: Post }) {
           padding: 32,
         }}
       >
-        <div
-          style={{
-            fontSize: 40,
-            lineHeight: 1.4,
-            fontWeight: 600,
-            display: '-webkit-box',
-            WebkitLineClamp: 5,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {text}
-        </div>
+        {text && (
+          <div
+            style={{
+              fontSize: 40,
+              lineHeight: 1.4,
+              fontWeight: 600,
+              display: '-webkit-box',
+              WebkitLineClamp: 5,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {text}
+          </div>
+        )}
+        {!text && imageEmbed && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <img
+              src={imageEmbed.url}
+              alt="Post"
+              style={{
+                height: '100%',
+                aspectRatio:
+                  (imageEmbed.metadata?.image?.width_px ?? 1) /
+                  (imageEmbed.metadata?.image?.height_px ?? 1),
+                borderRadius: 16,
+              }}
+            />
+          </div>
+        )}
       </div>
       <div
         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
@@ -144,9 +171,12 @@ function TokenImage({ token }: { token: Token }) {
   )
 }
 
-function CredentialBadge({ credential }: { credential: Credential & { token: Token } }) {
+function CredentialBadge({ credential }: { credential: Credential & { token?: Token } }) {
   switch (credential.type) {
     case CredentialType.ERC20_BALANCE: {
+      if (!credential.token) {
+        return null
+      }
       const amount =
         BigInt(credential.metadata.balance) / BigInt(10 ** credential.token.decimals)
       return (
@@ -155,13 +185,17 @@ function CredentialBadge({ credential }: { credential: Credential & { token: Tok
         >{`${formatAmount(Number(amount))} ${credential.token.symbol}`}</Badge>
       )
     }
-    case CredentialType.ERC721_BALANCE:
+    case CredentialType.ERC721_BALANCE: {
+      if (!credential.token) {
+        return null
+      }
       return (
         <Badge
           image={<TokenImage token={credential.token} />}
         >{`${credential.token.name} Holder`}</Badge>
       )
-    case CredentialType.FARCASTER_FID:
+    }
+    case CredentialType.FARCASTER_FID: {
       return (
         <Badge
           image={
@@ -175,6 +209,7 @@ function CredentialBadge({ credential }: { credential: Credential & { token: Tok
           }
         >{`< ${formatAmount(credential.metadata.fid)} FID`}</Badge>
       )
+    }
     default:
       return null
   }

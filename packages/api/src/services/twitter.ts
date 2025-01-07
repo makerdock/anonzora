@@ -1,5 +1,5 @@
 import https from 'node:https'
-import { SendTweetV2Params, TwitterApi } from 'twitter-api-v2'
+import { SendTweetV2Params, TwitterApi, TwitterApiError } from 'twitter-api-v2'
 import { db } from '../db'
 
 type TwitterConfig = {
@@ -64,7 +64,10 @@ export class TwitterService {
       quoteTweetId?: string
       replyToTweetId?: string
     }
-  ) {
+  ): Promise<
+    | { success: true; tweetId: string }
+    | { success: false; error: any; rateLimitReset?: number }
+  > {
     await this.refreshClient(username)
     const mediaIds = await Promise.all(
       args.images.map((image) => this.uploadMedia(username, image))
@@ -86,14 +89,18 @@ export class TwitterService {
       }
     }
 
-    const result = await this.client.v2.tweet(args.text, params)
-    if (result?.data?.id) {
-      return { success: true, tweetId: result.data.id }
+    try {
+      const result = await this.client.v2.tweet(args.text, params)
+      if (result?.data?.id) {
+        return { success: true, tweetId: result.data.id }
+      }
+    } catch (error) {
+      const e = error as TwitterApiError
+      console.error(e)
+      return { success: false, error: e, rateLimitReset: e.rateLimit?.reset }
     }
 
-    throw new Error(
-      `Failed to tweet: ${result.errors?.map((e) => JSON.stringify(e)).join(' ')}`
-    )
+    return { success: false, error: new Error('Unknown error') }
   }
 }
 
