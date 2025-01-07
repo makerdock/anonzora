@@ -15,7 +15,7 @@ export function PostImage({ post }: { post: Post }) {
   const maxCredentials = 5 + (vaultId ? 1 : 0)
 
   const imageEmbed = post.embeds.find((embed) =>
-    embed.metadata?.content_type.startsWith('image')
+    embed.metadata?.content_type?.startsWith('image')
   )
 
   return (
