@@ -1,5 +1,10 @@
 import https from 'node:https'
-import { SendTweetV2Params, TwitterApi, TwitterApiError } from 'twitter-api-v2'
+import {
+  ApiResponseError,
+  SendTweetV2Params,
+  TwitterApi,
+  TwitterApiError,
+} from 'twitter-api-v2'
 import { db } from '../db'
 
 type TwitterConfig = {
@@ -66,7 +71,7 @@ export class TwitterService {
     }
   ): Promise<
     | { success: true; tweetId: string }
-    | { success: false; error: any; rateLimitReset?: number }
+    | { success: false; error?: TwitterApiError; rateLimitReset?: number }
   > {
     await this.refreshClient(username)
     const mediaIds = await Promise.all(
@@ -94,13 +99,21 @@ export class TwitterService {
       if (result?.data?.id) {
         return { success: true, tweetId: result.data.id }
       }
-    } catch (error) {
-      const e = error as TwitterApiError
-      console.error(e)
-      return { success: false, error: e, rateLimitReset: e.rateLimit?.reset }
+    } catch (e) {
+      const error = e as ApiResponseError
+      if (
+        error.data.detail ===
+        'You attempted to reply to a Tweet that is deleted or not visible to you.'
+      ) {
+        return { success: false }
+      }
+
+      console.log(error.rateLimit)
+
+      return { success: false, error: error, rateLimitReset: error.rateLimit?.reset }
     }
 
-    return { success: false, error: new Error('Unknown error') }
+    return { success: false }
   }
 }
 

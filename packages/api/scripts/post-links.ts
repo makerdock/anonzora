@@ -90,8 +90,13 @@ async function handleTwitterPosts() {
       images: [],
     })
     if (!tweet.success) {
-      console.error(`[post-links] [twitter] failed to create tweet for ${link}`)
-      return tweet.rateLimitReset ?? currentTimestamp + 60 * 5
+      if (tweet.error) {
+        console.error(`[post-links] [twitter] failed to create tweet for ${link}`)
+        return tweet.rateLimitReset ?? currentTimestamp + 60 * 5
+      }
+      console.error(`[post-links] [twitter] skipping tweet for ${link}`)
+      await db.relationships.delete('twitter', replyToTweetId)
+      continue
     }
     await db.db.insert(postLinksTable).values({
       post_target: 'twitter',
