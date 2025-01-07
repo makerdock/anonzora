@@ -127,7 +127,7 @@ export class CopyPostTwitter extends BaseAction<
     const tweet = await this.postToTweet(post.data)
     const response = await twitter.postTweet(this.action.metadata.twitter, tweet)
 
-    if (!response.tweetId) {
+    if (!response.success) {
       return { success: false }
     }
 

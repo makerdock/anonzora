@@ -110,12 +110,15 @@ async function handleTwitterPosts() {
     const parentLink = `https://twitter.com/${replyToAccount}/status/${replyToTweetId}`
     const childLink = `https://twitter.com/${POST_ACCOUNT_TWITTER_USERNAME}/status/${tweet.tweetId}`
     console.log(`[post-links] [twitter] ${parentLink} -> ${childLink}`)
+
+    // Wait 10 seconds before trying the next post
+    await new Promise((resolve) => setTimeout(resolve, 10_000))
   }
 }
 
 async function main() {
   let farcasterDisabledUntil: number | undefined = undefined
-  let twitterDisabledUntil: number | undefined = undefined
+  // let twitterDisabledUntil: number | undefined = undefined
   while (true) {
     const currentTimestamp = new Date().getTime() / 1000
     if (farcasterDisabledUntil && farcasterDisabledUntil >= currentTimestamp) {
@@ -125,13 +128,13 @@ async function main() {
     } else {
       farcasterDisabledUntil = await handleFarcasterPosts()
     }
-    if (twitterDisabledUntil && twitterDisabledUntil >= currentTimestamp) {
-      console.log(
-        `[post-links] [twitter] waiting for ${twitterDisabledUntil - currentTimestamp} seconds`
-      )
-    } else {
-      twitterDisabledUntil = await handleTwitterPosts()
-    }
+    // if (twitterDisabledUntil && twitterDisabledUntil >= currentTimestamp) {
+    //   console.log(
+    //     `[post-links] [twitter] waiting for ${twitterDisabledUntil - currentTimestamp} seconds`
+    //   )
+    // } else {
+    //   twitterDisabledUntil = await handleTwitterPosts()
+    // }
 
     // Wait 30 seconds before checking again
     await new Promise((resolve) => setTimeout(resolve, 30_000))

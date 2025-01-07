@@ -108,7 +108,7 @@ export class TwitterService {
         return { success: false }
       }
 
-      console.log(error.rateLimit)
+      console.log(error.data, error.rateLimit)
 
       return { success: false, error: error, rateLimitReset: error.rateLimit?.reset }
     }
