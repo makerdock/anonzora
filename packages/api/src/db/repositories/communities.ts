@@ -73,6 +73,8 @@ export class CommunitiesRepository {
         twitterAccountsTable,
         eq(communitiesTable.twitter_username, twitterAccountsTable.username)
       )
+      .where(eq(communitiesTable.hidden, false))
+
     return communities.map((community) => ({
       ...community.communities,
       token: community.tokens,

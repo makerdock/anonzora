@@ -139,8 +139,12 @@ export const communitiesTable = pgTable('communities', {
   twitter_username: varchar({ length: 255 }).references(
     () => twitterAccountsTable.username
   ),
+  passkey_id: varchar({ length: 255 }).references(() => passkeysTable.id),
+  wallet_id: varchar({ length: 255 }).notNull(),
+  wallet_address: varchar({ length: 255 }).notNull(),
   posts: integer('posts').notNull().default(0),
   followers: integer('followers').notNull().default(0),
+  hidden: boolean('hidden').notNull().default(false),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),
 })
