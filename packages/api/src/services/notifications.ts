@@ -3,6 +3,8 @@ import { neynar } from './neynar'
 import { feed } from './feed'
 import { db } from '../db'
 
+const IGNORE_FIDS = [937160]
+
 type HubMessage = {
   hash: string
   data: {
@@ -35,7 +37,7 @@ export class NotificationsService {
 
     const data: Post[] = []
     for (const cast of casts) {
-      if (skipHashes.has(cast.hash)) {
+      if (skipHashes.has(cast.hash) || IGNORE_FIDS.includes(cast.author.fid)) {
         continue
       }
 

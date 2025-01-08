@@ -21,11 +21,11 @@ export class RedisService {
   }
 
   async getPost(hash: string) {
-    return this.client.get(`post:${hash}`)
+    return this.client.get(`post:v2:${hash}`)
   }
 
   async setPost(hash: string, post: string) {
-    return this.client.set(`post:${hash}`, post)
+    return this.client.set(`post:v2:${hash}`, post, 'EX', 60 * 5)
   }
 
   async setPosts(posts: FarcasterCast[]) {
