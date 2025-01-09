@@ -40,7 +40,7 @@ export function VaultSettings({
     mutationFn: async (args: { imageUrl: string | null; username: string | null }) => {
       const res = await sdk.updateVaultSettings(vault.id, args)
       if (!res.data?.success) {
-        throw new Error(res.data?.error ?? 'Failed to update vault settings')
+        throw new Error(res.data?.error)
       }
       return res
     },
@@ -107,7 +107,7 @@ export function VaultSettings({
           <YStack gap="$2">
             {error && (
               <Text color="$red11" fos="$1" textAlign="center" mt="$-2">
-                Username already taken
+                {error.message}
               </Text>
             )}
             <Button
@@ -278,7 +278,7 @@ function EditUsername({
   return (
     <YStack gap="$2">
       <Text fos="$1" fow="400" color="$color11" textTransform="uppercase">
-        Display Name
+        Username
       </Text>
       <Input
         value={username ?? ''}

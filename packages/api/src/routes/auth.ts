@@ -186,6 +186,17 @@ export const authRoutes = createElysia({ prefix: '/auth' })
       }
 
       if (body.username) {
+        if (!/^[a-zA-Z0-9_]+$/.test(body.username)) {
+          return {
+            success: false,
+            error: 'Username can only contain letters, numbers and underscores',
+          }
+        }
+
+        if (body.username.length > 15) {
+          return { success: false, error: 'Username must be less than 15 characters' }
+        }
+
         const vaultForUsername = await db.vaults.getForUsername(body.username)
         if (vaultForUsername && vaultForUsername.passkey_id !== passkeyId) {
           return { success: false, error: 'Username already taken' }
