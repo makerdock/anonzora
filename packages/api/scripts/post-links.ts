@@ -5,7 +5,7 @@ import { neynar } from '../src/services/neynar'
 import { twitter } from '../src/services/twitter'
 
 const POST_ACCOUNT_FID = 937160
-const POST_ACCOUNT_TWITTER_USERNAME = 'anonworldbot'
+const POST_ACCOUNT_TWITTER_USERNAME = 'anonworld_bot'
 
 async function getFarcasterPosts() {
   return await db.db
@@ -35,10 +35,12 @@ async function getTwitterPosts() {
         isNull(postLinksTable.post_target),
         eq(postRelationshipsTable.target, 'twitter'),
         isNull(postRelationshipsTable.deleted_at),
-        gte(postRelationshipsTable.created_at, new Date('2025-01-01'))
+        gte(postRelationshipsTable.created_at, new Date('2025-01-09'))
       )
     )
     .orderBy(desc(postRelationshipsTable.created_at))
+    // We intentionally limit to 1 to avoid rate limiting
+    .limit(1)
 }
 
 export async function handleFarcasterPosts() {
@@ -76,10 +78,11 @@ export async function handleFarcasterPosts() {
   }
 }
 
-async function handleTwitterPosts() {
+export async function handleTwitterPosts() {
   const currentTimestamp = new Date().getTime() / 1000
   const twitterPosts = await getTwitterPosts()
   console.log(`[post-links] found ${twitterPosts.length} twitter posts missing links`)
+
   for (const post of twitterPosts) {
     const link = `https://anon.world/posts/${post.post_relationships.post_hash}`
     const replyToAccount = post.post_relationships.target_account
@@ -110,9 +113,6 @@ async function handleTwitterPosts() {
     const parentLink = `https://twitter.com/${replyToAccount}/status/${replyToTweetId}`
     const childLink = `https://twitter.com/${POST_ACCOUNT_TWITTER_USERNAME}/status/${tweet.tweetId}`
     console.log(`[post-links] [twitter] ${parentLink} -> ${childLink}`)
-
-    // Wait 10 seconds before trying the next post
-    await new Promise((resolve) => setTimeout(resolve, 10_000))
   }
 }
 
