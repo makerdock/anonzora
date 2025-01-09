@@ -38,7 +38,7 @@ export function CredentialDisplay({
     >
       <XStack ai="center" gap="$2">
         <Link href={`/profiles/${credential.vault_id}`}>
-          <VaultBadge vaultId={credential.vault_id} />
+          <VaultBadge vaultId={credential.vault_id} vault={credential.vault} />
         </Link>
         <Badge>{getCredential(credential.type)?.name}</Badge>
         <Badge>{timeAgo(credential.verified_at.toString())}</Badge>

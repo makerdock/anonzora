@@ -5,9 +5,10 @@ import {
   postLikesTable,
   postRelationshipsTable,
   postsTable,
+  vaultsTable,
 } from '../schema'
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
-import { DBCredential, DBPost, DBPostLike, DBPostRelationship } from '../types'
+import { DBCredential, DBPost, DBPostLike, DBPostRelationship, DBVault } from '../types'
 import { alias } from 'drizzle-orm/pg-core'
 import { RevealArgs } from '@anonworld/common'
 
@@ -156,6 +157,7 @@ export class PostsRepository {
         credentialsTable,
         eq(postCredentialsTable.credential_id, credentialsTable.id)
       )
+      .leftJoin(vaultsTable, eq(credentialsTable.vault_id, vaultsTable.id))
       .where(inArray(postCredentialsTable.post_hash, hashes))
 
     const credentialsByHash = credentials.reduce(
@@ -163,10 +165,13 @@ export class PostsRepository {
         if (!acc[c.post_credentials.post_hash]) {
           acc[c.post_credentials.post_hash] = []
         }
-        acc[c.post_credentials.post_hash].push(c.credential_instances as DBCredential)
+        acc[c.post_credentials.post_hash].push({
+          ...c.credential_instances,
+          vault: c.vaults,
+        } as DBCredential & { vault: DBVault | null })
         return acc
       },
-      {} as Record<string, DBCredential[]>
+      {} as Record<string, (DBCredential & { vault: DBVault | null })[]>
     )
 
     return credentialsByHash

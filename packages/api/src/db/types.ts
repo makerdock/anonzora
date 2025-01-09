@@ -35,7 +35,11 @@ export type DBCredential = typeof credentialsTable.$inferSelect & {
   proof: CredentialProof
 } & (
     | {
-        type: CredentialType.ERC20_BALANCE | CredentialType.ERC721_BALANCE
+        type: CredentialType.ERC20_BALANCE
+        metadata: TokenBalanceMetadata
+      }
+    | {
+        type: CredentialType.ERC721_BALANCE
         metadata: TokenBalanceMetadata
       }
     | {

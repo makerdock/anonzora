@@ -346,4 +346,20 @@ export class AnonWorldSDK {
       `/nfts/collections/${chainId}/${tokenAddress}`
     )
   }
+
+  async updateVaultSettings(
+    vaultId: string,
+    args: {
+      imageUrl: string | null
+      username: string | null
+    }
+  ) {
+    return await this.request<{ success: true } | { success: false; error: string }>(
+      `/auth/vaults/${vaultId}/settings`,
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    )
+  }
 }

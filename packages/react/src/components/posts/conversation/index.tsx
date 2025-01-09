@@ -80,12 +80,19 @@ function Post({
           {post.credentials && post.credentials.length > 0 && (
             <>
               <View w={32} ai="center">
-                <VaultAvatar id={post.credentials[0].vault_id ?? ''} size="$2.5" />
+                <VaultAvatar
+                  vaultId={post.credentials[0].vault_id}
+                  imageUrl={post.credentials[0].vault?.image_url}
+                  size="$2.5"
+                />
               </View>
               <XStack gap="$2" ai="center">
                 {post.credentials[0].vault_id && (
                   <Link href={`/profiles/${post.credentials[0].vault_id}`}>
-                    <VaultBadge vaultId={post.credentials[0].vault_id} />
+                    <VaultBadge
+                      vault={post.credentials[0].vault}
+                      vaultId={post.credentials[0].vault_id}
+                    />
                   </Link>
                 )}
                 {post.credentials.map((credential, index) => (

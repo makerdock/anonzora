@@ -6,7 +6,7 @@ import { WebAuthnP256 } from 'ox'
 import { notifications } from '../services/notifications'
 import { db } from '../db'
 import { DBVault } from '../db/types'
-import { DBCredential } from '../db/types'
+import { CredentialWithId } from '@anonworld/common'
 
 export const authRoutes = createElysia({ prefix: '/auth' })
   .post(
@@ -126,13 +126,11 @@ export const authRoutes = createElysia({ prefix: '/auth' })
           }
         }
         if (vault.credential_instances) {
-          acc[vault.vaults.id].credentials.push(
-            vault.credential_instances as DBCredential
-          )
+          acc[vault.vaults.id].credentials.push(vault.credential_instances)
         }
         return acc
       },
-      {} as Record<string, DBVault & { credentials: DBCredential[] }>
+      {} as Record<string, DBVault & { credentials: CredentialWithId[] }>
     )
     return { data: Object.values(credentialsByVault) }
   })
@@ -180,3 +178,33 @@ export const authRoutes = createElysia({ prefix: '/auth' })
     const replies = await notifications.getReplies(vaultId)
     return { data: replies }
   })
+  .post(
+    '/vaults/:id/settings',
+    async ({ body, passkeyId, params, error }) => {
+      if (!passkeyId) {
+        return error(401, 'Unauthorized')
+      }
+
+      if (body.username) {
+        const vaultForUsername = await db.vaults.getForUsername(body.username)
+        if (vaultForUsername && vaultForUsername.passkey_id !== passkeyId) {
+          return { success: false, error: 'Username already taken' }
+        }
+      }
+
+      await db.vaults.update(params.id, {
+        image_url: body.imageUrl,
+        username: body.username,
+      })
+      return { success: true }
+    },
+    {
+      body: t.Object({
+        imageUrl: t.Nullable(t.String()),
+        username: t.Nullable(t.String()),
+      }),
+      params: t.Object({
+        id: t.String(),
+      }),
+    }
+  )

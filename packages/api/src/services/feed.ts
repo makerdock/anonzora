@@ -87,9 +87,9 @@ export class FeedService {
             'chainId' in c.metadata
               ? tokens[`${c.metadata.chainId}:${c.metadata.tokenAddress}`]
               : undefined,
-          id: undefined,
-          proof: undefined,
-          verified_at: c.verified_at.toISOString(),
+          vault: c.vault
+            ? { ...c.vault, credentials: [], created_at: c.created_at.toISOString() }
+            : undefined,
         })) ?? []
 
       formattedPost.relationships =

@@ -39,7 +39,7 @@ export function PostDisplay({
     }
   }
 
-  const vaultId = post.credentials?.[0]?.vault_id
+  const vault = post.credentials?.[0]?.vault
 
   return (
     <YStack
@@ -73,9 +73,9 @@ export function PostDisplay({
         )}
         {post.credentials && post.credentials.length > 0 && (
           <XStack gap="$2" ai="center" onPress={(e) => e.preventDefault()}>
-            {vaultId && (
-              <Link href={`/profiles/${vaultId}`}>
-                <VaultBadge vaultId={vaultId} />
+            {vault && (
+              <Link href={`/profiles/${vault.id}`}>
+                <VaultBadge vault={vault} vaultId={vault.id} />
               </Link>
             )}
             {post.credentials?.map((credential, index) => (

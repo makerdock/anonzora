@@ -29,10 +29,10 @@ export function VaultDisplay({ vault }: { vault: Vault }) {
       fs={1}
     >
       <XStack ai="center" gap="$4">
-        <VaultAvatar id={id} size="$6" />
+        <VaultAvatar vaultId={vault.id} imageUrl={vault.image_url} size="$6" />
         <YStack gap="$2" f={1}>
           <Text fos="$4" fow="600">
-            {id}
+            {vault.username ?? id}
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <XStack gap="$2">

@@ -60,10 +60,23 @@ export const CredentialsProvider = ({
 
   useEffect(() => {
     if (vaults) {
-      const missingCredentials = vaults.flatMap((vault) =>
-        vault.credentials.filter((cred) => !credentials.some((c) => c.id === cred.id))
-      )
-      setCredentials((prev) => [...prev, ...missingCredentials])
+      const fetchedCredentials: CredentialWithId[] = []
+      for (const vault of vaults) {
+        for (const credential of vault.credentials) {
+          fetchedCredentials.push({
+            ...credential,
+            vault: {
+              id: vault.id,
+              username: vault.username,
+              image_url: vault.image_url,
+            },
+          })
+        }
+      }
+      setCredentials((prev) => {
+        const localCredentials = prev.filter((cred) => !cred.vault_id)
+        return [...localCredentials, ...fetchedCredentials]
+      })
     }
   }, [vaults])
 

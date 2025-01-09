@@ -172,6 +172,8 @@ export const vaultsTable = pgTable('vaults', {
   passkey_id: varchar({ length: 255 })
     .references(() => passkeysTable.id)
     .notNull(),
+  username: varchar({ length: 255 }),
+  image_url: varchar({ length: 255 }),
   posts: integer('posts').notNull().default(0),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),

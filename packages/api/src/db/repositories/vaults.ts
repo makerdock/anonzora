@@ -127,6 +127,14 @@ export class VaultsRepository {
     await this.db.update(vaultsTable).set(params).where(eq(vaultsTable.id, vaultId))
   }
 
+  async getForUsername(username: string) {
+    const [vault] = await this.db
+      .select()
+      .from(vaultsTable)
+      .where(eq(vaultsTable.username, username))
+    return vault as DBVault
+  }
+
   async getCredentials(vaultId: string) {
     const response = await this.db
       .select()

@@ -113,7 +113,12 @@ function CredentialSelector() {
               >
                 <XStack gap="$2" ai="center" jc="space-between">
                   <XStack gap="$2" ai="center">
-                    {!isExpired && <VaultBadge vaultId={credential.vault_id} />}
+                    {!isExpired && (
+                      <VaultBadge
+                        vaultId={credential.vault_id}
+                        vault={credential.vault}
+                      />
+                    )}
                     {isExpired && (
                       <Badge
                         icon={
