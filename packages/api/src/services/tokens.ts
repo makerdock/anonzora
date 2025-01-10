@@ -119,7 +119,7 @@ class TokensService {
       platform: args.platform,
     }
     await db.tokens.create(token)
-    await redis.setToken(args.chainId, args.address, JSON.stringify(token))
+    await redis.setToken(args.chainId, args.address.toLowerCase(), JSON.stringify(token))
     return token
   }
 

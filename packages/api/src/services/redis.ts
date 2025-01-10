@@ -66,20 +66,25 @@ export class RedisService {
   }
 
   async getToken(chainId: number, tokenAddress: string) {
-    return this.client.get(`token:${chainId}:${tokenAddress}`)
+    return this.client.get(`token:${chainId}:${tokenAddress.toLowerCase()}`)
   }
 
   async setToken(chainId: number, tokenAddress: string, token: string) {
-    return this.client.set(`token:${chainId}:${tokenAddress}`, token, 'EX', 60 * 60 * 24)
+    return this.client.set(
+      `token:${chainId}:${tokenAddress.toLowerCase()}`,
+      token,
+      'EX',
+      60 * 60 * 24
+    )
   }
 
   async getNFTCollection(chainId: number, tokenAddress: string) {
-    return this.client.get(`nft-collection:${chainId}:${tokenAddress}`)
+    return this.client.get(`nft-collection:${chainId}:${tokenAddress.toLowerCase()}`)
   }
 
   async setNFTCollection(chainId: number, tokenAddress: string, collection: string) {
     return this.client.set(
-      `nft-collection:${chainId}:${tokenAddress}`,
+      `nft-collection:${chainId}:${tokenAddress.toLowerCase()}`,
       collection,
       'EX',
       60 * 60 * 24
