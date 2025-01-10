@@ -47,7 +47,11 @@ export function NewERC20CredentialProvider({
   >(initialTokenId)
   const [balance, setBalance] = useState<number>(initialBalance ?? 0)
   const [maxBalance, setMaxBalance] = useState<number>(0)
-  const [decimals, setDecimals] = useState<number>(18)
+  const [decimals, setDecimals] = useState<number>(
+    initialTokenId?.address.toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+      ? 6
+      : 18
+  )
   const { address } = useAccount()
   const { add } = useCredentials()
   const [isLoading, setIsLoading] = useState(false)
@@ -64,8 +68,17 @@ export function NewERC20CredentialProvider({
 
   useEffect(() => {
     if (onchainBalance) {
-      setMaxBalance(Number(formatUnits(onchainBalance, decimals)))
-      setBalance(Number(formatUnits(onchainBalance, decimals)))
+      setMaxBalance(Math.floor(Number(formatUnits(onchainBalance, decimals))))
+      if (initialBalance) {
+        setBalance(
+          Math.min(
+            Math.floor(Number(formatUnits(onchainBalance, decimals))),
+            initialBalance
+          )
+        )
+      } else {
+        setBalance(Math.floor(Number(formatUnits(onchainBalance, decimals))))
+      }
     }
   }, [onchainBalance, decimals])
 
