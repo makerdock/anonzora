@@ -46,7 +46,10 @@ export function TrendingFeed({ fid }: { fid: number }) {
   )
 }
 
-export function NewFeed({ fid }: { fid: number }) {
+export function NewFeed({
+  fid,
+  disableActions,
+}: { fid: number; disableActions: boolean }) {
   const { data, isLoading, hasNextPage, fetchNextPage } = useNewPosts({ fid })
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -85,7 +88,7 @@ export function NewFeed({ fid }: { fid: number }) {
       {data.pages.map((page, i) =>
         page.map((post) => (
           <Link key={post.hash} href={`/posts/${post.hash}`}>
-            <PostDisplay post={post} hoverable />
+            <PostDisplay post={post} hoverable disableActions={disableActions} />
           </Link>
         ))
       )}

@@ -19,6 +19,22 @@ export async function generateMetadata({
       description,
       images: [`https://anon.world/communities/${params.id}/opengraph-image`],
     },
+    other: {
+      ['fc:frame']: JSON.stringify({
+        version: 'next',
+        imageUrl: `https://anon.world/communities/${params.id}/frame-image`,
+        button: {
+          title: 'View Community',
+          action: {
+            type: 'launch_frame',
+            name: 'anon.world',
+            url: `https://anon.world/communities/${params.id}`,
+            splashImageUrl: 'https://anon.world/logo-background.png',
+            splashBackgroundColor: '#000000',
+          },
+        },
+      }),
+    },
   }
 }
 

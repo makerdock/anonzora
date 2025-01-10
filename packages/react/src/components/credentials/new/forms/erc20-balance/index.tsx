@@ -145,7 +145,7 @@ function TokenField() {
       const impl = t.attributes.fungible_info.implementations.find(
         (i) => i.address !== null
       )
-      return impl && t.attributes.value !== null
+      return impl
     })
   }, [data])
 
@@ -297,10 +297,12 @@ function TokenValue({ token }: { token: FungiblePosition }) {
             })}`}
           </Text>
           <Text fos="$1" fow="400" color="$color11">
-            {`$${token.attributes.value?.toLocaleString(undefined, {
-              maximumFractionDigits: 2,
-              minimumFractionDigits: 2,
-            })}`}
+            {token.attributes.value
+              ? `$${token.attributes.value?.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
+                })}`
+              : ''}
           </Text>
         </YStack>
       </XStack>

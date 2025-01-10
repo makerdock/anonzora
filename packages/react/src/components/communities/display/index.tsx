@@ -9,7 +9,10 @@ import { formatAmount, timeAgo } from '@anonworld/common'
 import { CommunityActions } from './actions'
 import { Link } from 'solito/link'
 
-export function CommunityDisplay({ community }: { community: Community }) {
+export function CommunityDisplay({
+  community,
+  disableActions,
+}: { community: Community; disableActions: boolean }) {
   return (
     <YStack
       theme="surface1"
@@ -59,9 +62,11 @@ export function CommunityDisplay({ community }: { community: Community }) {
         </YStack>
       </XStack>
       <CommunityToken community={community} />
-      <View position="absolute" top="$2" right="$3">
-        <CommunityActions community={community} />
-      </View>
+      {!disableActions && (
+        <View position="absolute" top="$2" right="$3">
+          <CommunityActions community={community} />
+        </View>
+      )}
     </YStack>
   )
 }
