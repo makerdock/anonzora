@@ -31,11 +31,6 @@ export const communitiesRoutes = createElysia({ prefix: '/communities' })
   .post(
     '/',
     async ({ body }) => {
-      const isFnameAvailable = await neynar.checkFnameAvailability(body.username)
-      if (!isFnameAvailable.available) {
-        throw new Error('Username is not available')
-      }
-
       let token: Token | undefined
       if (body.existingToken) {
         token = await tokens.getOrCreate(body.existingToken)

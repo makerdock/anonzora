@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import { communitiesTable, tokensTable } from '../schema'
 import { and, eq, inArray } from 'drizzle-orm'
 import { DBToken } from '../types'
+import { Token } from '@anonworld/common'
 
 export class TokensRepository {
   private db: ReturnType<typeof drizzle>
@@ -37,10 +38,10 @@ export class TokensRepository {
 
     const tokensById = tokens.reduce(
       (acc, t) => {
-        acc[t.id] = t
+        acc[t.id] = t as Token
         return acc
       },
-      {} as Record<string, DBToken>
+      {} as Record<string, Token>
     )
     return tokensById
   }
