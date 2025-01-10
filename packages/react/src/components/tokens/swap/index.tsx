@@ -18,17 +18,19 @@ export function SwapTokens({
       <SwapTokensDialog>
         <Dialog.Trigger asChild>
           <Button
-            size="$2"
-            px="$3"
-            bg="$background"
-            bc="$borderColor"
-            bw="$0.25"
+            size="$3"
+            bg="$color5"
             br="$12"
-            hoverStyle={{ opacity: 0.9 }}
+            bw="$0"
+            disabledStyle={{ opacity: 0.5, bg: '$color5' }}
+            hoverStyle={{ opacity: 0.9, bg: '$color5' }}
+            pressStyle={{ opacity: 0.9, bg: '$color5' }}
           >
-            <XStack ai="center" gap="$1">
-              <ArrowLeftRight size={12} />
-              <Text fos="$1">Swap</Text>
+            <XStack ai="center" gap="$2">
+              <ArrowLeftRight size={16} strokeWidth={2} color="$color12" />
+              <Text fos="$2" fow="500" color="$color12">
+                Swap
+              </Text>
             </XStack>
           </Button>
         </Dialog.Trigger>

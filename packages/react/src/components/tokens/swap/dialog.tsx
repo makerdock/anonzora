@@ -46,9 +46,9 @@ export function SwapTokensDialog({ children }: { children?: React.ReactNode }) {
             enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
             exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
             w={600}
-            gap="$3"
+            gap="$4"
           >
-            <Dialog.Title fos="$5">Swap</Dialog.Title>
+            <Dialog.Title fos="$5">Swap Tokens</Dialog.Title>
             <SwapForm />
             <Dialog.Close asChild>
               <View

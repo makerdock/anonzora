@@ -2,8 +2,9 @@
 
 import {
   CommunityDisplay,
-  NewCommunityPost,
   NewFeed,
+  SwapTokens,
+  NewCommunityPost,
   useCommunity,
 } from '@anonworld/react'
 import { View, XStack } from '@anonworld/ui'
@@ -21,7 +22,15 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
       <CommunityDisplay community={community} />
       <XStack ai="center" jc="space-between" $xs={{ px: '$2' }}>
         <View />
-        <NewCommunityPost community={community} />
+        <XStack gap="$2">
+          <SwapTokens
+            initialBuyToken={{
+              chainId: community.token.chain_id,
+              address: community.token.address,
+            }}
+          />
+          <NewCommunityPost community={community} />
+        </XStack>
       </XStack>
       <NewFeed fid={community.fid} />
     </Content>
