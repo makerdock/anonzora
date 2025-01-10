@@ -4,6 +4,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  ScrollView,
   Text,
   View,
   XStack,
@@ -72,16 +73,18 @@ export function PostDisplay({
           </XStack>
         )}
         {post.credentials && post.credentials.length > 0 && (
-          <XStack gap="$2" ai="center" onPress={(e) => e.preventDefault()}>
-            {vault && (
-              <Link href={`/profiles/${vault.id}`}>
-                <VaultBadge vault={vault} vaultId={vault.id} />
-              </Link>
-            )}
-            {post.credentials?.map((credential, index) => (
-              <PostCredential key={index} credential={credential} />
-            ))}
-          </XStack>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} mr="$7">
+            <XStack gap="$2" ai="center" onPress={(e) => e.preventDefault()}>
+              {vault && (
+                <Link href={`/profiles/${vault.id}`}>
+                  <VaultBadge vault={vault} vaultId={vault.id} />
+                </Link>
+              )}
+              {post.credentials?.map((credential, index) => (
+                <PostCredential key={index} credential={credential} />
+              ))}
+            </XStack>
+          </ScrollView>
         )}
         {(!post.credentials || post.credentials.length === 0) && (
           <XStack gap="$2" ai="center" onPress={(e) => e.preventDefault()}>
@@ -122,7 +125,7 @@ export function PostDisplay({
         </XStack>
         <XStack ai="center" gap="$2">
           {!disableActions && post.relationships.length > 0 && (
-            <View onPress={(e) => e.preventDefault()}>
+            <View onPress={(e) => e.stopPropagation()}>
               <PostCommunities post={post} />
             </View>
           )}

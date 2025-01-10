@@ -28,6 +28,8 @@ export const farcasterAccountsTable = pgTable('farcaster_accounts', {
   fid: integer('fid').primaryKey(),
   signer_uuid: varchar({ length: 255 }).notNull(),
   metadata: jsonb('metadata'),
+  custody_address: varchar({ length: 255 }),
+  custody_wallet_id: varchar({ length: 255 }),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),
 })
@@ -163,6 +165,7 @@ export const tokensTable = pgTable('tokens', {
   total_supply: bigint('total_supply', { mode: 'number' }).notNull().default(0),
   holders: bigint('holders', { mode: 'number' }).notNull().default(0),
   balance_slot: integer('balance_slot'),
+  platform: varchar({ length: 255 }),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),
 })
