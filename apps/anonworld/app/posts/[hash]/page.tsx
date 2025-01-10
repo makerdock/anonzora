@@ -1,7 +1,6 @@
 import { formatHexId, CredentialType, formatAmount } from '@anonworld/common'
 import { AnonWorldSDK } from '@anonworld/sdk'
 import { PostPage } from '@/components/post'
-import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 
 const sdk = new AnonWorldSDK()
@@ -59,9 +58,5 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: { params: { hash: string } }) {
-  const post = await sdk.getPost(params.hash)
-  if (!post.data) {
-    return notFound()
-  }
-  return <PostPage post={post.data} />
+  return <PostPage hash={params.hash} />
 }

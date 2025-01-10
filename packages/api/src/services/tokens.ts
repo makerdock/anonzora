@@ -4,6 +4,7 @@ import { DBToken } from '../db/types'
 import { redis } from './redis'
 import { simplehash } from './simplehash'
 import { zerion } from './zerion'
+import { formatUnits } from 'viem'
 
 class TokensService {
   async getOrCreate({
@@ -42,10 +43,24 @@ class TokensService {
     const zerionToken = await zerion.getFungible(token.chain_id, token.address)
     const simpleHashToken = await simplehash.getToken(token.chain_id, token.address)
 
+    const totalSupply = Number.parseInt(
+      formatUnits(
+        BigInt(
+          simpleHashToken?.supply ?? zerionToken?.attributes.market_data.total_supply ?? 0
+        ),
+        token.decimals
+      )
+    )
+    const priceUsd =
+      simpleHashToken?.prices[0]?.value_usd_string ??
+      zerionToken?.attributes.market_data.price?.toFixed(10) ??
+      0
+    const marketCap = totalSupply * Number(priceUsd)
+
     const fields = {
-      price_usd: zerionToken?.attributes.market_data.price?.toFixed(8) ?? 0,
-      market_cap: Math.round(zerionToken?.attributes.market_data.market_cap ?? 0),
-      total_supply: Math.round(zerionToken?.attributes.market_data.total_supply ?? 0),
+      price_usd: priceUsd,
+      market_cap: Math.round(marketCap),
+      total_supply: Math.round(totalSupply),
       holders: simpleHashToken?.holder_count ?? 0,
     }
     await db.tokens.update(token.id, fields)

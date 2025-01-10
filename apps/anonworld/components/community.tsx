@@ -6,11 +6,18 @@ import {
   SwapTokens,
   NewCommunityPost,
   Community,
+  useCommunity,
 } from '@anonworld/react'
 import { View, XStack } from '@anonworld/ui'
 import { Content } from '@/components/content'
 
-export function CommunityPage({ community }: { community: Community }) {
+export function CommunityPage({ id }: { id: string }) {
+  const { data: community } = useCommunity({ id })
+
+  if (!community) {
+    return null
+  }
+
   return (
     <Content>
       <CommunityDisplay community={community} />

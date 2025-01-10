@@ -23,11 +23,5 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const community = await sdk.getCommunity(params.id)
-
-  if (!community.data) {
-    return null
-  }
-
-  return <CommunityPage community={community.data} />
+  return <CommunityPage id={params.id} />
 }

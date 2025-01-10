@@ -123,7 +123,12 @@ class SimplehashService {
     }
 
     const url = `/fungibles/assets?fungible_ids=${chain.simplehashId}.${tokenAddress}&include_prices=1`
-    return await this.makeRequest<{ holder_count: number; decimals: number }>(url)
+    return await this.makeRequest<{
+      holder_count: number
+      decimals: number
+      prices: { value_usd_string: string }[]
+      supply: string
+    }>(url)
   }
 
   async getNFTCollection(chainId: number, tokenAddress: string) {

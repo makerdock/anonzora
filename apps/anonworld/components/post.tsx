@@ -6,15 +6,17 @@ import {
   ReplyBar,
   usePostConversation,
   Post,
+  usePost,
 } from '@anonworld/react'
 import { View, YStack, Spinner } from '@anonworld/ui'
 import { Content } from '@/components/content'
 import { useFrames } from './providers/frames'
 
-export function PostPage({ post }: { post: Post }) {
+export function PostPage({ hash }: { hash: string }) {
+  const { data: post } = usePost({ hash })
   const { isFrame } = useFrames()
   const { data: conversation, isLoading: conversationLoading } = usePostConversation({
-    hash: post.hash,
+    hash,
   })
 
   return (
