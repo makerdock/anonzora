@@ -9,10 +9,18 @@ export function SwapTokensDialog({ children }: { children?: React.ReactNode }) {
     <Dialog modal open={isOpen} onOpenChange={setIsOpen}>
       {children}
       <Adapt when="sm">
-        <Sheet animation="quicker" zIndex={200000} modal dismissOnSnapToBottom>
-          <Sheet.Frame padding="$4" gap="$2">
-            <Adapt.Contents />
-          </Sheet.Frame>
+        <Sheet
+          animation="quicker"
+          zIndex={200000}
+          modal
+          dismissOnSnapToBottom
+          snapPointsMode="fit"
+        >
+          {isOpen && (
+            <Sheet.Frame padding="$3" gap="$3" bg="$color2">
+              <Adapt.Contents />
+            </Sheet.Frame>
+          )}
           <Sheet.Overlay
             animation="quicker"
             enterStyle={{ opacity: 0 }}
@@ -29,43 +37,41 @@ export function SwapTokensDialog({ children }: { children?: React.ReactNode }) {
           exitStyle={{ opacity: 0 }}
         />
 
-        {isOpen && (
-          <Dialog.Content
-            bordered
-            elevate
-            key="content"
-            animateOnly={['transform', 'opacity']}
-            animation={[
-              'quicker',
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
+        <Dialog.Content
+          bordered
+          elevate
+          key="content"
+          animateOnly={['transform', 'opacity']}
+          animation={[
+            'quicker',
+            {
+              opacity: {
+                overshootClamping: true,
               },
-            ]}
-            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-            w={600}
-            gap="$4"
-          >
-            <Dialog.Title fos="$5">Swap Tokens</Dialog.Title>
-            <SwapForm />
-            <Dialog.Close asChild>
-              <View
-                bg="$background"
-                p="$2"
-                br="$12"
-                hoverStyle={{ bg: '$color5' }}
-                cursor="pointer"
-                position="absolute"
-                top="$2"
-                right="$2"
-              >
-                <X size={20} />
-              </View>
-            </Dialog.Close>
-          </Dialog.Content>
-        )}
+            },
+          ]}
+          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+          w={600}
+          gap="$4"
+        >
+          <Dialog.Title fos="$5">Swap Tokens</Dialog.Title>
+          {isOpen && <SwapForm />}
+          <Dialog.Close asChild>
+            <View
+              bg="$background"
+              p="$2"
+              br="$12"
+              hoverStyle={{ bg: '$color5' }}
+              cursor="pointer"
+              position="absolute"
+              top="$2"
+              right="$2"
+            >
+              <X size={20} />
+            </View>
+          </Dialog.Close>
+        </Dialog.Content>
       </Dialog.Portal>
     </Dialog>
   )

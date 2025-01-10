@@ -43,7 +43,7 @@ export function SwapForm() {
     <YStack gap="$4">
       <WalletField />
       {address && (
-        <YStack theme="surface1">
+        <YStack>
           {sellTokenData && (
             <TokenField
               token={sellTokenData}
@@ -78,9 +78,9 @@ export function SwapForm() {
               isLoading={isSwapQuoteFetching}
             />
           )}
+          <SubmitButton />
         </YStack>
       )}
-      <SubmitButton />
     </YStack>
   )
 }
@@ -159,7 +159,7 @@ function TokenField({
         </Text>
       </XStack>
       <XStack gap="$2" ai="center" jc="space-between" w="100%">
-        <View h="$2" ai="center" jc="center">
+        <View h="$2" jc="center" f={1}>
           {isLoading ? (
             <Spinner color="$color12" />
           ) : (
