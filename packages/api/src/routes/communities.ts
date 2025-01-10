@@ -46,19 +46,38 @@ export const communitiesRoutes = createElysia({ prefix: '/communities' })
         throw new Error('No token provided')
       }
 
-      const { fid, walletId, walletAddress } = await provisioning.deployFarcasterAccount({
-        name: body.name,
-        description: body.description,
-        imageUrl: body.imageUrl,
-        username: body.username,
-      })
+      let fid: number | null = null
+      let walletId: string | null = null
+      let walletAddress: string | null = null
+
+      const account = await db.socials.getFarcasterAccountByUsername(body.username)
+      if (account) {
+        const community = await db.communities.getForAccounts([account.fid], [])
+        if (community.length === 0) {
+          fid = account.fid
+          walletId = account.custody_wallet_id
+          walletAddress = account.custody_address
+        }
+      }
+
+      if (!fid || !walletId || !walletAddress) {
+        const newAccount = await provisioning.deployFarcasterAccount({
+          name: body.name,
+          description: body.description,
+          imageUrl: body.imageUrl,
+          username: body.username,
+        })
+        fid = newAccount.fid
+        walletId = newAccount.walletId
+        walletAddress = newAccount.walletAddress
+      }
 
       if (body.newToken) {
         token = await provisioning.deployToken({
           name: body.name,
           symbol: body.newToken.symbol,
           imageUrl: body.imageUrl,
-          creatorAddress: walletAddress,
+          creatorAddress: walletAddress as `0x${string}`,
           creatorFid: fid,
         })
       }

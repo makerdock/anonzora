@@ -46,23 +46,39 @@ type DeployTokenResponse = {
 
 class ProvisioningService {
   async deployToken(params: DeployTokenParams) {
-    const response = await fetch('https://www.clanker.world/api/tokens/deploy', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.CLANKER_API_KEY!,
-      },
-      body: JSON.stringify({
-        name: params.name,
-        symbol: params.symbol,
-        image: params.imageUrl,
-        requestorAddress: params.creatorAddress,
-        requestorFid: params.creatorFid.toString(),
-        requestKey: generateIdempotencyKey(),
-      }),
-    })
+    const fn = async () => {
+      const response = await fetch('https://www.clanker.world/api/tokens/deploy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.CLANKER_API_KEY!,
+        },
+        body: JSON.stringify({
+          name: params.name,
+          symbol: params.symbol,
+          image: params.imageUrl,
+          requestorAddress: params.creatorAddress,
+          requestorFid: params.creatorFid.toString(),
+          requestKey: generateIdempotencyKey(),
+        }),
+      })
 
-    const data: DeployTokenResponse = await response.json()
+      const data: DeployTokenResponse = await response.json()
+      return data
+    }
+
+    let data: DeployTokenResponse | undefined
+    for (let i = 0; i < 3; i++) {
+      data = await fn()
+      if (data?.contract_address) {
+        break
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+    }
+
+    if (!data?.contract_address) {
+      throw new Error('Failed to deploy token')
+    }
 
     return await tokens.createNewERC20({
       chainId: base.id,

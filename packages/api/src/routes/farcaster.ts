@@ -1,6 +1,7 @@
 import { createElysia } from '../utils'
 import { t } from 'elysia'
 import { neynar } from '../services/neynar'
+import { db } from '../db'
 
 export const farcasterRoutes = createElysia({ prefix: '/farcaster' })
   .get(
@@ -63,6 +64,15 @@ export const farcasterRoutes = createElysia({ prefix: '/farcaster' })
     '/fname-availability',
     async ({ query }) => {
       const response = await neynar.checkFnameAvailability(query.fname)
+      if (!response.available) {
+        const account = await db.socials.getFarcasterAccountByUsername(query.fname)
+        if (account) {
+          const community = await db.communities.getForAccounts([account.fid], [])
+          if (community.length === 0) {
+            return { available: true }
+          }
+        }
+      }
       return response
     },
     { query: t.Object({ fname: t.String() }) }

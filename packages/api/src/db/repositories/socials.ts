@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { farcasterAccountsTable, twitterAccountsTable } from '../schema'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 import { DBFarcasterAccount, DBTwitterAccount } from '../types'
 
 export class SocialsRepository {
@@ -29,6 +29,16 @@ export class SocialsRepository {
       .select()
       .from(farcasterAccountsTable)
       .where(eq(farcasterAccountsTable.fid, fid))
+      .limit(1)
+
+    return account as DBFarcasterAccount
+  }
+
+  async getFarcasterAccountByUsername(username: string) {
+    const [account] = await this.db
+      .select()
+      .from(farcasterAccountsTable)
+      .where(sql`${farcasterAccountsTable.metadata}->>'username' = ${username}`)
       .limit(1)
 
     return account as DBFarcasterAccount
