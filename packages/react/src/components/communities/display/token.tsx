@@ -46,7 +46,7 @@ export function CommunityToken({ community }: { community: Community }) {
           <Field
             label="Mkt Cap"
             value={`$${formatAmount(community.token.market_cap)}`}
-            minWidth="$10"
+            minWidth="$8"
             ai="flex-end"
           />
           <Field
@@ -55,13 +55,19 @@ export function CommunityToken({ community }: { community: Community }) {
               minimumFractionDigits: 2,
               maximumFractionDigits: 4,
             })}`}
-            minWidth="$10"
+            minWidth="$8"
+            ai="flex-end"
+          />
+          <Field
+            label="Supply"
+            value={formatAmount(community.token.total_supply || 100000000000)}
+            minWidth="$8"
             ai="flex-end"
           />
           <Field
             label="Holders"
             value={formatAmount(community.token.holders)}
-            minWidth="$10"
+            minWidth="$8"
             ai="flex-end"
           />
         </XStack>

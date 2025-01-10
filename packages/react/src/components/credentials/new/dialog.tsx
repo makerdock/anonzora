@@ -2,7 +2,6 @@ import { X } from '@tamagui/lucide-icons'
 import { Adapt, Dialog, Label, Sheet, Unspaced, View, YStack } from '@anonworld/ui'
 import { CredentialTypeSelect } from './select'
 import { NewCredentialForm } from './forms'
-import { useNewERC20Credential } from './forms/erc20-balance/context'
 import { ReactNode, useState } from 'react'
 import { CredentialType } from '@anonworld/common'
 

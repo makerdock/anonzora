@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil } from '@tamagui/lucide-icons'
+import { MoreHorizontal, Pencil, WalletMinimal } from '@tamagui/lucide-icons'
 import { Community, ContractType, getChain } from '@anonworld/common'
 import { Dialog, Popover, Text, View, YGroup } from '@anonworld/ui'
 import { DexScreener } from '../../svg/dexscreener'
@@ -59,6 +59,19 @@ export function CommunityActions({ community }: { community: Community }) {
                 </Dialog.Trigger>
               </CommunitySettings>
             )}
+          <YGroup.Item>
+            <Link
+              href={`https://basescan.org/address/${community.wallet_address}`}
+              target="_blank"
+            >
+              <View fd="row" gap="$2" px="$3.5" py="$2.5" hoverStyle={{ bg: '$color5' }}>
+                <WalletMinimal size={16} />
+                <Text fos="$2" fow="400">
+                  Community Wallet
+                </Text>
+              </View>
+            </Link>
+          </YGroup.Item>
           {community.token.platform === 'clanker' && (
             <YGroup.Item>
               <Link
@@ -93,7 +106,6 @@ export function CommunityActions({ community }: { community: Community }) {
               </View>
             </Link>
           </YGroup.Item>
-
           <YGroup.Item>
             <Link
               href={`https://dexscreener.com/${chain.name.toLowerCase()}/${community.token.address}`}

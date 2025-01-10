@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { ContractType, CredentialType, StorageType } from '@anonworld/common'
 import { useCredentials, useSDK } from '../../../../../providers'
-import { parseUnits } from 'viem'
-import { useAccount } from 'wagmi'
+import { erc20Abi, formatUnits, parseUnits } from 'viem'
+import { useAccount, useReadContract } from 'wagmi'
 
 interface NewERC20CredentialContextValue {
   isOpen: boolean
@@ -20,6 +20,7 @@ interface NewERC20CredentialContextValue {
   handleAddCredential: () => void
   isLoading: boolean
   error: string | undefined
+  initialTokenId?: { chainId: number; address: string }
 }
 
 const NewERC20CredentialContext = createContext<NewERC20CredentialContextValue | null>(
@@ -52,6 +53,21 @@ export function NewERC20CredentialProvider({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>()
   const { sdk } = useSDK()
+
+  const { data: onchainBalance } = useReadContract({
+    chainId: tokenId?.chainId,
+    address: tokenId?.address as `0x${string}`,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [address as `0x${string}`],
+  })
+
+  useEffect(() => {
+    if (onchainBalance) {
+      setMaxBalance(Number(formatUnits(onchainBalance, decimals)))
+      setBalance(Number(formatUnits(onchainBalance, decimals)))
+    }
+  }, [onchainBalance, decimals])
 
   const handleConnectWallet = () => {
     if (!connectWallet) return
@@ -131,6 +147,7 @@ export function NewERC20CredentialProvider({
         handleAddCredential,
         isLoading,
         error,
+        initialTokenId,
       }}
     >
       {children}
