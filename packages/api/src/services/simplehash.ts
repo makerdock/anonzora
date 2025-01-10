@@ -156,8 +156,11 @@ class SimplehashService {
     return response.collections[0]
   }
 
-  async getNFTsForWallet(address: string) {
-    const url = `/nfts/owners_v2?chains=${simplehashChains.join(',')}&wallet_addresses=${address}&order_by=floor_price__desc`
+  async getNFTsForWallet(
+    address: string,
+    orderBy: 'floor_price__desc' | 'transfer_time__desc' = 'floor_price__desc'
+  ) {
+    const url = `/nfts/owners_v2?chains=${simplehashChains.join(',')}&wallet_addresses=${address}&order_by=${orderBy}&limit=50`
     return await this.makeRequest<{
       next_cursor: string | null
       next: string | null

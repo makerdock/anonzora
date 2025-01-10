@@ -56,8 +56,24 @@ export const walletRoutes = createElysia({ prefix: '/wallet' })
   .get(
     '/:address/nfts',
     async ({ params }) => {
-      const data = await simplehash.getNFTsForWallet(params.address)
-      return { data: data.nfts }
+      const [byFloorPrice, byTransferTime] = await Promise.all([
+        simplehash.getNFTsForWallet(params.address, 'floor_price__desc'),
+        simplehash.getNFTsForWallet(params.address, 'transfer_time__desc'),
+      ])
+
+      const result = [...byFloorPrice.nfts, ...byTransferTime.nfts].filter(
+        (v, i, arr) => {
+          return arr.findIndex((t) => t.nft_id === v.nft_id) === i
+        }
+      )
+
+      return {
+        data: result.sort(
+          (a, b) =>
+            (b.collection.floor_prices?.[0]?.value_usd_cents || 0) -
+            (a.collection.floor_prices?.[0]?.value_usd_cents || 0)
+        ),
+      }
     },
     {
       params: t.Object({
