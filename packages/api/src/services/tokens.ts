@@ -52,7 +52,7 @@ class TokensService {
       )
     )
     const priceUsd =
-      simpleHashToken?.prices[0]?.value_usd_string ??
+      simpleHashToken?.prices?.[0]?.value_usd_string ??
       zerionToken?.attributes.market_data.price?.toFixed(10) ??
       0
     const marketCap = totalSupply * Number(priceUsd)
