@@ -47,6 +47,7 @@ export function CommunityImage({ community }: { community: Community }) {
             display: 'flex',
             flexDirection: 'column',
             gap: 16,
+            flex: 1,
           }}
         >
           <div
