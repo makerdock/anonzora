@@ -150,6 +150,9 @@ class SimplehashService {
         floor_prices: {
           value_usd_cents: number
         }[]
+        top_bids: {
+          value_usd_cents: number
+        }[]
       }[]
     }>(url)
 

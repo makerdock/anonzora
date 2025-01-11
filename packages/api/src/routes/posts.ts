@@ -12,7 +12,7 @@ const IGNORE_FIDS = [937160]
 export const postsRoutes = createElysia({ prefix: '/posts' })
   .get(
     '/:hash',
-    async ({ params, passkeyId }) => {
+    async ({ params, passkeyId, error }) => {
       let post: Post | null = null
       const cached = await redis.getPost(params.hash)
       if (cached) {
@@ -22,7 +22,7 @@ export const postsRoutes = createElysia({ prefix: '/posts' })
       }
 
       if (!post) {
-        throw new Error('Post not found')
+        return error(404, 'Post not found')
       }
 
       await redis.setPost(params.hash, JSON.stringify(post))
@@ -64,10 +64,7 @@ export const postsRoutes = createElysia({ prefix: '/posts' })
       const formattedPosts = await feed.getFeed(posts)
 
       return {
-        data: formatConversations(
-          conversations as ConversationPost[],
-          formattedPosts
-        ).filter((c) => !IGNORE_FIDS.includes(c.author.fid)),
+        data: formatConversations(conversations as ConversationPost[], formattedPosts),
       }
     },
     {
@@ -185,6 +182,7 @@ const formatConversations = (
 
   return formattedConversations
     .filter((c) => !copies.includes(c.hash))
+    .filter((c) => !IGNORE_FIDS.includes(c.author.fid))
     .sort(
       (a, b) =>
         (b.aggregate?.likes || b.reactions.likes_count) -

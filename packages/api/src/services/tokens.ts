@@ -163,6 +163,8 @@ class TokensService {
       floorPrice = Math.min(
         ...collection.floor_prices.map((fp) => fp.value_usd_cents / 100)
       )
+    } else {
+      floorPrice = collection.top_bids[0]?.value_usd_cents ?? 0
     }
 
     const fields = {
