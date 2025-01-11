@@ -130,7 +130,7 @@ export const credentialsTable = pgTable('credential_instances', {
 export const communitiesTable = pgTable('communities', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: varchar({ length: 255 }).notNull(),
-  description: varchar({ length: 255 }).notNull(),
+  description: varchar({ length: 1000 }).notNull(),
   image_url: varchar({ length: 255 }).notNull(),
   token_id: varchar({ length: 255 })
     .references(() => tokensTable.id)

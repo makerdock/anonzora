@@ -175,8 +175,8 @@ function TokenValue({ token }: { token: SimplehashNFT }) {
               null,
           }}
         />
-        <YStack>
-          <Text fos="$2" fow="500">
+        <YStack maxWidth="$20">
+          <Text fos="$2" fow="500" numberOfLines={1}>
             {token.name || `#${token.token_id}`}
           </Text>
           <Text fos="$1" fow="400" color="$color11">
