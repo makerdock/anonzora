@@ -83,6 +83,7 @@ export class PostsRepository {
       .where(
         and(
           isNull(postsTable.deleted_at),
+          isNull(parentPosts.deleted_at),
           eq(postsTable.fid, fid),
           sql`${postsTable.data}->>'reply' IS NULL`
         )

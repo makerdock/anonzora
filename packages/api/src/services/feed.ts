@@ -147,14 +147,16 @@ export class FeedService {
 
     const uncached = hashes.filter((hash) => !casts[hash])
 
-    for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
-      const batchHashes = uncached.slice(i, i + BATCH_SIZE)
-      const response = await neynar.getBulkCasts(batchHashes)
+    if (uncached.length > 0) {
+      for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
+        const batchHashes = uncached.slice(i, i + BATCH_SIZE)
+        const response = await neynar.getBulkCasts(batchHashes)
 
-      response.result.casts.forEach((cast) => {
-        casts[cast.hash] = cast
-      })
-      await redis.setPosts(response.result.casts)
+        response.result.casts.forEach((cast) => {
+          casts[cast.hash] = cast
+        })
+        await redis.setPosts(response.result.casts)
+      }
     }
 
     return casts
