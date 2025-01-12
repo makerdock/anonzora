@@ -166,7 +166,7 @@ const getSubscription = async (lastEventId?: number) => {
   return subscription
 }
 
-async function main() {
+async function live() {
   let lastEventId = Number(await redis.getLastEventId())
 
   let sets = await getFidSets()
@@ -195,6 +195,16 @@ async function main() {
       i = 0
       await redis.setLastEventId(event.id.toString())
       console.log(`[live] lastEventId: ${event.id}`)
+    }
+  }
+}
+
+async function main() {
+  while (true) {
+    try {
+      await live()
+    } catch (e) {
+      console.error(e)
     }
   }
 }
