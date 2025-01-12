@@ -16,17 +16,14 @@ const client = getSSLHubRpcClient('hub-grpc-api.neynar.com', {
   interceptors: [
     createDefaultMetadataKeyInterceptor('x-api-key', process.env.NEYNAR_API_KEY!),
   ],
-  channelOptions: {
-    'grpc.max_receive_message_length': 100 * 1024 * 1024, // 100MB
-    'grpc.max_send_message_length': 100 * 1024 * 1024, // 100MB
-  },
+  'grpc.max_receive_message_length': 1024 * 1024 * 1024 * 1024,
 })
 
 const getFidSets = async () => {
   const accounts = await db.socials.listFarcasterAccounts()
-  const result = await client.getFids({ reverse: true })
+  const result = await client.getFids({ reverse: true, pageSize: 1 })
   if (result.isErr()) {
-    throw new Error('Failed to get fids')
+    throw new Error(result.error.message)
   }
   const { fids } = result.value
   const maxFid = fids[0]
@@ -155,41 +152,55 @@ async function handleEvent(
   }
 }
 
-async function live(fromId?: number) {
-  let sets = await getFidSets()
-
-  console.log(`[live] fromId: ${fromId}`)
-
-  const subscription = await client.subscribe({
+const getSubscription = async (lastEventId?: number) => {
+  let subscriptionValue = await client.subscribe({
     eventTypes: [HubEventType.MERGE_MESSAGE],
-    ...(fromId && { fromId }),
+    ...(lastEventId && { fromId: lastEventId }),
   })
 
-  if (!subscription.isOk()) {
+  if (!subscriptionValue.isOk()) {
     throw new Error('Failed to subscribe')
   }
 
-  let i = 0
-
-  for await (const value of subscription.value) {
-    const event = value as HubEvent
-    await handleEvent(sets, event)
-    i++
-    if (i > 1000) {
-      i = 0
-      await redis.setLastEventId(event.id.toString())
-    }
-  }
+  let subscription = subscriptionValue.value
+  return subscription
 }
 
 async function main() {
   let lastEventId = Number(await redis.getLastEventId())
-  try {
-    await live(lastEventId)
-  } catch (e) {
-    console.error(e)
-    await Promise.all([live(), backfill()])
+
+  let sets = await getFidSets()
+
+  console.log(`[live] fromId: ${lastEventId}`)
+
+  let subscription = await getSubscription(lastEventId)
+
+  let i = 0
+
+  for await (const event of subscription) {
+    if (subscription.closed || subscription.destroyed) {
+      subscription = await getSubscription(lastEventId)
+    }
+
+    try {
+      await handleEvent(sets, event as HubEvent)
+    } catch (e) {
+      console.error(e)
+    }
+
+    lastEventId = event.id
+
+    i++
+    if (i > 1000) {
+      i = 0
+      await redis.setLastEventId(event.id.toString())
+      console.log(`[live] lastEventId: ${event.id}`)
+    }
   }
 }
 
-main().catch(console.error)
+main()
+  .catch(console.error)
+  .then(() => {
+    process.exit(1)
+  })

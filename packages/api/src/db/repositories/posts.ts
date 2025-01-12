@@ -203,6 +203,21 @@ export class PostsRepository {
     )
   }
 
+  async countReplies(hashes: string[]) {
+    const counts = await this.db
+      .select({ post_hash: postRepliesTable.post_hash, count: sql<number>`count(*)` })
+      .from(postRepliesTable)
+      .where(inArray(postRepliesTable.post_hash, hashes))
+      .groupBy(postRepliesTable.post_hash)
+    return counts.reduce(
+      (acc, count) => {
+        acc[count.post_hash] = Number(count.count)
+        return acc
+      },
+      {} as Record<string, number>
+    )
+  }
+
   async getCredentials(hashes: string[]) {
     const credentials = await this.db
       .select()

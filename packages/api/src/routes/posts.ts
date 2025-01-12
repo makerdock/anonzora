@@ -14,7 +14,8 @@ export const postsRoutes = createElysia({ prefix: '/posts' })
     '/:hash',
     async ({ params, passkeyId, error }) => {
       let post: Post | null = null
-      const cached = await redis.getPost(params.hash)
+      const cached = null
+      // const cached = await redis.getPost(params.hash)
       if (cached) {
         post = JSON.parse(cached)
       } else {

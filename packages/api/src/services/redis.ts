@@ -36,6 +36,10 @@ export class RedisService {
     return this.client.set(`post:v2:${hash}`, post, 'EX', 60 * 5)
   }
 
+  async getPosts(hashes: string[]) {
+    return this.client.mget(hashes.map((hash) => `post:v2:${hash}`))
+  }
+
   async setPosts(posts: FarcasterCast[]) {
     const args = posts.flatMap((post) => [`post:v2:${post.hash}`, JSON.stringify(post)])
     return this.client.mset(args)

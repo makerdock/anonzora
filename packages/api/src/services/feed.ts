@@ -2,6 +2,7 @@ import { FarcasterCast, Post, encodeJson } from '@anonworld/common'
 import { db } from '../db'
 import { neynar } from './neynar'
 import { DBPost, DBPostRelationship } from '../db/types'
+import { redis } from './redis'
 
 export class FeedService {
   async getFeedPost(hash: string) {
@@ -48,13 +49,14 @@ export class FeedService {
       }
     }
 
-    const [tokens, farcasterAccounts, twitterAccounts, communities, likes] =
+    const [tokens, farcasterAccounts, twitterAccounts, communities, likes, replies] =
       await Promise.all([
         db.tokens.getBulk(Array.from(tokenIds)),
         this.getRelatedFarcasterAccounts(Array.from(fids)),
         this.getRelatedTwitterAccounts(Array.from(usernames)),
         this.getRelatedCommunities(Array.from(fids), Array.from(usernames)),
         db.posts.countLikes(Array.from(hashes)),
+        db.posts.countReplies(Array.from(hashes)),
       ])
 
     const casts = await this.getCasts(Array.from(hashes))
@@ -109,14 +111,16 @@ export class FeedService {
       const relatedCasts =
         relationships[post.hash]?.map((r) => casts[r.target_id]).filter((c) => c) ?? []
 
-      let postLikes = cast.reactions.likes_count
-      postLikes += relatedCasts.reduce((acc, c) => acc + c.reactions.likes_count, 0)
-      if (likes[post.hash]) {
-        postLikes += likes[post.hash]
+      let postLikes = likes[post.hash] ?? 0
+      let postReplies = replies[post.hash] ?? 0
+      for (const c of relatedCasts) {
+        if (likes[c.hash]) {
+          postLikes += likes[c.hash]
+        }
+        if (replies[c.hash]) {
+          postReplies += replies[c.hash]
+        }
       }
-
-      let postReplies = cast.replies.count - 1
-      postReplies += relatedCasts.reduce((acc, c) => acc + c.replies.count - 1, 0)
 
       formattedPost.aggregate = {
         likes: postLikes,
@@ -133,13 +137,24 @@ export class FeedService {
     const BATCH_SIZE = 100
     const casts: Record<string, FarcasterCast> = {}
 
-    for (let i = 0; i < hashes.length; i += BATCH_SIZE) {
-      const batchHashes = hashes.slice(i, i + BATCH_SIZE)
+    const cached = await redis.getPosts(hashes)
+    for (let i = 0; i < hashes.length; i++) {
+      const item = cached[i]
+      if (item) {
+        casts[hashes[i]] = JSON.parse(item)
+      }
+    }
+
+    const uncached = hashes.filter((hash) => !casts[hash])
+
+    for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
+      const batchHashes = uncached.slice(i, i + BATCH_SIZE)
       const response = await neynar.getBulkCasts(batchHashes)
 
       response.result.casts.forEach((cast) => {
         casts[cast.hash] = cast
       })
+      await redis.setPosts(response.result.casts)
     }
 
     return casts

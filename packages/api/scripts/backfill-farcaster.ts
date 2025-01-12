@@ -1,22 +1,10 @@
-import {
-  bytesToHexString,
-  createDefaultMetadataKeyInterceptor,
-  getSSLHubRpcClient,
-  hexStringToBytes,
-  ReactionType,
-} from '@farcaster/hub-nodejs'
 import { db } from '../src/db'
 import { postLikesTable, postRepliesTable, postsTable } from '../src/db/schema'
-import { eq, inArray } from 'drizzle-orm'
-
-const client = getSSLHubRpcClient('hub-grpc-api.neynar.com', {
-  interceptors: [
-    createDefaultMetadataKeyInterceptor('x-api-key', process.env.NEYNAR_API_KEY!),
-  ],
-})
+import { eq, inArray, isNull } from 'drizzle-orm'
+import { neynar } from '../src/services/neynar'
 
 const backfillReplies = async () => {
-  const posts = await db.db.select().from(postsTable)
+  const posts = await db.db.select().from(postsTable).where(isNull(postsTable.deleted_at))
 
   console.log(`[backfill-replies] ${posts.length} posts`)
 
@@ -24,38 +12,41 @@ const backfillReplies = async () => {
 
   for (let i = 0; i < posts.length; i++) {
     const post = posts[i]
-    const bytesValue = hexStringToBytes(post.hash)
-    if (bytesValue.isErr()) {
-      continue
-    }
 
-    const messagesValue = await client.getCastsByParent({
-      parentCastId: {
-        fid: post.fid,
-        hash: bytesValue.value,
-      },
-    })
-
-    if (messagesValue.isErr()) {
-      continue
-    }
-
-    const { messages } = messagesValue.value
-
-    for (const message of messages) {
-      const hashValue = bytesToHexString(message.hash)
-      if (hashValue.isErr() || !message.data?.fid) {
-        continue
+    let cursor: string | undefined | null
+    do {
+      try {
+        const conversation = await neynar.getConversation(
+          post.hash,
+          1,
+          cursor ?? undefined
+        )
+        for (const cast of conversation.conversation.cast.direct_replies) {
+          toInsert.push({
+            post_hash: post.hash,
+            fid: cast.author.fid,
+            reply_hash: cast.hash,
+          })
+        }
+        cursor = conversation.next.cursor
+      } catch (e) {
+        const error = e as Error
+        if (error.message.includes('404')) {
+          await db.db
+            .update(postsTable)
+            .set({ deleted_at: new Date() })
+            .where(eq(postsTable.hash, post.hash))
+          break
+        }
+        if (error.message.includes('429')) {
+          await new Promise((resolve) => setTimeout(resolve, 60000))
+          continue
+        }
+        console.error(error.message)
       }
+    } while (cursor === undefined || cursor !== null)
 
-      toInsert.push({
-        post_hash: post.hash,
-        fid: message.data.fid,
-        reply_hash: hashValue.value,
-      })
-    }
-
-    if (i % 1000 === 0) {
+    if (i % 100 === 0) {
       console.log(`[backfill-replies] ${i} / ${posts.length}`)
     }
   }
@@ -70,7 +61,7 @@ const backfillReplies = async () => {
 }
 
 const backfillLikes = async () => {
-  const posts = await db.db.select().from(postsTable)
+  const posts = await db.db.select().from(postsTable).where(isNull(postsTable.deleted_at))
 
   console.log(`[backfill-likes] ${posts.length} posts`)
 
@@ -78,40 +69,36 @@ const backfillLikes = async () => {
 
   for (let i = 0; i < posts.length; i++) {
     const post = posts[i]
-    const bytesValue = hexStringToBytes(post.hash)
-    if (bytesValue.isErr()) {
-      continue
-    }
 
-    const messagesValue = await client.getReactionsByTarget({
-      targetCastId: {
-        fid: post.fid,
-        hash: bytesValue.value,
-      },
-    })
-
-    if (messagesValue.isErr()) {
-      continue
-    }
-
-    const { messages } = messagesValue.value
-
-    const likes = messages.filter(
-      (message) => message.data?.reactionBody?.type === ReactionType.LIKE
-    )
-
-    for (const message of likes) {
-      if (!message.data?.fid) {
-        continue
+    let cursor: string | undefined | null
+    do {
+      try {
+        const response = await neynar.getLikesForCast(post.hash, cursor ?? undefined)
+        for (const like of response.reactions) {
+          toInsert.push({
+            post_hash: post.hash,
+            fid: like.user.fid,
+          })
+        }
+        cursor = response.next.cursor
+      } catch (e) {
+        const error = e as Error
+        if (error.message.includes('404')) {
+          await db.db
+            .update(postsTable)
+            .set({ deleted_at: new Date() })
+            .where(eq(postsTable.hash, post.hash))
+          break
+        }
+        if (error.message.includes('429')) {
+          await new Promise((resolve) => setTimeout(resolve, 60000))
+          continue
+        }
+        console.error(error.message)
       }
+    } while (cursor === undefined || cursor !== null)
 
-      toInsert.push({
-        post_hash: post.hash,
-        fid: message.data.fid,
-      })
-    }
-
-    if (i % 1000 === 0) {
+    if (i % 100 === 0) {
       console.log(`[backfill-likes] ${i} / ${posts.length}`)
     }
   }

@@ -9,6 +9,7 @@ import {
   decimal,
   bigint,
   boolean,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core'
 
 export const actionsTable = pgTable('actions', {
@@ -55,16 +56,26 @@ export const postsTable = pgTable('posts', {
   deleted_at: timestamp(),
 })
 
-export const postLikesTable = pgTable('post_likes', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  post_hash: varchar({ length: 255 })
-    .references(() => postsTable.hash)
-    .notNull(),
-  fid: integer('fid'),
-  passkey_id: varchar({ length: 255 }).references(() => passkeysTable.id),
-  created_at: timestamp().notNull().defaultNow(),
-  updated_at: timestamp().notNull().defaultNow(),
-})
+export const postLikesTable = pgTable(
+  'post_likes',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    post_hash: varchar({ length: 255 })
+      .references(() => postsTable.hash)
+      .notNull(),
+    fid: integer('fid'),
+    passkey_id: varchar({ length: 255 }).references(() => passkeysTable.id),
+    created_at: timestamp().notNull().defaultNow(),
+    updated_at: timestamp().notNull().defaultNow(),
+  },
+  (table) => ({
+    unq_fid_post: uniqueIndex('unq_fid_post').on(table.post_hash, table.fid),
+    unq_passkey_post: uniqueIndex('unq_passkey_post').on(
+      table.post_hash,
+      table.passkey_id
+    ),
+  })
+)
 
 export const postRepliesTable = pgTable(
   'post_replies',

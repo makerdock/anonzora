@@ -36,7 +36,8 @@ export const feedsRoutes = createElysia({ prefix: '/feeds' })
     async ({ params, passkeyId, query }) => {
       let posts: Array<Post> = []
 
-      const cached = await redis.getNewFeed(params.fid)
+      const cached = null
+      // const cached = await redis.getNewFeed(params.fid)
       if (cached) {
         posts = JSON.parse(cached)
       } else {
@@ -64,7 +65,7 @@ export const feedsRoutes = createElysia({ prefix: '/feeds' })
 
 const getFormattedPosts = async (fid: number) => {
   const response = await db.posts.getFeed(fid, {
-    limit: 100,
+    limit: 200,
     offset: 0,
   })
 

@@ -102,6 +102,21 @@ class NeynarService {
     )
   }
 
+  async getLikesForCast(hash: string, cursor?: string) {
+    return this.makeRequest<{
+      reactions: Array<{
+        reaction_type: 'like'
+        reaction_timestamp: string
+        user: FarcasterUser
+      }>
+      next: {
+        cursor: string | null
+      }
+    }>(
+      `/farcaster/reactions/cast?hash=${hash}&types=likes&limit=100${cursor ? `&cursor=${cursor}` : ''}`
+    )
+  }
+
   async getUserCasts(fid: number, limit = 150, cursor?: string) {
     return this.makeRequest<{
       casts: Array<FarcasterCast>
@@ -267,11 +282,14 @@ class NeynarService {
     }
   }
 
-  async getConversation(identifier: string) {
+  async getConversation(identifier: string, replyDepth = 5, cursor?: string) {
     return this.makeRequest<{
       conversation: { cast: ConversationCast }
+      next: {
+        cursor: string | null
+      }
     }>(
-      `/farcaster/cast/conversation?identifier=${identifier}&type=hash&reply_depth=5&include_chronological_parent_casts=false&sort_type=desc_chron&limit=50`
+      `/farcaster/cast/conversation?identifier=${identifier}&type=hash&reply_depth=${replyDepth}&include_chronological_parent_casts=false&sort_type=desc_chron&limit=50${cursor ? `&cursor=${cursor}` : ''}`
     )
   }
 
