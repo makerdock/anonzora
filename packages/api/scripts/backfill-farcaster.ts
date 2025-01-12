@@ -18,7 +18,12 @@ const client = getSSLHubRpcClient('hub-grpc-api.neynar.com', {
 const backfillReplies = async () => {
   const posts = await db.db.select().from(postsTable)
 
-  for (const post of posts) {
+  console.log(`[backfill-replies] ${posts.length} posts`)
+
+  const toInsert = []
+
+  for (let i = 0; i < posts.length; i++) {
+    const post = posts[i]
     const bytesValue = hexStringToBytes(post.hash)
     if (bytesValue.isErr()) {
       continue
@@ -37,32 +42,42 @@ const backfillReplies = async () => {
 
     const { messages } = messagesValue.value
 
-    console.log(`[${post.hash}] has ${messages.length} replies`)
-
-    await db.db.delete(postRepliesTable).where(eq(postRepliesTable.post_hash, post.hash))
-
     for (const message of messages) {
       const hashValue = bytesToHexString(message.hash)
       if (hashValue.isErr() || !message.data?.fid) {
         continue
       }
 
-      await db.db
-        .insert(postRepliesTable)
-        .values({
-          post_hash: post.hash,
-          fid: message.data.fid,
-          reply_hash: hashValue.value,
-        })
-        .onConflictDoNothing()
+      toInsert.push({
+        post_hash: post.hash,
+        fid: message.data.fid,
+        reply_hash: hashValue.value,
+      })
     }
+
+    if (i % 1000 === 0) {
+      console.log(`[backfill-replies] ${i} / ${posts.length}`)
+    }
+  }
+
+  for (let i = 0; i < toInsert.length; i += 1000) {
+    console.log(`[backfill-replies] inserting ${i} / ${toInsert.length}`)
+    await db.db
+      .insert(postRepliesTable)
+      .values(toInsert.slice(i, i + 1000))
+      .onConflictDoNothing()
   }
 }
 
 const backfillLikes = async () => {
   const posts = await db.db.select().from(postsTable)
 
-  for (const post of posts) {
+  console.log(`[backfill-likes] ${posts.length} posts`)
+
+  const toInsert = []
+
+  for (let i = 0; i < posts.length; i++) {
+    const post = posts[i]
     const bytesValue = hexStringToBytes(post.hash)
     if (bytesValue.isErr()) {
       continue
@@ -85,21 +100,28 @@ const backfillLikes = async () => {
       (message) => message.data?.reactionBody?.type === ReactionType.LIKE
     )
 
-    console.log(`[${post.hash}] has ${likes.length} likes`)
-
     for (const message of likes) {
       if (!message.data?.fid) {
         continue
       }
 
-      await db.db
-        .insert(postLikesTable)
-        .values({
-          post_hash: post.hash,
-          fid: message.data.fid,
-        })
-        .onConflictDoNothing()
+      toInsert.push({
+        post_hash: post.hash,
+        fid: message.data.fid,
+      })
     }
+
+    if (i % 1000 === 0) {
+      console.log(`[backfill-likes] ${i} / ${posts.length}`)
+    }
+  }
+
+  for (let i = 0; i < toInsert.length; i += 1000) {
+    console.log(`[backfill-likes] inserting ${i} / ${toInsert.length}`)
+    await db.db
+      .insert(postLikesTable)
+      .values(toInsert.slice(i, i + 1000))
+      .onConflictDoNothing()
   }
 }
 
@@ -109,12 +131,8 @@ async function deleteIrrelevantReplies() {
   await db.db.delete(postRepliesTable).where(inArray(postRepliesTable.fid, fids))
 }
 
-async function main() {
+export async function backfill() {
+  await backfillReplies()
+  await deleteIrrelevantReplies()
   await backfillLikes()
 }
-
-main()
-  .catch(console.error)
-  .then(() => {
-    process.exit(0)
-  })
