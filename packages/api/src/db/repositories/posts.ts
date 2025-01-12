@@ -4,6 +4,7 @@ import {
   postCredentialsTable,
   postLikesTable,
   postRelationshipsTable,
+  postRepliesTable,
   postsTable,
   vaultsTable,
 } from '../schema'
@@ -103,6 +104,19 @@ export class PostsRepository {
       .from(postsTable)
       .where(eq(postsTable.fid, fid))
     return result.count
+  }
+
+  async replyFromFarcaster(hash: string, replyFid: number, replyHash: string) {
+    await this.db
+      .insert(postRepliesTable)
+      .values({ post_hash: hash, fid: replyFid, reply_hash: replyHash })
+      .onConflictDoNothing()
+  }
+
+  async unreplyFromFarcaster(replyHash: string) {
+    await this.db
+      .delete(postRepliesTable)
+      .where(eq(postRepliesTable.reply_hash, replyHash))
   }
 
   async likeFromFarcaster(fid: number, hash: string) {

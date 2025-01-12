@@ -66,6 +66,22 @@ export const postLikesTable = pgTable('post_likes', {
   updated_at: timestamp().notNull().defaultNow(),
 })
 
+export const postRepliesTable = pgTable(
+  'post_replies',
+  {
+    post_hash: varchar({ length: 255 })
+      .references(() => postsTable.hash)
+      .notNull(),
+    fid: integer('fid').notNull(),
+    reply_hash: varchar({ length: 255 }).notNull(),
+    created_at: timestamp().notNull().defaultNow(),
+    updated_at: timestamp().notNull().defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.post_hash, table.fid, table.reply_hash] }),
+  })
+)
+
 export const postRelationshipsTable = pgTable(
   'post_relationships',
   {
