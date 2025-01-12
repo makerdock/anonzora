@@ -10,7 +10,6 @@ import {
 import { redis } from '../src/services/redis'
 import { db } from '../src/db'
 import { DrizzleError } from 'drizzle-orm'
-import { backfill } from './backfill-farcaster'
 
 const client = getSSLHubRpcClient('hub-grpc-api.neynar.com', {
   interceptors: [

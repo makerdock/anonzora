@@ -36,8 +36,7 @@ export const feedsRoutes = createElysia({ prefix: '/feeds' })
     async ({ params, passkeyId, query }) => {
       let posts: Array<Post> = []
 
-      const cached = null
-      // const cached = await redis.getNewFeed(params.fid)
+      const cached = await redis.getNewFeed(params.fid)
       if (cached) {
         posts = JSON.parse(cached)
       } else {
@@ -71,7 +70,9 @@ const getFormattedPosts = async (fid: number) => {
 
   if (response.length === 0) return []
 
-  const posts = response.map((p) => p.parent_posts ?? p.posts)
+  const posts = response
+    .map((p) => p.parent_posts ?? p.posts)
+    .filter((p) => !p.data?.text?.includes('New community launched'))
 
   const result = await feed.getFeed(posts)
   return result.filter((p) => !p.parent_hash)
