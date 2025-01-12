@@ -99,12 +99,22 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
       }),
     }
   )
-  .get('/:hash', async ({ params }) => {
-    const credential = await db.credentials.getByHash(params.hash)
+  .get('/:hash', async ({ params, error }) => {
+    let credential = await db.credentials.getByHash(params.hash)
+    if (credential?.reverified_id) {
+      credential = await db.credentials.get(credential.parent_id)
+    }
+
+    if (!credential) {
+      return error(404, 'Credential not found')
+    }
+
     return {
       ...credential,
       id: undefined,
       proof: undefined,
+      parent_id: undefined,
+      reverified_id: undefined,
     }
   })
   .get('/:hash/posts', async ({ params }) => {

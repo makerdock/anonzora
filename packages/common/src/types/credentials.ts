@@ -39,7 +39,8 @@ type BaseCredential = {
     image_url: string | null
     username: string | null
   }
-  parent_id: string | null
+  parent_id?: string | null
+  reverified_id?: string | null
 }
 
 export type ERC20BalanceCredential = BaseCredential & {

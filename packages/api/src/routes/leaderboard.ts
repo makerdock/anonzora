@@ -104,10 +104,14 @@ export async function updateLeaderboard() {
     })
     .from(postCredentialsTable)
     .innerJoin(postsTable, eq(postCredentialsTable.post_hash, postsTable.hash))
+    .innerJoin(
+      credentialsTable,
+      eq(postCredentialsTable.credential_id, credentialsTable.id)
+    )
     .where(
       and(
         inArray(
-          postCredentialsTable.credential_id,
+          credentialsTable.parent_id,
           topThousand.map(([id]) => id)
         ),
         isNull(postsTable.deleted_at),
@@ -163,6 +167,8 @@ export async function updateLeaderboard() {
         : undefined,
       id: undefined,
       proof: undefined,
+      parent_id: undefined,
+      reverified_id: undefined,
     },
     posts: postCountsById[id],
   }))

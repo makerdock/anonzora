@@ -25,10 +25,18 @@ export class CredentialsRepository {
     const [cred] = await this.db
       .select()
       .from(credentialsTable)
+      .leftJoin(vaultsTable, eq(credentialsTable.vault_id, vaultsTable.id))
       .where(eq(credentialsTable.id, id))
       .limit(1)
 
-    return cred as DBCredential | null
+    if (!cred) {
+      return null
+    }
+
+    return {
+      ...cred.credential_instances,
+      vault: cred.vaults,
+    } as DBCredential
   }
 
   async getByHash(hash: string) {
@@ -38,10 +46,15 @@ export class CredentialsRepository {
       .leftJoin(vaultsTable, eq(credentialsTable.vault_id, vaultsTable.id))
       .where(eq(credentialsTable.hash, hash))
       .limit(1)
+
+    if (!cred) {
+      return null
+    }
+
     return {
       ...cred.credential_instances,
       vault: cred.vaults,
-    }
+    } as DBCredential
   }
 
   async getBulk(ids: string[]) {

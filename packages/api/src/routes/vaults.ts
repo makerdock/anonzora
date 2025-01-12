@@ -51,6 +51,8 @@ export const vaultsRoutes = createElysia({ prefix: '/vaults' })
           ...c,
           id: undefined,
           proof: undefined,
+          parent_id: undefined,
+          reverified_id: undefined,
         })),
       }
     },

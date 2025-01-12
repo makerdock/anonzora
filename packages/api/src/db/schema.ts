@@ -125,7 +125,7 @@ export const actionExecutionsTable = pgTable('action_executions', {
 
 export const credentialsTable = pgTable('credential_instances', {
   id: varchar({ length: 255 }).primaryKey(),
-  hash: varchar({ length: 255 }),
+  hash: varchar({ length: 255 }).notNull(),
   type: varchar({ length: 255 }).default('ERC20_BALANCE').notNull(),
   credential_id: varchar({ length: 255 }).notNull(),
   version: varchar({ length: 255 }),
@@ -133,7 +133,7 @@ export const credentialsTable = pgTable('credential_instances', {
   proof: jsonb('proof').notNull(),
   verified_at: timestamp().notNull(),
   vault_id: uuid('vault_id').references(() => vaultsTable.id),
-  parent_id: varchar({ length: 255 }),
+  parent_id: varchar({ length: 255 }).notNull(),
   reverified_id: varchar({ length: 255 }),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),

@@ -92,6 +92,8 @@ export class FeedService {
             : undefined,
           id: undefined,
           proof: undefined,
+          parent_id: undefined,
+          reverified_id: undefined,
         })) ?? []
 
       formattedPost.relationships =
