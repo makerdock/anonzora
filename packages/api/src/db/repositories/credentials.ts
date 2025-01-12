@@ -1,5 +1,10 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { credentialsTable } from '../schema'
+import {
+  credentialsTable,
+  vaultsTable,
+  postCredentialsTable,
+  postsTable,
+} from '../schema'
 import { DBCredential } from '../types'
 import { eq, inArray } from 'drizzle-orm'
 
@@ -24,6 +29,19 @@ export class CredentialsRepository {
       .limit(1)
 
     return cred as DBCredential | null
+  }
+
+  async getByHash(hash: string) {
+    const [cred] = await this.db
+      .select()
+      .from(credentialsTable)
+      .leftJoin(vaultsTable, eq(credentialsTable.vault_id, vaultsTable.id))
+      .where(eq(credentialsTable.hash, hash))
+      .limit(1)
+    return {
+      ...cred.credential_instances,
+      vault: cred.vaults,
+    }
   }
 
   async getBulk(ids: string[]) {
@@ -54,5 +72,16 @@ export class CredentialsRepository {
       .update(credentialsTable)
       .set({ vault_id: null })
       .where(eq(credentialsTable.id, credentialId))
+  }
+
+  async getPosts(hash: string) {
+    return await this.db
+      .select()
+      .from(postCredentialsTable)
+      .innerJoin(
+        credentialsTable,
+        eq(postCredentialsTable.credential_id, credentialsTable.id)
+      )
+      .where(eq(credentialsTable.hash, hash))
   }
 }

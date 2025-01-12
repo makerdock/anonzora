@@ -105,7 +105,9 @@ export const postCredentialsTable = pgTable('post_credentials', {
   post_hash: varchar({ length: 255 })
     .references(() => postsTable.hash)
     .notNull(),
-  credential_id: varchar({ length: 255 }),
+  credential_id: varchar({ length: 255 })
+    .references(() => credentialsTable.id)
+    .notNull(),
 })
 
 export const actionExecutionsTable = pgTable('action_executions', {
@@ -123,6 +125,7 @@ export const actionExecutionsTable = pgTable('action_executions', {
 
 export const credentialsTable = pgTable('credential_instances', {
   id: varchar({ length: 255 }).primaryKey(),
+  hash: varchar({ length: 255 }),
   type: varchar({ length: 255 }).default('ERC20_BALANCE').notNull(),
   credential_id: varchar({ length: 255 }).notNull(),
   version: varchar({ length: 255 }),

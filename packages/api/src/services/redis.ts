@@ -37,7 +37,7 @@ export class RedisService {
   }
 
   async setPosts(posts: FarcasterCast[]) {
-    const args = posts.flatMap((post) => [`post:${post.hash}`, JSON.stringify(post)])
+    const args = posts.flatMap((post) => [`post:v2:${post.hash}`, JSON.stringify(post)])
     return this.client.mset(args)
   }
 
@@ -105,6 +105,14 @@ export class RedisService {
 
   async setVaultChallenge(nonce: string, challenge: string) {
     return this.client.set(`vault:challenge:${nonce}`, challenge, 'EX', 60 * 5)
+  }
+
+  async getLeaderboard() {
+    return this.client.get('leaderboard')
+  }
+
+  async setLeaderboard(leaderboard: string) {
+    return this.client.set('leaderboard', leaderboard)
   }
 }
 

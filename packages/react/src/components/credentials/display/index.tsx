@@ -1,4 +1,4 @@
-import { CredentialWithId, getCredential } from '@anonworld/common'
+import { Credential, CredentialWithId, getCredential } from '@anonworld/common'
 import { View, XStack, YStack } from '@anonworld/ui'
 import { CREDENTIAL_EXPIRATION_TIME, timeAgo } from '@anonworld/common'
 import { Badge } from '../../badge'
@@ -10,7 +10,7 @@ import { CredentialTypeDisplay } from '../types'
 export function CredentialDisplay({
   credential,
   onPress,
-}: { credential: CredentialWithId; onPress?: () => void }) {
+}: { credential: Credential; onPress?: () => void }) {
   const isExpired =
     credential.verified_at &&
     new Date(credential.verified_at).getTime() + CREDENTIAL_EXPIRATION_TIME < Date.now()
@@ -45,9 +45,11 @@ export function CredentialDisplay({
         {isExpired && <Badge destructive>Expired</Badge>}
       </XStack>
       <CredentialTypeDisplay credential={credential} />
-      <View position="absolute" top="$2" right="$3" $xs={{ right: '$2' }}>
-        <CredentialActions credential={credential} />
-      </View>
+      {credential.id && (
+        <View position="absolute" top="$2" right="$3" $xs={{ right: '$2' }}>
+          <CredentialActions credential={credential as CredentialWithId} />
+        </View>
+      )}
     </YStack>
   )
 }

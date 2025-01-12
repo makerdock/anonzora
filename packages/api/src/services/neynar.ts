@@ -91,9 +91,9 @@ class NeynarService {
   }
 
   async getBulkUsersByFids(fids: number[]) {
-    return this.makeRequest<Record<string, Array<FarcasterUser>>>(
-      `/farcaster/user/bulk?fids=${fids.join(',')}`
-    )
+    return this.makeRequest<{
+      users: Array<FarcasterUser>
+    }>(`/farcaster/user/bulk?fids=${fids.join(',')}`)
   }
 
   async getBulkUsersByAddresses(addresses: string[]) {

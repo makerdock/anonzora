@@ -1,5 +1,6 @@
 import { db } from '../src/db'
 import { buildFeeds } from '../src/routes/feeds'
+import { updateLeaderboard } from '../src/routes/leaderboard'
 import { neynar } from '../src/services/neynar'
 import { tokens } from '../src/services/tokens'
 import { handleFarcasterPosts, handleTwitterPosts } from './post-links'
@@ -82,17 +83,6 @@ const updateTwitterAccounts = async () => {
   }
 }
 
-// const updateVaults = async () => {
-//   const vaults = await db.vaults.list()
-//   for (const vault of vaults) {
-//     console.log(`[vault] updating vault for ${vault.id}`)
-//     const posts = await db.vaults.countPosts(vault.id)
-//     await db.vaults.update(vault.id, {
-//       posts,
-//     })
-//   }
-// }
-
 const main = async () => {
   let i = 0
   while (true) {
@@ -109,7 +99,10 @@ const main = async () => {
       if (i % 20 === 0) {
         await updateFarcasterAccounts()
         await updateTwitterAccounts()
-        // await updateVaults()
+      }
+      if (i % 100 === 0) {
+        console.log('[leaderboard] updating leaderboard')
+        await updateLeaderboard()
       }
     } catch (error) {
       console.error('[error]', error)

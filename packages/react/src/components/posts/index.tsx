@@ -1,4 +1,4 @@
-export { TrendingFeed, NewFeed } from './feed'
+export { TrendingFeed, NewFeed, CredentialPostFeed } from './feed'
 export { PostDisplay } from './display'
 export { PostConversation } from './conversation'
 export { PostFeedSelector } from './feed/selector'

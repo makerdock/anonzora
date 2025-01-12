@@ -191,8 +191,14 @@ export class AnonWorldSDK {
     })
   }
 
-  async getCredential(id: string) {
-    return await this.request<Credential>(`/credentials/${id}`)
+  async getCredential(hash: string) {
+    return await this.request<Credential>(`/credentials/${hash}`)
+  }
+
+  async getCredentialPosts(hash: string, page = 1) {
+    return await this.request<{ data: Array<Post> }>(
+      `/credentials/${hash}/posts?page=${page}`
+    )
   }
 
   async getWalletFungibles(address: string) {
@@ -418,5 +424,11 @@ export class AnonWorldSDK {
         method: 'DELETE',
       }
     )
+  }
+
+  async getLeaderboard() {
+    return await this.request<{
+      data: { score: number; credential: CredentialWithId; posts: number }[]
+    }>('/leaderboard')
   }
 }

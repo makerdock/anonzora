@@ -3,7 +3,6 @@ import {
   Credential,
   ERC20CredentialRequirement,
   CredentialType,
-  CredentialWithId,
   CredentialRequirement,
   ERC721CredentialRequirement,
   FarcasterFidCredentialRequirement,
@@ -21,7 +20,7 @@ import { FarcasterFidRequirement } from './farcaster-fid/requirement'
 import { FarcasterFidBadge } from './farcaster-fid/badge'
 import { FarcasterFidSelect } from './farcaster-fid/select'
 
-export function CredentialTypeDisplay({ credential }: { credential: CredentialWithId }) {
+export function CredentialTypeDisplay({ credential }: { credential: Credential }) {
   switch (credential.type) {
     case CredentialType.ERC20_BALANCE:
       return <ERC20BalanceDisplay credential={credential} />
@@ -82,7 +81,7 @@ export function CredentialTypeBadge({ credential }: { credential: Credential }) 
   }
 }
 
-export function CredentialTypeSelect({ credential }: { credential: CredentialWithId }) {
+export function CredentialTypeSelect({ credential }: { credential: Credential }) {
   switch (credential.type) {
     case CredentialType.ERC20_BALANCE:
       return <ERC20BalanceSelect credential={credential} />

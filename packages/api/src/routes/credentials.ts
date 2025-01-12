@@ -6,6 +6,7 @@ import { keccak256, zeroAddress, pad, concat, toHex } from 'viem'
 import { Credential, CredentialType, getChain } from '@anonworld/common'
 import { db } from '../db'
 import { CredentialsManager } from '@anonworld/credentials'
+import { feed } from '../services/feed'
 
 export const credentialsRoutes = createElysia({ prefix: '/credentials' })
   .post(
@@ -65,6 +66,7 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
 
       const credential = await db.credentials.create({
         id,
+        hash: keccak256(id),
         type: credentialType,
         credential_id: credentialId,
         metadata,
@@ -74,7 +76,7 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
           publicInputs: body.publicInputs,
         },
         verified_at: new Date(Number(block.timestamp) * 1000),
-        parent_id: parent?.parent_id ?? parent?.id,
+        parent_id: parent?.parent_id ?? parent?.id ?? id,
         vault_id: parent?.vault_id,
       })
 
@@ -97,9 +99,24 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
       }),
     }
   )
-  .get('/:id', async ({ params }) => {
-    const credential = await db.credentials.get(params.id)
+  .get('/:hash', async ({ params }) => {
+    const credential = await db.credentials.getByHash(params.hash)
     return {
       ...credential,
+      id: undefined,
+      proof: undefined,
+    }
+  })
+  .get('/:hash/posts', async ({ params }) => {
+    const credentialPosts = await db.credentials.getPosts(params.hash)
+    const hashes = credentialPosts.map((p) => p.post_credentials.post_hash)
+    if (hashes.length === 0) return { data: [] }
+
+    const rawPosts = await db.posts.getFeedForHashes(hashes)
+    const posts = rawPosts.map((p) => p.parent_posts ?? p.posts)
+
+    const result = await feed.getFeed(posts)
+    return {
+      data: result.filter((p) => !p.parent_hash),
     }
   })

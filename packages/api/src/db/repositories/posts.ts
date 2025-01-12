@@ -98,6 +98,32 @@ export class PostsRepository {
     }[]
   }
 
+  async getFeedForHashes(hashes: string[]) {
+    const parentPosts = alias(postsTable, 'parent_posts')
+    const posts = await this.db
+      .select()
+      .from(postsTable)
+      .leftJoin(
+        postRelationshipsTable,
+        eq(postsTable.hash, postRelationshipsTable.target_id)
+      )
+      .leftJoin(parentPosts, eq(parentPosts.hash, postRelationshipsTable.post_hash))
+      .where(
+        and(
+          isNull(postsTable.deleted_at),
+          inArray(postsTable.hash, hashes),
+          sql`${postsTable.data}->>'reply' IS NULL`
+        )
+      )
+      .orderBy(desc(postsTable.created_at))
+
+    return posts as {
+      posts: DBPost
+      parent_posts: DBPost | null
+      post_relationships: DBPostRelationship | null
+    }[]
+  }
+
   async countForFid(fid: number) {
     const [result] = await this.db
       .select({ count: sql<number>`count(*)` })

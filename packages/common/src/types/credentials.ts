@@ -1,5 +1,4 @@
 import { Token } from './token'
-import { Vault } from './vaults'
 
 export enum CredentialType {
   ERC20_BALANCE = 'ERC20_BALANCE',
@@ -29,6 +28,7 @@ export type FarcasterFidMetadata = {
 
 type BaseCredential = {
   id?: string
+  hash: string | null
   credential_id: string
   proof?: CredentialProof
   verified_at: string | Date
