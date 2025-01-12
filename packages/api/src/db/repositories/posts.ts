@@ -105,6 +105,19 @@ export class PostsRepository {
     return result.count
   }
 
+  async likeFromFarcaster(fid: number, hash: string) {
+    await this.db
+      .insert(postLikesTable)
+      .values({ fid, post_hash: hash })
+      .onConflictDoNothing()
+  }
+
+  async unlikeFromFarcaster(fid: number, hash: string) {
+    await this.db
+      .delete(postLikesTable)
+      .where(and(eq(postLikesTable.fid, fid), eq(postLikesTable.post_hash, hash)))
+  }
+
   async like(passkeyId: string, hash: string) {
     await this.db
       .insert(postLikesTable)

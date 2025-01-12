@@ -20,6 +20,14 @@ export class RedisService {
     return RedisService.instance
   }
 
+  async getLastEventId() {
+    return this.client.get('last-event-id')
+  }
+
+  async setLastEventId(id: string) {
+    return this.client.set('last-event-id', id)
+  }
+
   async getPost(hash: string) {
     return this.client.get(`post:v2:${hash}`)
   }
