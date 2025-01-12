@@ -112,17 +112,26 @@ export const communitiesRoutes = createElysia({ prefix: '/communities' })
       let text = `👋 This is the community account for ${body.name}.`
       text += ` Requires ${body.minimumBalance} ${token.symbol} to post to it using @anonworld.`
 
-      const response = await neynar.createCast({
-        fid,
+      const communityFirstCast = {
         links: [`https://anon.world/communities/${community.id}`],
         reply: null,
         text,
         images: [],
+      }
+
+      const response = await neynar.createCast({
+        fid,
+        ...communityFirstCast,
       })
 
       if (response.success) {
-        await neynar.createCast({
-          fid: ANONWORLD_FID,
+        await db.posts.create({
+          hash: response.cast.hash,
+          fid,
+          data: communityFirstCast,
+        })
+
+        const anonWorldCast = {
           links: [`https://anon.world/communities/${community.id}`],
           reply: null,
           text: `🌐 New community launched: @${body.username}`,
@@ -131,7 +140,20 @@ export const communitiesRoutes = createElysia({ prefix: '/communities' })
             hash: response.cast.hash,
           },
           images: [],
+        }
+
+        const anonWorldAnnouncement = await neynar.createCast({
+          fid: ANONWORLD_FID,
+          ...anonWorldCast,
         })
+
+        if (anonWorldAnnouncement.success) {
+          await db.posts.create({
+            hash: anonWorldAnnouncement.cast.hash,
+            fid: ANONWORLD_FID,
+            data: anonWorldCast,
+          })
+        }
       }
 
       return await db.communities.get(community.id)

@@ -1,16 +1,18 @@
 import { Button, Popover, Text, View, XStack, YGroup } from '@anonworld/ui'
 import { ChevronDown } from '@tamagui/lucide-icons'
+import { useState } from 'react'
 
 export function CommunityFeedSelector({
   selected,
   onSelect,
 }: {
-  selected: string
-  onSelect: (sort: string) => void
+  selected: 'popular' | 'new'
+  onSelect: (sort: 'popular' | 'new') => void
 }) {
+  const [isOpen, setIsOpen] = useState(false)
   return (
     <View ai="flex-end">
-      <Popover size="$5" placement="bottom">
+      <Popover size="$5" placement="bottom" open={isOpen} onOpenChange={setIsOpen}>
         <Popover.Trigger
           onPress={(e) => {
             e.stopPropagation()
@@ -45,8 +47,20 @@ export function CommunityFeedSelector({
         >
           <YGroup>
             <ActionButton label="Sort by" fow="600" bbw="$0.5" />
-            <ActionButton label="Popular" onPress={() => onSelect('popular')} />
-            <ActionButton label="New" onPress={() => onSelect('new')} />
+            <ActionButton
+              label="Popular"
+              onPress={() => {
+                setIsOpen(false)
+                onSelect('popular')
+              }}
+            />
+            <ActionButton
+              label="New"
+              onPress={() => {
+                setIsOpen(false)
+                onSelect('new')
+              }}
+            />
           </YGroup>
         </Popover.Content>
       </Popover>

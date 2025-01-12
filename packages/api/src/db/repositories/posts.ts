@@ -114,9 +114,10 @@ export class PostsRepository {
   }
 
   async unreplyFromFarcaster(replyHash: string) {
-    await this.db
+    return await this.db
       .delete(postRepliesTable)
       .where(eq(postRepliesTable.reply_hash, replyHash))
+      .returning()
   }
 
   async likeFromFarcaster(fid: number, hash: string) {

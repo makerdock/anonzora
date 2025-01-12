@@ -9,7 +9,7 @@ import {
 } from '@farcaster/hub-nodejs'
 import { redis } from '../src/services/redis'
 import { db } from '../src/db'
-import { neynar } from '../src/services/neynar'
+import { DrizzleError } from 'drizzle-orm'
 
 const client = getSSLHubRpcClient('hub-grpc-api.neynar.com', {
   interceptors: [
@@ -19,7 +19,12 @@ const client = getSSLHubRpcClient('hub-grpc-api.neynar.com', {
 
 const getFidSets = async () => {
   const accounts = await db.socials.listFarcasterAccounts()
-  const { fid: maxFid } = await neynar.getNewFid()
+  const result = await client.getFids({ reverse: true })
+  if (result.isErr()) {
+    throw new Error('Failed to get fids')
+  }
+  const { fids } = result.value
+  const maxFid = fids[0]
   const anonFids = new Set(accounts.map((account) => account.fid))
 
   const otherFids = new Set(
@@ -107,9 +112,11 @@ async function main() {
         continue
       }
 
-      console.log(`[unreply] ${messageData.fid} unreplied ${hashValue.value}`)
       try {
-        await db.posts.unreplyFromFarcaster(hashValue.value)
+        const result = await db.posts.unreplyFromFarcaster(hashValue.value)
+        if (result.length > 0) {
+          console.log(`[unreply] ${messageData.fid} unreplied ${hashValue.value}`)
+        }
       } catch (e) {
         console.error(e)
       }
@@ -138,7 +145,12 @@ async function main() {
         try {
           await db.posts.likeFromFarcaster(messageData.fid, hashValue.value)
         } catch (e) {
-          console.error(e)
+          if (e instanceof DrizzleError) {
+            // TODO: Backfill first post of communities before 1/13/2025
+            if (!e.message.includes('violates foreign key constraint')) {
+              console.error(e)
+            }
+          }
         }
       } else if (messageData.type === MessageType.REACTION_REMOVE) {
         console.log(`[unlike] ${messageData.fid} unliked ${hashValue.value}`)
