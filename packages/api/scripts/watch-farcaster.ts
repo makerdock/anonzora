@@ -178,16 +178,17 @@ async function live() {
   let lastEventTime = Date.now()
 
   const intervalId = setInterval(() => {
-    if (Date.now() - lastEventTime > 5000) {
+    const now = Date.now()
+    if (now - lastEventTime > 5000) {
       console.log('[live] No events received for 5 seconds, closing subscription...')
-      clearInterval(intervalId)
       subscription.destroy()
+      clearInterval(intervalId)
     }
-  }, 5000)
+  }, 1000)
 
   for await (const event of subscription) {
     if (subscription.closed || subscription.destroyed) {
-      return
+      break
     }
 
     try {
@@ -206,6 +207,8 @@ async function live() {
       console.log(`[live] lastEventId: ${event.id}`)
     }
   }
+
+  clearInterval(intervalId)
 }
 
 async function main() {
