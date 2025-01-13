@@ -162,15 +162,16 @@ export const CredentialsProvider = ({
   }
 
   const removeFromVault = async (vaultId: string, credential: CredentialWithId) => {
-    await sdk.removeFromVault(vaultId, credential.id)
     setLocalCredentials((prev) => {
-      prev?.push({
+      const creds = [...(prev ?? [])]
+      creds.push({
         ...credential,
         vault_id: null,
         vault: null,
       })
-      return prev
+      return creds
     })
+    await sdk.removeFromVault(vaultId, credential.id)
     await refetchVaults()
   }
 

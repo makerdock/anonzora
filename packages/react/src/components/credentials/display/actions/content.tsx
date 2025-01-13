@@ -1,47 +1,25 @@
-import { Plus, Minus, RefreshCw, Trash } from '@tamagui/lucide-icons'
-import { Dialog, Spinner, Text, View, YGroup } from '@anonworld/ui'
-import { CredentialType } from '@anonworld/common'
-import { NewCredential, useCredentials, useToken } from '../../../..'
-import { NamedExoticComponent, useState } from 'react'
+import { RefreshCw, Trash, UserRound } from '@tamagui/lucide-icons'
+import { Dialog, Text, YGroup, XStack } from '@anonworld/ui'
+import { CredentialType, formatHexId } from '@anonworld/common'
+import { NewCredential, useCredentials, useToken, VaultAvatar } from '../../../..'
+import { NamedExoticComponent, ReactNode } from 'react'
 import { CredentialWithId } from '@anonworld/common'
 import { formatUnits } from 'viem'
+import { Check } from '@tamagui/lucide-icons'
 
 export function CredentialActionsContent({
   credential,
 }: {
   credential: CredentialWithId
 }) {
-  const {
-    vaults,
-    addToVault,
-    removeFromVault,
-    delete: deleteCredential,
-  } = useCredentials()
+  const { delete: deleteCredential } = useCredentials()
 
   return (
     <YGroup>
-      {!credential.vault_id && vaults && vaults.length > 0 && (
-        <ActionButton
-          label="Add to profile"
-          onPress={async () => {
-            if (!vaults || vaults.length === 0) return
-            await addToVault(vaults[0], credential)
-          }}
-          Icon={Plus}
-        />
-      )}
-      {credential.vault_id && vaults && vaults.length > 0 && (
-        <ActionButton
-          label="Remove from profile"
-          onPress={async () => {
-            if (!credential.vault_id) return
-            await removeFromVault(credential.vault_id, credential)
-          }}
-          Icon={Minus}
-        />
-      )}
+      <ActionItem label="Profile" fow="600" bbw="$0.5" />
+      <VaultSelect credential={credential} />
       <ReverifyButton credential={credential} />
-      <ActionButton
+      <ActionItem
         label="Delete"
         onPress={() => deleteCredential(credential.id)}
         Icon={Trash}
@@ -86,55 +64,92 @@ function ReverifyButton({
       parentId={credential.id}
     >
       <Dialog.Trigger asChild>
-        <ActionButton label="Reverify" Icon={RefreshCw} />
+        <ActionItem label="Reverify" Icon={RefreshCw} />
       </Dialog.Trigger>
     </NewCredential>
   )
 }
 
-function ActionButton({
+function VaultSelect({ credential }: { credential: CredentialWithId }) {
+  const { vaults, addToVault, removeFromVault } = useCredentials()
+
+  return (
+    <>
+      {vaults.map((vault) => {
+        const displayId = formatHexId(vault.id)
+        return (
+          <ActionItem
+            key={vault.id}
+            label={vault.username ?? displayId}
+            image={
+              <VaultAvatar vaultId={vault.id} imageUrl={vault.image_url} size={16} />
+            }
+            selected={vault.id === credential.vault_id}
+            onPress={() => {
+              if (vault.id !== credential.vault_id) {
+                addToVault(vault, credential)
+              }
+            }}
+          />
+        )
+      })}
+      <ActionItem
+        label="Anonymous"
+        image={<VaultAvatar size={16} />}
+        selected={!credential.vault_id}
+        onPress={() => {
+          if (credential.vault_id) {
+            removeFromVault(credential.vault_id, credential)
+          }
+        }}
+        bbw="$0.5"
+      />
+    </>
+  )
+}
+
+function ActionItem({
   label,
   onPress,
   Icon,
+  image,
   destructive = false,
+  selected = false,
+  fow = '400',
+  bbw = '$0',
 }: {
   label: string
-  onPress?: () => Promise<void> | void
+  onPress?: () => void
   Icon?: NamedExoticComponent<any>
+  image?: ReactNode
   destructive?: boolean
+  selected?: boolean
+  fow?: '400' | '600'
+  bbw?: '$0' | '$0.5'
 }) {
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handlePress = async () => {
-    setIsLoading(true)
-    try {
-      await onPress?.()
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <YGroup.Item>
-      <View
-        onPress={onPress ? handlePress : undefined}
-        fd="row"
+      <XStack
+        onPress={onPress}
+        jc="space-between"
         ai="center"
         gap="$2"
         px="$3.5"
         py="$2.5"
-        hoverStyle={{ bg: '$color5' }}
+        hoverStyle={onPress ? { bg: '$color5' } : {}}
+        cursor={onPress ? 'pointer' : 'default'}
+        bbw={bbw}
+        bc="$borderColor"
       >
-        {isLoading && <Spinner color="$color12" />}
-        {Icon && !isLoading && (
-          <Icon size={16} color={destructive ? '$red9' : undefined} />
-        )}
-        <Text fos="$2" fow="400" color={destructive ? '$red9' : undefined}>
-          {label}
-        </Text>
-      </View>
+        <XStack ai="center" gap="$2">
+          {Icon && <Icon size={16} color={destructive ? '$red9' : undefined} />}
+          {image}
+          <Text fos="$2" fow={fow} color={destructive ? '$red9' : undefined}>
+            {label}
+          </Text>
+        </XStack>
+        {selected && <Check size={16} color="$color12" />}
+      </XStack>
     </YGroup.Item>
   )
 }
