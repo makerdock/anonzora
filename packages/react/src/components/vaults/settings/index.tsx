@@ -27,7 +27,7 @@ export function VaultSettings({
   vault,
   children,
 }: {
-  vault: Vault
+  vault: Omit<Vault, 'credentials'>
   children?: ReactNode
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -162,7 +162,7 @@ function EditImage({
   imageUrl,
   setImageUrl,
 }: {
-  vault: Vault
+  vault: Omit<Vault, 'credentials'>
   imageUrl: string | null
   setImageUrl: (imageUrl: string | null) => void
 }) {
@@ -271,7 +271,7 @@ function EditUsername({
   username,
   setUsername,
 }: {
-  vault: Vault
+  vault: Omit<Vault, 'credentials'>
   username: string | null
   setUsername: (username: string | null) => void
 }) {

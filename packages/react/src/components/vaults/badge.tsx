@@ -11,7 +11,7 @@ export function VaultBadge({
 }) {
   return (
     <Badge icon={<VaultAvatar vaultId={vaultId} imageUrl={vault?.image_url} />}>
-      {vault?.username ?? (vaultId ? formatHexId(vaultId) : 'No Profile')}
+      {vault?.username ?? (vaultId ? formatHexId(vaultId) : 'Anonymous')}
     </Badge>
   )
 }

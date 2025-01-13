@@ -69,6 +69,8 @@ export const CredentialsProvider = ({
               id: vault.id,
               username: vault.username,
               image_url: vault.image_url,
+              posts: vault.posts,
+              created_at: vault.created_at,
             },
           })
         }

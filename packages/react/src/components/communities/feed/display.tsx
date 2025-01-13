@@ -6,6 +6,7 @@ import { Farcaster } from '../../svg/farcaster'
 import { X } from '../../svg/x'
 import { Community, FarcasterUser, TwitterUser } from '@anonworld/common'
 import { Link } from 'solito/link'
+import { Gift } from '@tamagui/lucide-icons'
 
 export function CommunityDisplay({
   community,
@@ -79,6 +80,9 @@ export function CommunityDisplay({
       <XStack gap="$2" ai="center" jc="space-between">
         <XStack gap="$2">
           <Badge>{timeAgo(community.created_at)}</Badge>
+          {community.token.platform === 'clanker' && (
+            <Badge icon={<Gift size={12} />}>Rewards</Badge>
+          )}
         </XStack>
         <XStack gap="$2">
           {community.farcaster && <FarcasterBadge farcaster={community.farcaster} />}

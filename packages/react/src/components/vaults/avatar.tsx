@@ -10,10 +10,10 @@ export function VaultAvatar({
   if (!vaultId) {
     return (
       <LinearGradient
-        width={16}
-        height={16}
+        width={size}
+        height={size}
         borderRadius="$12"
-        colors={['$color10', '$color12']}
+        colors={['$color9', '$color11']}
         start={[1, 1]}
         end={[0, 0]}
       />

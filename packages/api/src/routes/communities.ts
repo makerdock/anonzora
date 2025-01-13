@@ -61,6 +61,7 @@ export const communitiesRoutes = createElysia({ prefix: '/communities' })
           description: body.description,
           imageUrl: body.imageUrl,
           username: body.username,
+          url: `https://anon.world/communities/${body.username}`,
         })
         fid = newAccount.fid
         walletId = newAccount.walletId

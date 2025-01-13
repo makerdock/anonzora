@@ -19,6 +19,7 @@ type DeployFarcasterAccountParams = {
   description: string
   imageUrl: string
   username: string
+  url: string
 }
 
 type DeployTokenParams = {
@@ -113,6 +114,7 @@ class ProvisioningService {
       description: params.description,
       imageUrl: params.imageUrl,
       username: params.username,
+      url: params.url,
     })
 
     if (!result.success) {

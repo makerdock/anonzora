@@ -18,35 +18,31 @@ export function CredentialDisplay({
     <YStack
       theme="surface1"
       themeShallow
-      bg="$background"
+      py="$4"
+      px="$1"
+      btw="$0.5"
       bc="$borderColor"
-      bw="$0.5"
-      p="$3"
       gap="$4"
-      br="$4"
-      $xs={{
-        br: '$0',
-        bw: '$0',
-        btw: '$0.5',
-        px: '$2',
-        py: '$3',
-      }}
       onPress={onPress}
       hoverStyle={onPress ? { bg: '$color3' } : {}}
       cursor={onPress ? 'pointer' : undefined}
       fs={1}
     >
       <XStack ai="center" gap="$2">
-        <Link href={`/profiles/${credential.vault_id}`}>
-          <VaultBadge vaultId={credential.vault_id} vault={credential.vault} />
-        </Link>
+        {credential.vault_id ? (
+          <Link href={`/profiles/${credential.vault_id}`}>
+            <VaultBadge vaultId={credential.vault_id} vault={credential.vault} />
+          </Link>
+        ) : (
+          <VaultBadge />
+        )}
         <Badge>{getCredential(credential.type)?.name}</Badge>
         <Badge>{timeAgo(credential.verified_at.toString())}</Badge>
         {isExpired && <Badge destructive>Expired</Badge>}
       </XStack>
       <CredentialTypeDisplay credential={credential} />
       {credential.id && (
-        <View position="absolute" top="$2" right="$3" $xs={{ right: '$2' }}>
+        <View position="absolute" top="$2" right="$1" $xs={{ right: '$0' }}>
           <CredentialActions credential={credential as CredentialWithId} />
         </View>
       )}

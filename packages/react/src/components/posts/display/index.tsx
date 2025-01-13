@@ -75,10 +75,12 @@ export function PostDisplay({
         {post.credentials && post.credentials.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} mr="$7">
             <XStack gap="$2" ai="center" onPress={(e) => e.preventDefault()}>
-              {vault && (
+              {vault ? (
                 <Link href={`/profiles/${vault.id}`}>
                   <VaultBadge vault={vault} vaultId={vault.id} />
                 </Link>
+              ) : (
+                <VaultBadge />
               )}
               {post.credentials?.map((credential, index) => (
                 <PostCredential key={index} credential={credential} />

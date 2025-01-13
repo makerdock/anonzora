@@ -31,7 +31,7 @@ class NeynarService {
   private async makeRequest<T>(
     endpoint: string,
     options?: {
-      method?: 'GET' | 'POST' | 'DELETE'
+      method?: 'GET' | 'POST' | 'DELETE' | 'PATCH'
       maxRetries?: number
       retryDelay?: number
       body?: string
@@ -308,6 +308,7 @@ class NeynarService {
     description: string
     imageUrl: string
     username: string
+    url: string
   }) {
     return this.makeRequest<{
       success: boolean
@@ -327,6 +328,7 @@ class NeynarService {
           pfp_url: params.imageUrl,
           username: params.username,
           display_name: params.name,
+          url: params.url,
         },
       }),
     })
@@ -336,6 +338,32 @@ class NeynarService {
     return this.makeRequest<{
       available: boolean
     }>(`/farcaster/fname/availability?fname=${fname}`)
+  }
+
+  async updateUserProfile(params: {
+    fid: number
+    name: string
+    description: string
+    imageUrl: string
+    url: string
+  }) {
+    const signerUuid = await db.socials.getFarcasterAccount(params.fid)
+    if (!signerUuid) {
+      throw new Error('No signer found for address')
+    }
+
+    return this.makeRequest<{
+      success: boolean
+    }>(`/farcaster/user`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        signer_uuid: signerUuid.signer_uuid,
+        bio: params.description,
+        pfp_url: params.imageUrl,
+        display_name: params.name,
+        url: params.url,
+      }),
+    })
   }
 }
 

@@ -2,7 +2,7 @@ import { AnonWorldSDK } from '@anonworld/sdk'
 import { ImageResponse } from 'next/og'
 import { PostImage } from '@/components/post-image'
 
-const sdk = new AnonWorldSDK()
+const sdk = new AnonWorldSDK(process.env.NEXT_PUBLIC_API_URL)
 
 async function loadFont() {
   const response = await fetch(

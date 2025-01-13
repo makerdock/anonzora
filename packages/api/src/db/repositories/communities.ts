@@ -5,7 +5,7 @@ import {
   tokensTable,
   twitterAccountsTable,
 } from '../schema'
-import { eq, inArray, or } from 'drizzle-orm'
+import { eq, inArray, or, sql } from 'drizzle-orm'
 import { DBCommunity } from '../types'
 import { FarcasterUser, TwitterUser, Community } from '@anonworld/common'
 
@@ -24,10 +24,12 @@ export class CommunitiesRepository {
   }
 
   async get(id: string) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+      id
+    )
     const [community] = await this.db
       .select()
       .from(communitiesTable)
-      .where(eq(communitiesTable.id, id))
       .leftJoin(tokensTable, eq(communitiesTable.token_id, tokensTable.id))
       .leftJoin(
         farcasterAccountsTable,
@@ -36,6 +38,11 @@ export class CommunitiesRepository {
       .leftJoin(
         twitterAccountsTable,
         eq(communitiesTable.twitter_username, twitterAccountsTable.username)
+      )
+      .where(
+        isUuid
+          ? eq(communitiesTable.id, id)
+          : sql`${farcasterAccountsTable.metadata}->>'username' = ${id}`
       )
       .limit(1)
 

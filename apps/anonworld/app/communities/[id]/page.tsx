@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { AnonWorldSDK } from '@anonworld/sdk'
 import { CommunityPage } from '@/components/community'
 
-const sdk = new AnonWorldSDK()
+const sdk = new AnonWorldSDK(process.env.NEXT_PUBLIC_API_URL)
 
 export async function generateMetadata({
   params,

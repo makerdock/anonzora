@@ -1,4 +1,5 @@
 import { Token } from './token'
+import { Vault } from './vaults'
 
 export enum CredentialType {
   ERC20_BALANCE = 'ERC20_BALANCE',
@@ -34,11 +35,7 @@ type BaseCredential = {
   verified_at: string | Date
   token?: Token
   vault_id: string | null
-  vault?: {
-    id: string
-    image_url: string | null
-    username: string | null
-  }
+  vault?: Omit<Vault, 'credentials'>
   parent_id?: string | null
   reverified_id?: string | null
 }

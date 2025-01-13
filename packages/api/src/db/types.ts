@@ -4,6 +4,8 @@ import {
   CredentialType,
   PostData,
   FarcasterFidMetadata,
+  FarcasterUser,
+  TwitterUser,
 } from '@anonworld/common'
 import {
   communitiesTable,
@@ -22,8 +24,12 @@ import {
 } from './schema'
 
 export type DBAction = typeof actionsTable.$inferSelect
-export type DBFarcasterAccount = typeof farcasterAccountsTable.$inferSelect
-export type DBTwitterAccount = typeof twitterAccountsTable.$inferSelect
+export type DBFarcasterAccount = typeof farcasterAccountsTable.$inferSelect & {
+  metadata: FarcasterUser
+}
+export type DBTwitterAccount = typeof twitterAccountsTable.$inferSelect & {
+  metadata: TwitterUser
+}
 export type DBPost = typeof postsTable.$inferSelect & {
   data: PostData
 }
