@@ -51,27 +51,38 @@ class TokensService {
         token.decimals
       )
     )
-    const priceUsd =
-      simpleHashToken?.prices?.[0]?.value_usd_string ??
-      zerionToken?.attributes.market_data.price?.toFixed(10) ??
-      0
-    const marketCap = totalSupply * Number(priceUsd)
 
-    const fields = {
-      price_usd: priceUsd,
-      market_cap: Math.round(marketCap),
-      total_supply: Math.round(totalSupply),
-      holders: simpleHashToken?.holder_count ?? 0,
+    const prices = [
+      simpleHashToken?.prices?.[0]?.value_usd_string,
+      zerionToken?.attributes.market_data.price?.toFixed(10),
+      '0',
+    ]
+
+    for (const price of prices) {
+      if (!price) continue
+
+      const marketCap = totalSupply * Number(price)
+      const fields = {
+        price_usd: price,
+        market_cap: Math.round(marketCap),
+        total_supply: Math.round(totalSupply),
+        holders: simpleHashToken?.holder_count ?? 0,
+      }
+
+      try {
+        await db.tokens.update(token.id, fields)
+      } catch (e) {
+        continue
+      }
+
+      const result = {
+        ...token,
+        ...fields,
+      }
+      await redis.setToken(token.chain_id, token.address, JSON.stringify(result))
+
+      return result
     }
-    await db.tokens.update(token.id, fields)
-
-    const result = {
-      ...token,
-      ...fields,
-    }
-    await redis.setToken(token.chain_id, token.address, JSON.stringify(result))
-
-    return result
   }
 
   async createERC20(chainId: number, tokenAddress: string) {

@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { postRelationshipsTable } from '../schema'
+import { postRelationshipsTable, postsTable } from '../schema'
 import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { DBPostRelationship } from '../types'
 
@@ -56,14 +56,16 @@ export class RelationshipsRepository {
     const response = await this.db
       .select()
       .from(postRelationshipsTable)
+      .leftJoin(postsTable, eq(postRelationshipsTable.target_id, postsTable.hash))
       .where(
         and(
           inArray(postRelationshipsTable.post_hash, hashes),
-          isNull(postRelationshipsTable.deleted_at)
+          isNull(postRelationshipsTable.deleted_at),
+          isNull(postsTable.deleted_at)
         )
       )
 
-    return response as DBPostRelationship[]
+    return response.map((r) => r.post_relationships) as DBPostRelationship[]
   }
 
   async getChildren(hashes: string[]) {
