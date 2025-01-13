@@ -12,7 +12,7 @@ const LOCAL_STORAGE_KEY = 'anon:credentials:v1'
 const LOCAL_STORAGE_VAULT_KEY = 'anon:vault:v1'
 
 const getInitialCredentials = () => {
-  if (typeof window === 'undefined') return []
+  if (typeof window === 'undefined') return null
   const stored = localStorage.getItem(LOCAL_STORAGE_KEY)
   if (stored) {
     try {
@@ -42,6 +42,7 @@ const getInitialVault = () => {
 }
 
 type CredentialsContextType = {
+  isInitialized: boolean
   localCredentials: CredentialWithId[]
   credentials: CredentialWithId[]
   delete: (id: string) => Promise<void>
@@ -66,12 +67,16 @@ export const CredentialsProvider = ({
   const manager = useMemo(() => new CredentialsManager(), [])
 
   const { sdk } = useSDK()
-  const [localCredentials, setLocalCredentials] = useState<CredentialWithId[]>(
+  const [localCredentials, setLocalCredentials] = useState<CredentialWithId[] | null>(
     getInitialCredentials()
   )
   const { signMessageAsync } = useSignMessage()
-  const { data: vaults, refetch: refetchVaults } = useVaults()
+  const { data: vaults, isFetched, refetch: refetchVaults } = useVaults()
   const [vault, setVault] = useState<Vault | null>(getInitialVault())
+
+  const isInitialized = useMemo(() => {
+    return localCredentials !== null
+  }, [localCredentials, isFetched])
 
   useEffect(() => {
     if (vaults && !vault) {
@@ -118,45 +123,48 @@ export const CredentialsProvider = ({
     }
 
     if (parentId) {
-      setLocalCredentials((prev) =>
-        prev.map((cred) =>
-          cred.id === parentId
-            ? {
-                ...credential.data,
-                vault_id: cred.vault_id,
-                vault: cred.vault,
-              }
-            : cred
-        )
+      setLocalCredentials(
+        (prev) =>
+          prev?.map((cred) =>
+            cred.id === parentId
+              ? {
+                  ...credential.data,
+                  vault_id: cred.vault_id,
+                  vault: cred.vault,
+                }
+              : cred
+          ) ?? null
       )
     } else {
-      setLocalCredentials((prev) => [...prev, credential.data])
+      setLocalCredentials((prev) => [...(prev ?? []), credential.data])
     }
     return credential.data
   }
 
   const deleteCredential = async (id: string) => {
-    const credential = localCredentials.find((cred) => cred.id === id)
+    const credential = localCredentials?.find((cred) => cred.id === id)
     if (credential?.vault_id) {
       await sdk.removeFromVault(credential.vault_id, id)
     }
-    setLocalCredentials((prev) => prev.filter((cred) => cred.id !== id))
+    setLocalCredentials((prev) => prev?.filter((cred) => cred.id !== id) ?? null)
   }
 
   const getCredential = (id: string) => {
-    return localCredentials.find((cred) => cred.id === id)
+    return localCredentials?.find((cred) => cred.id === id)
   }
 
   const addToVault = async (vault: Vault, credential: CredentialWithId) => {
     await sdk.addToVault(vault.id, credential.id)
-    setLocalCredentials((prev) => prev.filter((cred) => cred.id !== credential.id))
+    setLocalCredentials(
+      (prev) => prev?.filter((cred) => cred.id !== credential.id) ?? null
+    )
     await refetchVaults()
   }
 
   const removeFromVault = async (vaultId: string, credential: CredentialWithId) => {
     await sdk.removeFromVault(vaultId, credential.id)
     setLocalCredentials((prev) => {
-      prev.push({
+      prev?.push({
         ...credential,
         vault_id: null,
         vault: null,
@@ -198,8 +206,9 @@ export const CredentialsProvider = ({
   return (
     <CredentialsContext.Provider
       value={{
-        localCredentials,
-        credentials: localCredentials.concat(
+        isInitialized,
+        localCredentials: localCredentials ?? [],
+        credentials: (localCredentials ?? []).concat(
           vaults?.flatMap((vault) => vault.credentials) ?? []
         ),
         delete: deleteCredential,

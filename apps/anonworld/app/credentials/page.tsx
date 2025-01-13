@@ -11,12 +11,20 @@ import {
   VaultAvatar,
   VaultSettings,
 } from '@anonworld/react'
-import { Dialog, Separator, Text, View, XStack, YStack } from '@anonworld/ui'
+import { Dialog, Separator, Spinner, Text, View, XStack, YStack } from '@anonworld/ui'
 import { Content } from '@/components/content'
 import { Plus, Settings } from '@tamagui/lucide-icons'
 
 export default function Credentials() {
-  const { vaults, localCredentials } = useCredentials()
+  const { vaults, localCredentials, isInitialized } = useCredentials()
+
+  if (!isInitialized) {
+    return (
+      <View ai="center" jc="center" f={1} p="$4">
+        <Spinner color="$color12" />
+      </View>
+    )
+  }
 
   return (
     <Content>
@@ -28,10 +36,10 @@ export default function Credentials() {
         </XStack>
       </XStack>
       <YStack gap="$4">
+        {isInitialized && <VaultDisplay credentials={localCredentials} />}
         {Object.values(vaults).map((vault, i) => (
           <VaultDisplay key={vault.id} vault={vault} credentials={vault.credentials} />
         ))}
-        <VaultDisplay credentials={localCredentials} />
       </YStack>
     </Content>
   )
@@ -71,23 +79,24 @@ function VaultDisplay({
             {vault ? vault.username || formatHexId(vault.id) : 'Anonymous'}
           </Text>
         </XStack>
-        {vault ? (
-          <VaultSettings vault={vault}>
-            <Dialog.Trigger>
-              <XStack p="$2" br="$12" hoverStyle={{ bg: '$color5' }} cursor="pointer">
-                <Settings size={16} />
-              </XStack>
-            </Dialog.Trigger>
-          </VaultSettings>
-        ) : (
-          <NewCredential>
+        <XStack ai="center">
+          {vault && (
+            <VaultSettings vault={vault}>
+              <Dialog.Trigger>
+                <XStack p="$2" br="$12" hoverStyle={{ bg: '$color5' }} cursor="pointer">
+                  <Settings size={16} />
+                </XStack>
+              </Dialog.Trigger>
+            </VaultSettings>
+          )}
+          <NewCredential vault={vault}>
             <Dialog.Trigger>
               <XStack p="$2" br="$12" hoverStyle={{ bg: '$color5' }} cursor="pointer">
                 <Plus size={16} />
               </XStack>
             </Dialog.Trigger>
           </NewCredential>
-        )}
+        </XStack>
       </XStack>
       {credentials.length > 0 ? (
         <YStack>

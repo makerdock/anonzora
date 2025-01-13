@@ -1,4 +1,4 @@
-import { formatHexId } from '@anonworld/common'
+import { formatHexId, Vault } from '@anonworld/common'
 import { Badge } from '../badge'
 import { VaultAvatar } from './avatar'
 
@@ -7,7 +7,7 @@ export function VaultBadge({
   vault,
 }: {
   vaultId?: string | null
-  vault?: { id: string; username: string | null; image_url: string | null }
+  vault?: Omit<Vault, 'credentials'>
 }) {
   return (
     <Badge icon={<VaultAvatar vaultId={vaultId} imageUrl={vault?.image_url} />}>

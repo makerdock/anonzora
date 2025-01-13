@@ -36,9 +36,10 @@ export function Leaderboard() {
               <Text fos="$2" fow="600">
                 {i + 1}
               </Text>
-              {credential.vault && (
-                <VaultBadge vaultId={credential.vault_id} vault={credential.vault} />
-              )}
+              <VaultBadge
+                vaultId={credential.vault_id}
+                vault={credential.vault ?? undefined}
+              />
               <PostCredential credential={credential} />
             </XStack>
             <YStack ai="flex-end">
