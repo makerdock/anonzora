@@ -47,6 +47,7 @@ export const vaultsRoutes = createElysia({ prefix: '/vaults' })
       ])
       return {
         ...vault,
+        passkeyId: undefined,
         credentials: credentials.map((c) => ({
           ...c,
           id: undefined,

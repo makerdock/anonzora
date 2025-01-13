@@ -1,10 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import {
-  credentialsTable,
-  vaultsTable,
-  postCredentialsTable,
-  postsTable,
-} from '../schema'
+import { credentialsTable, vaultsTable, postCredentialsTable } from '../schema'
 import { DBCredential } from '../types'
 import { eq, inArray } from 'drizzle-orm'
 
@@ -35,7 +30,10 @@ export class CredentialsRepository {
 
     return {
       ...cred.credential_instances,
-      vault: cred.vaults,
+      vault: {
+        ...cred.vaults,
+        passkeyId: undefined,
+      },
     } as DBCredential
   }
 
@@ -53,7 +51,10 @@ export class CredentialsRepository {
 
     return {
       ...cred.credential_instances,
-      vault: cred.vaults,
+      vault: {
+        ...cred.vaults,
+        passkeyId: undefined,
+      },
     } as DBCredential
   }
 

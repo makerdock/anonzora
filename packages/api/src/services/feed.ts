@@ -90,7 +90,12 @@ export class FeedService {
               ? tokens[`${c.metadata.chainId}:${c.metadata.tokenAddress}`]
               : undefined,
           vault: c.vault
-            ? { ...c.vault, credentials: [], created_at: c.created_at.toISOString() }
+            ? {
+                ...c.vault,
+                passkeyId: undefined,
+                credentials: [],
+                created_at: c.created_at.toISOString(),
+              }
             : undefined,
           id: undefined,
           proof: undefined,
