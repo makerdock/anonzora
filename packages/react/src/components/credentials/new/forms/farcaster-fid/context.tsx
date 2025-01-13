@@ -16,6 +16,7 @@ interface NewFarcasterFidContextValue {
   connectFarcaster: (profile: FarcasterAuth) => void
   disconnectFarcaster: () => void
   farcasterAuth: FarcasterAuth | undefined
+  parentId?: string
 }
 
 const NewFarcasterFidContext = createContext<NewFarcasterFidContextValue | null>(null)
@@ -24,10 +25,12 @@ export function NewFarcasterFidProvider({
   children,
   isOpen,
   setIsOpen,
+  parentId,
 }: {
   children: React.ReactNode
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  parentId?: string
 }) {
   const { add } = useCredentials()
   const [isLoading, setIsLoading] = useState(false)
@@ -61,12 +64,16 @@ export function NewFarcasterFidProvider({
         throw new Error('No fid connected')
       }
 
-      await add(CredentialType.FARCASTER_FID, {
-        verifiedFid: BigInt(fid),
-        address: farcasterAuth.profile.custody,
-        signature: farcasterAuth.signature,
-        message: farcasterAuth.message,
-      })
+      await add(
+        CredentialType.FARCASTER_FID,
+        {
+          verifiedFid: BigInt(fid),
+          address: farcasterAuth.profile.custody,
+          signature: farcasterAuth.signature,
+          message: farcasterAuth.message,
+        },
+        parentId
+      )
 
       setIsLoading(false)
       setIsOpen(false)
@@ -89,6 +96,7 @@ export function NewFarcasterFidProvider({
         connectFarcaster,
         disconnectFarcaster,
         farcasterAuth,
+        parentId,
       }}
     >
       {children}

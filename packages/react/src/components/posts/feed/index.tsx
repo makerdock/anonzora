@@ -50,7 +50,7 @@ export function TrendingFeed({ fid }: { fid: number }) {
 export function NewFeed({
   fid,
   disableActions,
-}: { fid: number; disableActions: boolean }) {
+}: { fid: number; disableActions?: boolean }) {
   const { data, isLoading, hasNextPage, fetchNextPage } = useNewPosts({ fid })
   const loadMoreRef = useRef<HTMLDivElement>(null)
 

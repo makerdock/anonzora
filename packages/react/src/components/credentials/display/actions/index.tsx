@@ -34,6 +34,7 @@ export function CredentialActions({ credential }: { credential: CredentialWithId
         cursor="pointer"
         bordered
         overflow="hidden"
+        zIndex={0}
       >
         {isOpen && <CredentialActionsContent credential={credential} />}
       </Popover.Content>

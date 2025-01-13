@@ -13,6 +13,7 @@ interface NewERC721CredentialContextValue {
   handleAddCredential: () => void
   isLoading: boolean
   error: string | undefined
+  parentId?: string
 }
 
 const NewERC721CredentialContext = createContext<NewERC721CredentialContextValue | null>(
@@ -23,6 +24,7 @@ export function NewERC721CredentialProvider({
   children,
   initialTokenId,
   initialBalance,
+  parentId,
   isOpen,
   setIsOpen,
 }: {
@@ -31,6 +33,7 @@ export function NewERC721CredentialProvider({
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  parentId?: string
 }) {
   const { connectWallet, isConnecting } = useSDK()
   const [isConnectingWallet, setIsConnectingWallet] = useState(false)
@@ -84,13 +87,17 @@ export function NewERC721CredentialProvider({
         throw new Error('Failed to find balance storage slot')
       }
 
-      await add(CredentialType.ERC721_BALANCE, {
-        address,
-        chainId: tokenId.chainId,
-        tokenAddress: tokenId.address as `0x${string}`,
-        verifiedBalance: BigInt(1),
-        balanceSlot: response.data.slot,
-      })
+      await add(
+        CredentialType.ERC721_BALANCE,
+        {
+          address,
+          chainId: tokenId.chainId,
+          tokenAddress: tokenId.address as `0x${string}`,
+          verifiedBalance: BigInt(1),
+          balanceSlot: response.data.slot,
+        },
+        parentId
+      )
 
       setIsLoading(false)
       setIsOpen(false)
@@ -112,6 +119,7 @@ export function NewERC721CredentialProvider({
         handleAddCredential,
         isLoading,
         error,
+        parentId,
       }}
     >
       {children}

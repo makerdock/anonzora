@@ -1,15 +1,11 @@
 import { Plus, Minus, RefreshCw, Trash } from '@tamagui/lucide-icons'
-import { Spinner, Text, View, YGroup } from '@anonworld/ui'
-import {
-  ContractType,
-  CredentialType,
-  CredentialWithId,
-  StorageType,
-} from '@anonworld/common'
-import { useCredentials, useSDK } from '../../../..'
+import { Dialog, Spinner, Text, View, YGroup } from '@anonworld/ui'
+import { CredentialType } from '@anonworld/common'
+import { NewCredential, useCredentials, useToken } from '../../../..'
 import { useVaults } from '../../../../hooks/use-vaults'
 import { NamedExoticComponent, useState } from 'react'
-import { useAccount } from 'wagmi'
+import { CredentialWithId } from '@anonworld/common'
+import { formatUnits } from 'viem'
 
 export function CredentialActionsContent({
   credential,
@@ -18,8 +14,6 @@ export function CredentialActionsContent({
 }) {
   const credentials = useCredentials()
   const { data: vaults } = useVaults()
-  const { address } = useAccount()
-  const { sdk, connectWallet } = useSDK()
 
   return (
     <YGroup>
@@ -28,7 +22,7 @@ export function CredentialActionsContent({
           label="Add to profile"
           onPress={async () => {
             if (!vaults || vaults.length === 0) return
-            await credentials.addToVault(vaults[0].id, credential.id)
+            await credentials.addToVault(vaults[0], credential.id)
           }}
           Icon={Plus}
         />
@@ -43,40 +37,7 @@ export function CredentialActionsContent({
           Icon={Minus}
         />
       )}
-      <ActionButton
-        label="Reverify"
-        onPress={async () => {
-          if (!address) {
-            connectWallet?.()
-            throw new Error('No address connected')
-          }
-
-          const response = await sdk.getStorageSlot(
-            credential.metadata.chainId,
-            credential.metadata.tokenAddress,
-            credential.type === CredentialType.ERC20_BALANCE
-              ? ContractType.ERC20
-              : ContractType.ERC721,
-            StorageType.BALANCE
-          )
-          if (!response.data) {
-            throw new Error('Failed to find balance storage slot')
-          }
-
-          await credentials.add(
-            credential.type,
-            {
-              address,
-              chainId: credential.metadata.chainId,
-              tokenAddress: credential.metadata.tokenAddress,
-              verifiedBalance: BigInt(credential.metadata.balance),
-              balanceSlot: response.data.slot,
-            },
-            credential.id
-          )
-        }}
-        Icon={RefreshCw}
-      />
+      <ReverifyButton credential={credential} />
       <ActionButton
         label="Delete"
         onPress={() => credentials.delete(credential.id)}
@@ -87,6 +48,47 @@ export function CredentialActionsContent({
   )
 }
 
+function ReverifyButton({
+  credential,
+}: {
+  credential: CredentialWithId
+}) {
+  const { data: token } = useToken(
+    credential.type === CredentialType.ERC20_BALANCE
+      ? {
+          chainId: credential.metadata.chainId,
+          address: credential.metadata.tokenAddress,
+        }
+      : undefined
+  )
+
+  return (
+    <NewCredential
+      initialCredentialType={credential.type}
+      initialBalance={
+        credential.type === CredentialType.ERC20_BALANCE
+          ? Number(
+              formatUnits(BigInt(credential.metadata.balance), token?.decimals ?? 18)
+            )
+          : undefined
+      }
+      initialTokenId={
+        credential.type === CredentialType.ERC20_BALANCE
+          ? {
+              chainId: credential.metadata.chainId,
+              address: credential.metadata.tokenAddress,
+            }
+          : undefined
+      }
+      parentId={credential.id}
+    >
+      <Dialog.Trigger asChild>
+        <ActionButton label="Reverify" Icon={RefreshCw} />
+      </Dialog.Trigger>
+    </NewCredential>
+  )
+}
+
 function ActionButton({
   label,
   onPress,
@@ -94,7 +96,7 @@ function ActionButton({
   destructive = false,
 }: {
   label: string
-  onPress: () => Promise<void> | void
+  onPress?: () => Promise<void> | void
   Icon?: NamedExoticComponent<any>
   destructive?: boolean
 }) {
@@ -103,7 +105,7 @@ function ActionButton({
   const handlePress = async () => {
     setIsLoading(true)
     try {
-      await onPress()
+      await onPress?.()
     } catch (error) {
       console.error(error)
     } finally {
@@ -114,7 +116,7 @@ function ActionButton({
   return (
     <YGroup.Item>
       <View
-        onPress={handlePress}
+        onPress={onPress ? handlePress : undefined}
         fd="row"
         ai="center"
         gap="$2"

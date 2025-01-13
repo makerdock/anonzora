@@ -205,7 +205,7 @@ export const authRoutes = createElysia({ prefix: '/auth' })
 
       await db.vaults.update(params.id, {
         image_url: body.imageUrl,
-        username: body.username,
+        username: body.username || null,
       })
       return { success: true }
     },

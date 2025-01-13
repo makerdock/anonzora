@@ -35,7 +35,7 @@ type BaseCredential = {
   verified_at: string | Date
   token?: Token
   vault_id: string | null
-  vault?: Omit<Vault, 'credentials'>
+  vault?: Omit<Vault, 'credentials'> | null
   parent_id?: string | null
   reverified_id?: string | null
 }

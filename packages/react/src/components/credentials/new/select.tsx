@@ -6,9 +6,11 @@ import { credentials, CredentialType } from '@anonworld/common'
 export function CredentialTypeSelect({
   credentialType,
   setCredentialType,
+  disabled,
 }: {
   credentialType: CredentialType
   setCredentialType: (credentialType: CredentialType) => void
+  disabled?: boolean
 }) {
   return (
     <Select
@@ -17,8 +19,8 @@ export function CredentialTypeSelect({
       disablePreventBodyScroll
       id="type"
     >
-      <Select.Trigger iconAfter={ChevronDown}>
-        <Select.Value placeholder="Something" />
+      <Select.Trigger iconAfter={ChevronDown} disabled={disabled}>
+        <Select.Value placeholder="Credential Type" />
       </Select.Trigger>
 
       <Adapt when="sm" platform="touch">

@@ -13,7 +13,7 @@ import {
 } from '@anonworld/ui'
 import { NewERC20CredentialProvider, useNewERC20Credential } from './context'
 import { FungiblePosition, getChain, getZerionChain } from '@anonworld/common'
-import { useAccount, useReadContract } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { formatAddress } from '@anonworld/common'
 import { useEffect, useMemo, useState } from 'react'
 import { useWalletFungibles } from '../../../../../hooks/use-wallet-fungibles'
@@ -21,18 +21,19 @@ import { TokenImage } from '../../../../tokens/image'
 import { WalletField } from '../components/wallet-field'
 import { SubmitButton } from '../components/submit-button'
 import { useToken } from '../../../../../hooks'
-import { erc20Abi, formatUnits } from 'viem'
 
 export function ERC20CredentialForm({
   initialTokenId,
   initialBalance,
   isOpen,
   setIsOpen,
+  parentId,
 }: {
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  parentId?: string
 }) {
   const { address } = useAccount()
 
@@ -42,6 +43,7 @@ export function ERC20CredentialForm({
       initialBalance={initialBalance}
       isOpen={isOpen}
       setIsOpen={setIsOpen}
+      parentId={parentId}
     >
       <YStack gap="$2">
         <ERC20WalletField />
@@ -359,7 +361,8 @@ function BalanceField() {
 
 function ERC20SubmitButton() {
   const { address } = useAccount()
-  const { handleAddCredential, balance, isLoading, error } = useNewERC20Credential()
+  const { handleAddCredential, balance, isLoading, error, parentId } =
+    useNewERC20Credential()
   return (
     <SubmitButton
       onSubmit={handleAddCredential}
@@ -367,6 +370,7 @@ function ERC20SubmitButton() {
       disabledText={balance === 0 ? 'Select a token' : 'Connect Wallet'}
       error={error}
       isLoading={isLoading}
+      text={parentId ? 'Reverify Credential' : 'Add Credential'}
     />
   )
 }

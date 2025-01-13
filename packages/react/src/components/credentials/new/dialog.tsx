@@ -9,13 +9,17 @@ export function NewCredentialDialog({
   children,
   initialTokenId,
   initialBalance,
+  initialCredentialType,
+  parentId,
 }: {
   children?: ReactNode
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
+  initialCredentialType?: CredentialType
+  parentId?: string
 }) {
   const [credentialType, setCredentialType] = useState<CredentialType>(
-    CredentialType.ERC20_BALANCE
+    initialCredentialType || CredentialType.ERC20_BALANCE
   )
   const [isOpen, setIsOpen] = useState(false)
   return (
@@ -69,7 +73,9 @@ export function NewCredentialDialog({
           gap="$2"
           w={600}
         >
-          <Dialog.Title fos="$5">Add Credential</Dialog.Title>
+          <Dialog.Title fos="$5">
+            {parentId ? 'Reverify Credential' : 'Add Credential'}
+          </Dialog.Title>
           <YStack>
             <Label fos="$1" fow="400" color="$color11" textTransform="uppercase">
               Credential Type
@@ -77,6 +83,7 @@ export function NewCredentialDialog({
             <CredentialTypeSelect
               credentialType={credentialType}
               setCredentialType={setCredentialType}
+              disabled={!!initialCredentialType}
             />
           </YStack>
           {isOpen && (
@@ -84,6 +91,7 @@ export function NewCredentialDialog({
               credentialType={credentialType}
               initialTokenId={initialTokenId}
               initialBalance={initialBalance}
+              parentId={parentId}
               isOpen={isOpen}
               setIsOpen={setIsOpen}
             />

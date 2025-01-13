@@ -6,13 +6,14 @@ export function SubmitButton({
   disabledText,
   isLoading,
   error,
+  text,
 }: {
   onSubmit: () => void
   disabled: boolean
   disabledText?: string
   isLoading: boolean
   error?: string
-  children?: React.ReactNode
+  text: string
 }) {
   return (
     <YStack mt="$4" gap="$2">
@@ -37,13 +38,13 @@ export function SubmitButton({
       >
         {!isLoading ? (
           <Text fos="$3" fow="600" color="$color1">
-            {!disabled ? 'Add Credential' : disabledText}
+            {!disabled ? text : disabledText}
           </Text>
         ) : (
           <XStack gap="$2" alignItems="center">
             <Spinner color="$color1" />
             <Text fos="$2" fow="600" color="$color1">
-              Adding Credential
+              {text}
             </Text>
           </XStack>
         )}

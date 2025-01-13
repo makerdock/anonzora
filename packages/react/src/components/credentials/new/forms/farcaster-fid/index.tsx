@@ -7,12 +7,14 @@ import { NewFarcasterFidProvider, useNewFarcasterFid } from './context'
 export function FarcasterFidForm({
   isOpen,
   setIsOpen,
+  parentId,
 }: {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  parentId?: string
 }) {
   return (
-    <NewFarcasterFidProvider isOpen={isOpen} setIsOpen={setIsOpen}>
+    <NewFarcasterFidProvider isOpen={isOpen} setIsOpen={setIsOpen} parentId={parentId}>
       <YStack gap="$2">
         <FarcasterFidSiwfField />
         <FidField />
@@ -105,7 +107,7 @@ function FidField() {
 }
 
 function FarcasterSubmitButton() {
-  const { handleAddCredential, isLoading, error, fid } = useNewFarcasterFid()
+  const { handleAddCredential, isLoading, error, fid, parentId } = useNewFarcasterFid()
   return (
     <SubmitButton
       onSubmit={handleAddCredential}
@@ -113,6 +115,7 @@ function FarcasterSubmitButton() {
       disabledText="Connect Account"
       isLoading={isLoading}
       error={error}
+      text={parentId ? 'Reverify Credential' : 'Add Credential'}
     />
   )
 }

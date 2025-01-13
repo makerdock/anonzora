@@ -13,11 +13,13 @@ export function ERC721CredentialForm({
   initialBalance,
   isOpen,
   setIsOpen,
+  parentId,
 }: {
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  parentId?: string
 }) {
   const { address } = useAccount()
 
@@ -27,6 +29,7 @@ export function ERC721CredentialForm({
       initialBalance={initialBalance}
       isOpen={isOpen}
       setIsOpen={setIsOpen}
+      parentId={parentId}
     >
       <YStack gap="$2">
         <ERC721WalletField />
@@ -202,7 +205,7 @@ function TokenValue({ token }: { token: SimplehashNFT }) {
 
 function ERC721SubmitButton() {
   const { address } = useAccount()
-  const { handleAddCredential, isLoading, error } = useNewERC721Credential()
+  const { handleAddCredential, isLoading, error, parentId } = useNewERC721Credential()
   return (
     <SubmitButton
       onSubmit={handleAddCredential}
@@ -210,6 +213,7 @@ function ERC721SubmitButton() {
       disabledText="Connect Wallet"
       error={error}
       isLoading={isLoading}
+      text={parentId ? 'Reverify Credential' : 'Add Credential'}
     />
   )
 }

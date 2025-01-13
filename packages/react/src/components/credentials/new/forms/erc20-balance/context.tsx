@@ -21,6 +21,7 @@ interface NewERC20CredentialContextValue {
   isLoading: boolean
   error: string | undefined
   initialTokenId?: { chainId: number; address: string }
+  parentId?: string
 }
 
 const NewERC20CredentialContext = createContext<NewERC20CredentialContextValue | null>(
@@ -33,12 +34,14 @@ export function NewERC20CredentialProvider({
   initialBalance,
   isOpen,
   setIsOpen,
+  parentId,
 }: {
   children: React.ReactNode
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  parentId?: string
 }) {
   const { connectWallet, isConnecting } = useSDK()
   const [isConnectingWallet, setIsConnectingWallet] = useState(false)
@@ -126,13 +129,17 @@ export function NewERC20CredentialProvider({
         throw new Error('Failed to find balance storage slot')
       }
 
-      await add(CredentialType.ERC20_BALANCE, {
-        address,
-        chainId: tokenId.chainId,
-        tokenAddress: tokenId.address as `0x${string}`,
-        verifiedBalance: parseUnits(balance.toString(), decimals),
-        balanceSlot: response.data.slot,
-      })
+      await add(
+        CredentialType.ERC20_BALANCE,
+        {
+          address,
+          chainId: tokenId.chainId,
+          tokenAddress: tokenId.address as `0x${string}`,
+          verifiedBalance: parseUnits(balance.toString(), decimals),
+          balanceSlot: response.data.slot,
+        },
+        parentId
+      )
 
       setIsLoading(false)
       setIsOpen(false)
@@ -161,6 +168,7 @@ export function NewERC20CredentialProvider({
         isLoading,
         error,
         initialTokenId,
+        parentId,
       }}
     >
       {children}

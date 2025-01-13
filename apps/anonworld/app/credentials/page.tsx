@@ -3,12 +3,13 @@
 import {
   CredentialDisplay,
   CredentialWithId,
+  formatHexId,
   NewCredential,
   useCredentials,
   VaultAvatar,
   VaultSettings,
 } from '@anonworld/react'
-import { Dialog, Text, View, XStack, YStack } from '@anonworld/ui'
+import { Dialog, Separator, Text, View, XStack, YStack } from '@anonworld/ui'
 import { Content } from '@/components/content'
 import { useMemo } from 'react'
 import { Settings } from '@tamagui/lucide-icons'
@@ -21,13 +22,17 @@ export default function Credentials() {
       credentials.reduce(
         (acc, credential) => {
           const vaultId = credential.vault_id ?? ''
-          acc[vaultId] = {
-            vault: credential.vault,
-            credentials: [...(acc[vaultId]?.credentials || []), credential].sort(
-              (a, b) =>
-                new Date(b.verified_at).getTime() - new Date(a.verified_at).getTime()
-            ),
+          if (!acc[vaultId]) {
+            acc[vaultId] = {
+              vault: credential.vault,
+              credentials: [],
+            }
           }
+          acc[vaultId].credentials.push(credential)
+          acc[vaultId].credentials.sort(
+            (a, b) =>
+              new Date(b.verified_at).getTime() - new Date(a.verified_at).getTime()
+          )
           return acc
         },
         {} as Record<
@@ -57,7 +62,7 @@ export default function Credentials() {
           })
           .map((vault, i) => (
             <YStack
-              key={i}
+              key={vault.vault?.id || 'anonymous'}
               theme="surface1"
               themeShallow
               bg="$background"
@@ -83,7 +88,9 @@ export default function Credentials() {
                     size="$2"
                   />
                   <Text fos="$3" fow="600">
-                    {vault.vault?.username ?? 'Anonymous'}
+                    {vault.vault
+                      ? vault.vault.username || formatHexId(vault.vault.id)
+                      : 'Anonymous'}
                   </Text>
                 </XStack>
                 {vault.vault && (
@@ -102,8 +109,17 @@ export default function Credentials() {
                 )}
               </XStack>
               <YStack>
-                {vault.credentials.map((credential) => (
-                  <CredentialDisplay key={credential.id} credential={credential} />
+                {vault.credentials.map((credential, i) => (
+                  <>
+                    <Separator
+                      key={`${credential.id}-separator`}
+                      mb="$2.5"
+                      mt={i === 0 ? '$0' : '$2.5'}
+                    />
+                    <View key={`${credential.id}-view`} p="$2">
+                      <CredentialDisplay credential={credential} />
+                    </View>
+                  </>
                 ))}
               </YStack>
             </YStack>

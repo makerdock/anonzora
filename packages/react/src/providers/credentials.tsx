@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useSignMessage } from 'wagmi'
-import { CredentialType, CredentialWithId } from '@anonworld/common'
+import { CredentialType, CredentialWithId, Vault } from '@anonworld/common'
 import { useSDK } from './sdk'
 import { useVaults } from '../hooks/use-vaults'
 import { CredentialArgsTypeMap, CredentialsManager } from '@anonworld/credentials'
@@ -38,7 +38,7 @@ type CredentialsContextType = {
   delete: (id: string) => Promise<void>
   get: (id: string) => CredentialWithId | undefined
   add: (type: CredentialType, args: any, parentId?: string) => Promise<CredentialWithId>
-  addToVault: (vaultId: string, credentialId: string) => Promise<void>
+  addToVault: (vault: Vault, credentialId: string) => Promise<void>
   removeFromVault: (vaultId: string, credentialId: string) => Promise<void>
 }
 
@@ -76,7 +76,14 @@ export const CredentialsProvider = ({
         }
       }
       setCredentials((prev) => {
-        const localCredentials = prev.filter((cred) => !cred.vault_id)
+        const localCredentials = prev
+          .filter((cred) => !cred.vault_id)
+          .map((cred) => ({
+            ...cred,
+            vault: null,
+            vault_id: null,
+          }))
+          .filter((v, i, acc) => acc.findIndex((c) => c.id === v.id) === i)
         return [...localCredentials, ...fetchedCredentials]
       })
     }
@@ -122,7 +129,15 @@ export const CredentialsProvider = ({
 
     if (parentId) {
       setCredentials((prev) =>
-        prev.map((cred) => (cred.id === parentId ? credential.data : cred))
+        prev.map((cred) =>
+          cred.id === parentId
+            ? {
+                ...credential.data,
+                vault_id: cred.vault_id,
+                vault: cred.vault,
+              }
+            : cred
+        )
       )
     } else {
       setCredentials((prev) => [...prev, credential.data])
@@ -142,11 +157,23 @@ export const CredentialsProvider = ({
     return credentials.find((cred) => cred.id === id)
   }
 
-  const addToVault = async (vaultId: string, credentialId: string) => {
-    await sdk.addToVault(vaultId, credentialId)
+  const addToVault = async (vault: Vault, credentialId: string) => {
+    await sdk.addToVault(vault.id, credentialId)
     setCredentials((prev) =>
       prev.map((cred) =>
-        cred.id === credentialId ? { ...cred, vault_id: vaultId } : cred
+        cred.id === credentialId
+          ? {
+              ...cred,
+              vault_id: vault.id,
+              vault: {
+                id: vault.id,
+                username: vault.username,
+                image_url: vault.image_url,
+                posts: vault.posts,
+                created_at: vault.created_at,
+              },
+            }
+          : cred
       )
     )
   }

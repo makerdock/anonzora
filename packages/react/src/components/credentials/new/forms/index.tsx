@@ -10,12 +10,14 @@ export function NewCredentialForm({
   initialBalance,
   isOpen,
   setIsOpen,
+  parentId,
 }: {
   credentialType: CredentialType
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  parentId?: string
 }) {
   if (credentialType === CredentialType.ERC20_BALANCE) {
     return (
@@ -24,6 +26,7 @@ export function NewCredentialForm({
         initialBalance={initialBalance}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
+        parentId={parentId}
       />
     )
   }
@@ -34,11 +37,12 @@ export function NewCredentialForm({
         initialBalance={initialBalance}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
+        parentId={parentId}
       />
     )
   }
   if (credentialType === CredentialType.FARCASTER_FID) {
-    return <FarcasterFidForm isOpen={isOpen} setIsOpen={setIsOpen} />
+    return <FarcasterFidForm isOpen={isOpen} setIsOpen={setIsOpen} parentId={parentId} />
   }
   return <View />
 }
