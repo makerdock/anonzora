@@ -175,10 +175,19 @@ async function live() {
   let subscription = await getSubscription(lastEventId)
 
   let i = 0
+  let lastEventTime = Date.now()
+
+  const intervalId = setInterval(() => {
+    if (Date.now() - lastEventTime > 5000) {
+      console.log('[live] No events received for 5 seconds, closing subscription...')
+      clearInterval(intervalId)
+      subscription.destroy()
+    }
+  }, 5000)
 
   for await (const event of subscription) {
     if (subscription.closed || subscription.destroyed) {
-      subscription = await getSubscription(lastEventId)
+      return
     }
 
     try {
@@ -187,11 +196,12 @@ async function live() {
       console.error(e)
     }
 
-    lastEventId = event.id
+    lastEventTime = Date.now()
 
     i++
     if (i > 1000) {
       i = 0
+      lastEventId = event.id
       await redis.setLastEventId(event.id.toString())
       console.log(`[live] lastEventId: ${event.id}`)
     }
@@ -203,7 +213,14 @@ async function main() {
     try {
       await live()
     } catch (e) {
-      console.error(e)
+      if (
+        e instanceof Error &&
+        !['Premature close', 'Response message parsing'].some((m) =>
+          e.message.includes(m)
+        )
+      ) {
+        console.error(e)
+      }
     }
   }
 }
