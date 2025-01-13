@@ -1,6 +1,7 @@
-import { Separator, Text, XStack, YStack } from '@anonworld/ui'
+import { Image, Separator, Text, useToastController, XStack, YStack } from '@anonworld/ui'
 import { Field } from '../../field'
 import {
+  ContractType,
   CredentialType,
   ERC20CredentialRequirement,
   ERC721CredentialRequirement,
@@ -12,28 +13,68 @@ import { useActions } from '../../../hooks/use-actions'
 import { Action, ActionType, Community, getChain } from '@anonworld/common'
 import { useCredentials } from '../../../providers'
 import { getUsableCredential } from '@anonworld/common'
-import { CircleCheck, CircleX } from '@tamagui/lucide-icons'
+import { CircleCheck, CircleX, Coins, Copy } from '@tamagui/lucide-icons'
 import { TokenImage } from '../../tokens/image'
+import { Link } from 'solito/link'
 
 export function CommunityToken({ community }: { community: Community }) {
   const chain = getChain(Number(community.token.chain_id))
+  const toast = useToastController()
+
   return (
     <YStack gap="$4" mt="$2" $xs={{ gap: '$2' }}>
       <XStack gap="$4" ai="center">
-        <Text fos="$1" fow="400" color="$color11" textTransform="uppercase">
-          Token
-        </Text>
+        <XStack ai="center" gap="$2">
+          <Coins size={12} color="$color11" />
+          <Text fos="$1" fow="400" color="$color11" textTransform="uppercase">
+            Token
+          </Text>
+        </XStack>
         <Separator />
       </XStack>
       <XStack ai="center" jc="space-between">
-        <YStack gap="$1" minWidth="$10">
-          <XStack ai="center" gap="$2">
-            <TokenImage token={community.token} />
-            <Text fow="600">{community.token.symbol}</Text>
+        <YStack gap="$1" minWidth="$12">
+          <Link
+            href={
+              community.token.type === ContractType.ERC721
+                ? `https://opensea.io/assets/${chain.name.toLowerCase()}/${community.token.address}`
+                : `https://dexscreener.com/${chain.name.toLowerCase()}/${community.token.address}`
+            }
+            target="_blank"
+          >
+            <XStack ai="center" gap="$2">
+              <TokenImage token={community.token} />
+              <Text fow="600">{community.token.symbol}</Text>
+            </XStack>
+          </Link>
+          <XStack
+            gap="$1.5"
+            onPress={() => {
+              navigator.clipboard.writeText(community.token.address)
+              toast.show('Copied token address')
+            }}
+            cursor="pointer"
+            group
+            ai="center"
+          >
+            <Copy size={10} color="$color11" $group-hover={{ color: '$color12' }} />
+            <Text
+              fos="$1"
+              fow="400"
+              color="$color11"
+              textTransform="uppercase"
+              $group-hover={{ color: '$color12' }}
+            >
+              {formatAddress(community.token.address)}
+            </Text>
+            <Image
+              src={chain.imageUrl}
+              width={10}
+              height={10}
+              br="$12"
+              alt={chain.name}
+            />
           </XStack>
-          <Text fos="$1" fow="400" color="$color11" textTransform="uppercase">
-            {`${chain.name} | ${formatAddress(community.token.address)}`}
-          </Text>
         </YStack>
         <XStack
           gap="$4"
@@ -51,10 +92,7 @@ export function CommunityToken({ community }: { community: Community }) {
           />
           <Field
             label="Price"
-            value={`$${Number(community.token.price_usd).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 4,
-            })}`}
+            value={`$${formatAmount(Number(community.token.price_usd))}`}
             minWidth="$8"
             ai="flex-end"
           />

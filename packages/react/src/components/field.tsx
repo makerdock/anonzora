@@ -29,7 +29,7 @@ export function Field({
       ai={ai}
       $xs={{ flexDirection: 'row-reverse', gap: '$2', jc: 'flex-end' }}
     >
-      <XStack ai={ai} gap="$2" f={1} maxWidth={minWidth}>
+      <XStack ai="center" gap="$2" f={1} maxWidth={minWidth}>
         {imageComponent}
         {image && <Image src={image} w={16} h={16} br="$12" />}
         {!image && imageFallbackText && (

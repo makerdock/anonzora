@@ -40,7 +40,9 @@ export function CommunityImage({ community }: { community: Community }) {
         <img
           src={community.image_url}
           alt={community.name}
-          style={{ borderRadius: 16, height: 300, width: 300 }}
+          width={300}
+          height={300}
+          style={{ borderRadius: 16, width: 300, height: 300 }}
         />
         <div
           style={{

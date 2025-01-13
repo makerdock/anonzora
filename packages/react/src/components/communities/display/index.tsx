@@ -8,6 +8,7 @@ import { CommunityToken } from './token'
 import { formatAmount, timeAgo } from '@anonworld/common'
 import { CommunityActions } from './actions'
 import { Link } from 'solito/link'
+import { CommunityWallet } from './wallet'
 
 export function CommunityDisplay({
   community,
@@ -62,6 +63,9 @@ export function CommunityDisplay({
         </YStack>
       </XStack>
       <CommunityToken community={community} />
+      {community.token.platform === 'clanker' && (
+        <CommunityWallet community={community} />
+      )}
       {!disableActions && (
         <View position="absolute" top="$2" right="$3">
           <CommunityActions community={community} />

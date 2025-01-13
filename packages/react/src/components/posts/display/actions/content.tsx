@@ -23,21 +23,51 @@ export function PostActionsContent({
   const { credentials } = useCredentials()
 
   const actions = useMemo(() => {
-    return data
+    const validActions = data
       ?.sort((a, b) => a.type.localeCompare(b.type))
-      .filter((action) =>
-        credentials.some(
-          (credential) => credential.credential_id === action.credential_id
-        )
+      .filter(
+        (action) =>
+          post.credentials.some(
+            (credential) => credential.credential_id === action.credential_id
+          ) ||
+          (action.credential_id ===
+            'ERC20_BALANCE:8453:0x0db510e79909666d6dec7f5e49370838c16d950f' &&
+            credentials.some(
+              (credential) =>
+                credential.credential_id ===
+                'ERC20_BALANCE:8453:0x0db510e79909666d6dec7f5e49370838c16d950f'
+            ))
       )
-  }, [data, credentials])
+    if (!validActions) return []
 
-  const hasActions = actions && actions.length > 0
+    return validActions.filter((action) => {
+      if (action.type === ActionType.COPY_POST_TWITTER) {
+        return !post.relationships.some(
+          (c) => c.targetAccount === action.metadata.twitter
+        )
+      }
+      if (action.type === ActionType.COPY_POST_FARCASTER) {
+        return !post.relationships.some(
+          (c) => c.targetAccount === action.metadata.fid.toString()
+        )
+      }
+      if (action.type === ActionType.DELETE_POST_TWITTER) {
+        return post.relationships.some((c) => c.targetAccount === action.metadata.twitter)
+      }
+      if (action.type === ActionType.DELETE_POST_FARCASTER) {
+        return post.relationships.some(
+          (c) => c.targetAccount === action.metadata.fid.toString()
+        )
+      }
+      return true
+    })
+  }, [data, post.credentials])
+
   const hasReveal = post.reveal && !post.reveal.phrase
 
   return (
     <YGroup>
-      {!hasActions && !hasReveal && (
+      {actions.length === 0 && !hasReveal && (
         <YGroup.Item>
           <View fd="row" gap="$2" px="$3.5" py="$2.5">
             <Text fos="$2" fow="400" color="$color11">
@@ -46,10 +76,9 @@ export function PostActionsContent({
           </View>
         </YGroup.Item>
       )}
-      {hasActions &&
-        actions?.map((action) => (
-          <PostAction key={action.id} post={post} action={action} />
-        ))}
+      {actions.map((action) => (
+        <PostAction key={action.id} post={post} action={action} />
+      ))}
       {hasReveal && (
         <YGroup.Item>
           <View

@@ -8,6 +8,7 @@ import { Link } from 'solito/link'
 import { Clanker } from '../../svg/clanker'
 import { useAuth } from '../../../providers'
 import { CommunitySettings } from '../settings'
+import { OpenSea } from '../../svg/opensea'
 
 export function CommunityActions({ community }: { community: Community }) {
   const chain = getChain(Number(community.token.chain_id))
@@ -93,32 +94,69 @@ export function CommunityActions({ community }: { community: Community }) {
               </Link>
             </YGroup.Item>
           )}
-          <YGroup.Item>
-            <Link
-              href={`https://app.uniswap.org/swap?outputCurrency=${community.token.address}&chain=${chain.id}&inputCurrency=ETH`}
-              target="_blank"
-            >
-              <View fd="row" gap="$2" px="$3.5" py="$2.5" hoverStyle={{ bg: '$color5' }}>
-                <Uniswap size={16} />
-                <Text fos="$2" fow="400">
-                  Uniswap
-                </Text>
-              </View>
-            </Link>
-          </YGroup.Item>
-          <YGroup.Item>
-            <Link
-              href={`https://dexscreener.com/${chain.name.toLowerCase()}/${community.token.address}`}
-              target="_blank"
-            >
-              <View fd="row" gap="$2" px="$3.5" py="$2.5" hoverStyle={{ bg: '$color5' }}>
-                <DexScreener size={16} />
-                <Text fos="$2" fow="400">
-                  DexScreener
-                </Text>
-              </View>
-            </Link>
-          </YGroup.Item>
+          {community.token.type === ContractType.ERC20 && (
+            <YGroup.Item>
+              <Link
+                href={`https://app.uniswap.org/swap?outputCurrency=${community.token.address}&chain=${chain.id}&inputCurrency=ETH`}
+                target="_blank"
+              >
+                <View
+                  fd="row"
+                  gap="$2"
+                  px="$3.5"
+                  py="$2.5"
+                  hoverStyle={{ bg: '$color5' }}
+                >
+                  <Uniswap size={16} />
+                  <Text fos="$2" fow="400">
+                    Uniswap
+                  </Text>
+                </View>
+              </Link>
+            </YGroup.Item>
+          )}
+          {community.token.type === ContractType.ERC20 && (
+            <YGroup.Item>
+              <Link
+                href={`https://dexscreener.com/${chain.name.toLowerCase()}/${community.token.address}`}
+                target="_blank"
+              >
+                <View
+                  fd="row"
+                  gap="$2"
+                  px="$3.5"
+                  py="$2.5"
+                  hoverStyle={{ bg: '$color5' }}
+                >
+                  <DexScreener size={16} />
+                  <Text fos="$2" fow="400">
+                    DexScreener
+                  </Text>
+                </View>
+              </Link>
+            </YGroup.Item>
+          )}
+          {community.token.type === ContractType.ERC721 && (
+            <YGroup.Item>
+              <Link
+                href={`https://opensea.io/assets/${chain.name.toLowerCase()}/${community.token.address}`}
+                target="_blank"
+              >
+                <View
+                  fd="row"
+                  gap="$2"
+                  px="$3.5"
+                  py="$2.5"
+                  hoverStyle={{ bg: '$color5' }}
+                >
+                  <OpenSea size={16} />
+                  <Text fos="$2" fow="400">
+                    OpenSea
+                  </Text>
+                </View>
+              </Link>
+            </YGroup.Item>
+          )}
           <YGroup.Item>
             <Link
               href={`https://basescan.org/token/${community.token.address}`}

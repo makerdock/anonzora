@@ -33,7 +33,12 @@ export function timeAgo(timestamp: string): string {
 }
 
 export function formatAmount(num: number): string {
-  if (num < 1000) return num.toString()
+  if (num < 1000) {
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 5,
+    })
+  }
   const units = ['K', 'M', 'B', 'T']
   const unitIndex = Math.floor(Math.log10(num) / 3) - 1
   const unitValue = 1000 ** (unitIndex + 1)
