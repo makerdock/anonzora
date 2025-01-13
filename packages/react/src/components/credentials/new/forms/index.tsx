@@ -1,5 +1,5 @@
 import { View } from '@anonworld/ui'
-import { CredentialType } from '@anonworld/common'
+import { CredentialType, Vault } from '@anonworld/common'
 import { ERC20CredentialForm } from './erc20-balance'
 import { ERC721CredentialForm } from './erc721-balance'
 import { FarcasterFidForm } from './farcaster-fid'
@@ -11,6 +11,7 @@ export function NewCredentialForm({
   isOpen,
   setIsOpen,
   parentId,
+  vault,
 }: {
   credentialType: CredentialType
   initialTokenId?: { chainId: number; address: string }
@@ -18,6 +19,7 @@ export function NewCredentialForm({
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   parentId?: string
+  vault?: Vault
 }) {
   if (credentialType === CredentialType.ERC20_BALANCE) {
     return (
@@ -27,6 +29,7 @@ export function NewCredentialForm({
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         parentId={parentId}
+        vault={vault}
       />
     )
   }
@@ -38,11 +41,19 @@ export function NewCredentialForm({
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         parentId={parentId}
+        vault={vault}
       />
     )
   }
   if (credentialType === CredentialType.FARCASTER_FID) {
-    return <FarcasterFidForm isOpen={isOpen} setIsOpen={setIsOpen} parentId={parentId} />
+    return (
+      <FarcasterFidForm
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        parentId={parentId}
+        vault={vault}
+      />
+    )
   }
   return <View />
 }

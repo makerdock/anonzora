@@ -1,22 +1,16 @@
-import { LogOut, Pencil } from '@tamagui/lucide-icons'
-import { Dialog, Popover, Text, View, YGroup } from '@anonworld/ui'
+import { Check, LogOut } from '@tamagui/lucide-icons'
+import { Popover, Text, XStack, YGroup } from '@anonworld/ui'
 import { NamedExoticComponent, ReactNode, useState } from 'react'
-import { useAuth } from '../../providers'
+import { useAuth, useCredentials } from '../../providers'
 import { formatHexId } from '@anonworld/common'
-import { useVaults } from '../../hooks/use-vaults'
 import { VaultAvatar } from '../vaults/avatar'
-import { Link } from 'solito/link'
-import { VaultSettings } from '../vaults/settings'
 
 export function AuthActions() {
-  const { logout } = useAuth()
-  const { data: vaults } = useVaults()
-  const id = formatHexId(vaults?.[0]?.id ?? '')
+  const { logout, passkeyId } = useAuth()
+  const { vault } = useCredentials()
   const [isOpen, setIsOpen] = useState(false)
 
-  const vault = vaults?.[0]
-
-  if (!vault) {
+  if (!passkeyId) {
     return null
   }
 
@@ -28,7 +22,7 @@ export function AuthActions() {
         }}
         cursor="pointer"
       >
-        <VaultAvatar vaultId={vault.id} imageUrl={vault.image_url} size={32} />
+        <VaultAvatar vaultId={vault?.id} imageUrl={vault?.image_url} size={32} />
       </Popover.Trigger>
       <Popover.Content
         enterStyle={{ y: -10, opacity: 0 }}
@@ -46,35 +40,37 @@ export function AuthActions() {
         bordered
         overflow="hidden"
       >
-        {vault && isOpen && (
+        {isOpen && (
           <YGroup>
-            <VaultSettings vault={vault}>
-              <Dialog.Trigger asChild>
-                <ActionItem Icon={Pencil} label="Edit Profile" />
-              </Dialog.Trigger>
-            </VaultSettings>
-            {vaults?.map((vault) => {
-              const displayId = formatHexId(vault.id)
-              return (
-                <Link key={vault.id} href={`/profiles/${vault.id}`}>
-                  <ActionItem
-                    label={vault.username ?? displayId}
-                    image={
-                      <VaultAvatar
-                        vaultId={vault.id}
-                        imageUrl={vault.image_url}
-                        size={16}
-                      />
-                    }
-                  />
-                </Link>
-              )
-            })}
+            <VaultSelect />
             <ActionItem label="Logout" onPress={logout} Icon={LogOut} destructive />
           </YGroup>
         )}
       </Popover.Content>
     </Popover>
+  )
+}
+
+function VaultSelect() {
+  const { vaults, vault: selectedVault, switchVault } = useCredentials()
+
+  return (
+    <>
+      {vaults.map((vault) => {
+        const displayId = formatHexId(vault.id)
+        return (
+          <ActionItem
+            key={vault.id}
+            label={vault.username ?? displayId}
+            image={
+              <VaultAvatar vaultId={vault.id} imageUrl={vault.image_url} size={16} />
+            }
+            selected={vault.id === selectedVault?.id}
+            onPress={() => switchVault(vault)}
+          />
+        )
+      })}
+    </>
   )
 }
 
@@ -84,18 +80,20 @@ function ActionItem({
   Icon,
   image,
   destructive = false,
+  selected = false,
 }: {
   label: string
   onPress?: () => void
   Icon?: NamedExoticComponent<any>
   image?: ReactNode
   destructive?: boolean
+  selected?: boolean
 }) {
   return (
     <YGroup.Item>
-      <View
+      <XStack
         onPress={onPress}
-        fd="row"
+        jc="space-between"
         ai="center"
         gap="$2"
         px="$3.5"
@@ -103,12 +101,15 @@ function ActionItem({
         hoverStyle={onPress ? { bg: '$color5' } : {}}
         cursor={onPress ? 'pointer' : 'default'}
       >
-        {Icon && <Icon size={16} color={destructive ? '$red9' : undefined} />}
-        {image}
-        <Text fos="$2" fow="400" color={destructive ? '$red9' : undefined}>
-          {label}
-        </Text>
-      </View>
+        <XStack ai="center" gap="$2">
+          {Icon && <Icon size={16} color={destructive ? '$red9' : undefined} />}
+          {image}
+          <Text fos="$2" fow="400" color={destructive ? '$red9' : undefined}>
+            {label}
+          </Text>
+        </XStack>
+        {selected && <Check size={16} color="$color12" />}
+      </XStack>
     </YGroup.Item>
   )
 }

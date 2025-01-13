@@ -1,6 +1,6 @@
 import { Adapt, Label, Select, Sheet, Spinner, Text, XStack, YStack } from '@anonworld/ui'
 import { NewERC721CredentialProvider, useNewERC721Credential } from './context'
-import { getChain, getSimplehashChain, SimplehashNFT } from '@anonworld/common'
+import { getChain, getSimplehashChain, SimplehashNFT, Vault } from '@anonworld/common'
 import { useAccount } from 'wagmi'
 import { useEffect, useMemo, useState } from 'react'
 import { TokenImage } from '../../../../tokens/image'
@@ -14,12 +14,14 @@ export function ERC721CredentialForm({
   isOpen,
   setIsOpen,
   parentId,
+  vault,
 }: {
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   parentId?: string
+  vault?: Vault
 }) {
   const { address } = useAccount()
 
@@ -30,6 +32,7 @@ export function ERC721CredentialForm({
       isOpen={isOpen}
       setIsOpen={setIsOpen}
       parentId={parentId}
+      vault={vault}
     >
       <YStack gap="$2">
         <ERC721WalletField />

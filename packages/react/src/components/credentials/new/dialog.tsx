@@ -3,7 +3,7 @@ import { Adapt, Dialog, Label, Sheet, Unspaced, View, YStack } from '@anonworld/
 import { CredentialTypeSelect } from './select'
 import { NewCredentialForm } from './forms'
 import { ReactNode, useState } from 'react'
-import { CredentialType } from '@anonworld/common'
+import { CredentialType, Vault } from '@anonworld/common'
 
 export function NewCredentialDialog({
   children,
@@ -11,12 +11,14 @@ export function NewCredentialDialog({
   initialBalance,
   initialCredentialType,
   parentId,
+  vault,
 }: {
   children?: ReactNode
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   initialCredentialType?: CredentialType
   parentId?: string
+  vault?: Vault
 }) {
   const [credentialType, setCredentialType] = useState<CredentialType>(
     initialCredentialType || CredentialType.ERC20_BALANCE
@@ -92,6 +94,7 @@ export function NewCredentialDialog({
               initialTokenId={initialTokenId}
               initialBalance={initialBalance}
               parentId={parentId}
+              vault={vault}
               isOpen={isOpen}
               setIsOpen={setIsOpen}
             />

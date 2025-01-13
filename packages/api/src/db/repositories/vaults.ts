@@ -36,6 +36,10 @@ export class VaultsRepository {
     return vault as DBVault
   }
 
+  async delete(vaultId: string) {
+    await this.db.delete(vaultsTable).where(eq(vaultsTable.id, vaultId))
+  }
+
   async getForPasskey(passkeyId: string) {
     const response = await this.db
       .select()

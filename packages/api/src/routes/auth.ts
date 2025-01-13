@@ -178,6 +178,31 @@ export const authRoutes = createElysia({ prefix: '/auth' })
     const replies = await notifications.getReplies(vaultId)
     return { data: replies }
   })
+  .delete('/vaults/:id', async ({ passkeyId, params, error }) => {
+    if (!passkeyId) {
+      return error(401, 'Unauthorized')
+    }
+    const vault = await db.vaults.get(params.id)
+    if (!vault) {
+      return error(404, 'Vault not found')
+    }
+    if (vault.passkey_id !== passkeyId) {
+      return error(403, 'Unauthorized')
+    }
+
+    await db.credentials.batchRemoveFromVault(params.id)
+    await db.vaults.delete(params.id)
+    return { success: true }
+  })
+  .post('/vaults', async ({ passkeyId }) => {
+    if (!passkeyId) {
+      return error(401, 'Unauthorized')
+    }
+    const vault = await db.vaults.create({
+      passkey_id: passkeyId,
+    })
+    return vault
+  })
   .post(
     '/vaults/:id/settings',
     async ({ body, passkeyId, params, error }) => {

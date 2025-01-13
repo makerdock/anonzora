@@ -15,9 +15,8 @@ import {
 import { ReactNode, useRef, useEffect, useState } from 'react'
 import { formatHexId, Vault } from '@anonworld/common'
 import { VaultAvatar } from '../avatar'
-import { X } from '../../svg/x'
 import { useUploadImage } from '../../../hooks/use-upload-image'
-import { Pencil, X as XIcon } from '@tamagui/lucide-icons'
+import { Pencil, X } from '@tamagui/lucide-icons'
 import { useMutation } from '@tanstack/react-query'
 import { useSDK } from '../../../providers'
 import { useVaults } from '../../../hooks/use-vaults'
@@ -44,9 +43,26 @@ export function VaultSettings({
       }
       return res
     },
-    onSuccess: () => {
-      refetchVaults()
-      refetchVault()
+    onSuccess: async () => {
+      setIsOpen(false)
+      await Promise.all([refetchVaults, refetchVault])
+    },
+  })
+  const {
+    mutate: deleteVault,
+    isPending: isDeleting,
+    error: deleteError,
+  } = useMutation({
+    mutationFn: async () => {
+      const res = await sdk.deleteVault(vault.id)
+      if (!res.data?.success) {
+        throw new Error('Failed to delete vault')
+      }
+      return res
+    },
+    onSuccess: async () => {
+      setIsOpen(false)
+      await refetchVaults()
     },
   })
 
@@ -105,35 +121,61 @@ export function VaultSettings({
           <EditImage vault={vault} imageUrl={imageUrl} setImageUrl={setImageUrl} />
           <EditUsername vault={vault} username={username} setUsername={setUsername} />
           <YStack gap="$2">
-            {error && (
+            {(error || deleteError) && (
               <Text color="$red11" fos="$1" textAlign="center" mt="$-2">
-                {error.message}
+                {error?.message || deleteError?.message}
               </Text>
             )}
-            <Button
-              bg="$color12"
-              br="$4"
-              disabledStyle={{ opacity: 0.5, bg: '$color12' }}
-              hoverStyle={{ opacity: 0.9, bg: '$color12' }}
-              pressStyle={{ opacity: 0.9, bg: '$color12' }}
-              onPress={() => {
-                mutate({ imageUrl, username })
-              }}
-              disabled={isPending}
-            >
-              {!isPending ? (
-                <Text fos="$3" fow="600" color="$color1">
-                  Save
-                </Text>
-              ) : (
-                <XStack gap="$2" alignItems="center">
-                  <Spinner color="$color1" />
-                  <Text fos="$2" fow="600" color="$color1">
-                    Saving
+            <XStack gap="$2" ai="center" jc="space-between">
+              <Button
+                bg="$red8"
+                br="$4"
+                disabledStyle={{ opacity: 0.5, bg: '$red8' }}
+                hoverStyle={{ opacity: 0.9, bg: '$red8' }}
+                pressStyle={{ opacity: 0.9, bg: '$red8' }}
+                onPress={() => {
+                  deleteVault()
+                }}
+                disabled={isDeleting}
+              >
+                {!isDeleting ? (
+                  <Text fos="$3" fow="600" color="$color12">
+                    Delete
                   </Text>
-                </XStack>
-              )}
-            </Button>
+                ) : (
+                  <XStack gap="$2" alignItems="center">
+                    <Spinner color="$color12" />
+                    <Text fos="$2" fow="600" color="$color12">
+                      Deleting
+                    </Text>
+                  </XStack>
+                )}
+              </Button>
+              <Button
+                bg="$color12"
+                br="$4"
+                disabledStyle={{ opacity: 0.5, bg: '$color12' }}
+                hoverStyle={{ opacity: 0.9, bg: '$color12' }}
+                pressStyle={{ opacity: 0.9, bg: '$color12' }}
+                onPress={() => {
+                  mutate({ imageUrl, username })
+                }}
+                disabled={isPending}
+              >
+                {!isPending ? (
+                  <Text fos="$3" fow="600" color="$color1">
+                    Save Profile
+                  </Text>
+                ) : (
+                  <XStack gap="$2" alignItems="center">
+                    <Spinner color="$color1" />
+                    <Text fos="$2" fow="600" color="$color1">
+                      Saving
+                    </Text>
+                  </XStack>
+                )}
+              </Button>
+            </XStack>
           </YStack>
           <Unspaced>
             <Dialog.Close asChild>
@@ -258,7 +300,7 @@ function EditImage({
               setImageUrl(null)
             }}
           >
-            <XIcon color="$red11" size={12} strokeWidth={2.25} />
+            <X color="$red11" size={12} strokeWidth={2.25} />
           </View>
         )}
       </View>

@@ -31,7 +31,7 @@ export function CredentialDisplay({
         <CredentialTypeDisplay credential={credential} />
       </View>
       {credential.id && (
-        <View position="absolute" top="$-2" right="$0" $xs={{ right: '$0' }}>
+        <View position="absolute" top="$-2" right="$-2">
           <CredentialActions credential={credential as CredentialWithId} />
         </View>
       )}

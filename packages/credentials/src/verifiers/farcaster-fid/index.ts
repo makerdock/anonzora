@@ -20,6 +20,8 @@ const ID_OF_STORAGE_SLOT = 9
 export type FarcasterFidArgs = {
   address: string
   verifiedFid: bigint
+  signature: string
+  message: string
 }
 
 export type FarcasterFidPublicData = {
@@ -58,7 +60,7 @@ export class FarcasterFidVerifier extends Circuit implements Verifier {
   }
 
   async buildInput(args: FarcasterFidArgs): Promise<{
-    input: Omit<FarcasterFidInputData, 'signature' | 'messageHash'>
+    input: FarcasterFidInputData
   }> {
     const storageSlotHex = pad(toHex(ID_OF_STORAGE_SLOT))
     const storageKey = keccak256(
@@ -79,6 +81,8 @@ export class FarcasterFidVerifier extends Circuit implements Verifier {
       contractAddress: ID_REGISTRY_ADDRESS,
       storageSlot: storageSlotHex,
       verifiedFid: `0x${args.verifiedFid.toString(16)}`,
+      signature: args.signature,
+      messageHash: hashMessage(args.message),
     }
 
     return {

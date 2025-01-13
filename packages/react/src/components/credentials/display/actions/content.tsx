@@ -2,7 +2,6 @@ import { Plus, Minus, RefreshCw, Trash } from '@tamagui/lucide-icons'
 import { Dialog, Spinner, Text, View, YGroup } from '@anonworld/ui'
 import { CredentialType } from '@anonworld/common'
 import { NewCredential, useCredentials, useToken } from '../../../..'
-import { useVaults } from '../../../../hooks/use-vaults'
 import { NamedExoticComponent, useState } from 'react'
 import { CredentialWithId } from '@anonworld/common'
 import { formatUnits } from 'viem'
@@ -12,8 +11,12 @@ export function CredentialActionsContent({
 }: {
   credential: CredentialWithId
 }) {
-  const credentials = useCredentials()
-  const { data: vaults } = useVaults()
+  const {
+    vaults,
+    addToVault,
+    removeFromVault,
+    delete: deleteCredential,
+  } = useCredentials()
 
   return (
     <YGroup>
@@ -22,7 +25,7 @@ export function CredentialActionsContent({
           label="Add to profile"
           onPress={async () => {
             if (!vaults || vaults.length === 0) return
-            await credentials.addToVault(vaults[0], credential.id)
+            await addToVault(vaults[0], credential)
           }}
           Icon={Plus}
         />
@@ -32,7 +35,7 @@ export function CredentialActionsContent({
           label="Remove from profile"
           onPress={async () => {
             if (!credential.vault_id) return
-            await credentials.removeFromVault(credential.vault_id, credential.id)
+            await removeFromVault(credential.vault_id, credential)
           }}
           Icon={Minus}
         />
@@ -40,7 +43,7 @@ export function CredentialActionsContent({
       <ReverifyButton credential={credential} />
       <ActionButton
         label="Delete"
-        onPress={() => credentials.delete(credential.id)}
+        onPress={() => deleteCredential(credential.id)}
         Icon={Trash}
         destructive
       />

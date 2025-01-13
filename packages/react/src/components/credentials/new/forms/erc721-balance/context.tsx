@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { ContractType, CredentialType, StorageType } from '@anonworld/common'
+import { ContractType, CredentialType, StorageType, Vault } from '@anonworld/common'
 import { useCredentials, useSDK } from '../../../../../providers'
 import { useAccount } from 'wagmi'
 
@@ -27,6 +27,7 @@ export function NewERC721CredentialProvider({
   parentId,
   isOpen,
   setIsOpen,
+  vault,
 }: {
   children: React.ReactNode
   initialTokenId?: { chainId: number; address: string }
@@ -34,6 +35,7 @@ export function NewERC721CredentialProvider({
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   parentId?: string
+  vault?: Vault
 }) {
   const { connectWallet, isConnecting } = useSDK()
   const [isConnectingWallet, setIsConnectingWallet] = useState(false)
@@ -41,7 +43,7 @@ export function NewERC721CredentialProvider({
     { chainId: number; address: string } | undefined
   >(initialTokenId)
   const { address } = useAccount()
-  const { add } = useCredentials()
+  const { add, addToVault } = useCredentials()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>()
   const { sdk } = useSDK()
@@ -87,7 +89,7 @@ export function NewERC721CredentialProvider({
         throw new Error('Failed to find balance storage slot')
       }
 
-      await add(
+      const credential = await add(
         CredentialType.ERC721_BALANCE,
         {
           address,
@@ -98,6 +100,10 @@ export function NewERC721CredentialProvider({
         },
         parentId
       )
+
+      if (vault) {
+        await addToVault(vault, credential)
+      }
 
       setIsLoading(false)
       setIsOpen(false)

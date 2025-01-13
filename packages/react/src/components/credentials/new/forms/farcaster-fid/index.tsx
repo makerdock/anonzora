@@ -3,18 +3,26 @@ import { SubmitButton } from '../components/submit-button'
 import { SiwfField } from '../components/siwf-field'
 import { useEffect, useMemo } from 'react'
 import { NewFarcasterFidProvider, useNewFarcasterFid } from './context'
+import { Vault } from '@anonworld/common'
 
 export function FarcasterFidForm({
   isOpen,
   setIsOpen,
   parentId,
+  vault,
 }: {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   parentId?: string
+  vault?: Vault
 }) {
   return (
-    <NewFarcasterFidProvider isOpen={isOpen} setIsOpen={setIsOpen} parentId={parentId}>
+    <NewFarcasterFidProvider
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      parentId={parentId}
+      vault={vault}
+    >
       <YStack gap="$2">
         <FarcasterFidSiwfField />
         <FidField />

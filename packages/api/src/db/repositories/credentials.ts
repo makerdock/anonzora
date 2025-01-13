@@ -87,6 +87,13 @@ export class CredentialsRepository {
       .where(eq(credentialsTable.id, credentialId))
   }
 
+  async batchRemoveFromVault(vaultId: string) {
+    await this.db
+      .update(credentialsTable)
+      .set({ vault_id: null })
+      .where(eq(credentialsTable.vault_id, vaultId))
+  }
+
   async getPosts(hash: string) {
     return await this.db
       .select()

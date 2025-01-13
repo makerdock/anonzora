@@ -1,4 +1,4 @@
-import { CredentialType } from '@anonworld/common'
+import { CredentialType, Vault } from '@anonworld/common'
 import { NewCredentialDialog } from './dialog'
 import { Button, Text, XStack } from '@anonworld/ui'
 import { Dialog } from '@anonworld/ui'
@@ -11,12 +11,14 @@ export function NewCredential({
   initialTokenId,
   initialBalance,
   initialCredentialType,
+  vault,
   children,
 }: {
   parentId?: string
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   initialCredentialType?: CredentialType
+  vault?: Vault
   children?: ReactNode
 }) {
   return (
@@ -33,6 +35,7 @@ export function NewCredential({
         initialBalance={initialBalance}
         initialCredentialType={initialCredentialType}
         parentId={parentId}
+        vault={vault}
       >
         {children || (
           <Dialog.Trigger asChild>

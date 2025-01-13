@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useCredentials } from '../../../../../providers'
-import { CredentialType } from '@anonworld/common'
+import { CredentialType, Vault } from '@anonworld/common'
 import { FarcasterAuth } from '../components/siwf-field'
 
 const LOCAL_STORAGE_KEY = 'farcaster-auth'
@@ -26,13 +26,15 @@ export function NewFarcasterFidProvider({
   isOpen,
   setIsOpen,
   parentId,
+  vault,
 }: {
   children: React.ReactNode
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   parentId?: string
+  vault?: Vault
 }) {
-  const { add } = useCredentials()
+  const { add, addToVault } = useCredentials()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>()
   const [fid, setFid] = useState<number>(0)
@@ -64,7 +66,7 @@ export function NewFarcasterFidProvider({
         throw new Error('No fid connected')
       }
 
-      await add(
+      const credential = await add(
         CredentialType.FARCASTER_FID,
         {
           verifiedFid: BigInt(fid),
@@ -74,6 +76,10 @@ export function NewFarcasterFidProvider({
         },
         parentId
       )
+
+      if (vault) {
+        await addToVault(vault, credential)
+      }
 
       setIsLoading(false)
       setIsOpen(false)

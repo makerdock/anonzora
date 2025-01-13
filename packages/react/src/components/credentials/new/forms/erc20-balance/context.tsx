@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { ContractType, CredentialType, StorageType } from '@anonworld/common'
+import { ContractType, CredentialType, StorageType, Vault } from '@anonworld/common'
 import { useCredentials, useSDK } from '../../../../../providers'
 import { erc20Abi, formatUnits, parseUnits } from 'viem'
 import { useAccount, useReadContract } from 'wagmi'
@@ -35,6 +35,7 @@ export function NewERC20CredentialProvider({
   isOpen,
   setIsOpen,
   parentId,
+  vault,
 }: {
   children: React.ReactNode
   initialTokenId?: { chainId: number; address: string }
@@ -42,6 +43,7 @@ export function NewERC20CredentialProvider({
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   parentId?: string
+  vault?: Vault
 }) {
   const { connectWallet, isConnecting } = useSDK()
   const [isConnectingWallet, setIsConnectingWallet] = useState(false)
@@ -56,7 +58,7 @@ export function NewERC20CredentialProvider({
       : 18
   )
   const { address } = useAccount()
-  const { add } = useCredentials()
+  const { add, addToVault } = useCredentials()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>()
   const { sdk } = useSDK()
@@ -129,7 +131,7 @@ export function NewERC20CredentialProvider({
         throw new Error('Failed to find balance storage slot')
       }
 
-      await add(
+      const credential = await add(
         CredentialType.ERC20_BALANCE,
         {
           address,
@@ -140,6 +142,10 @@ export function NewERC20CredentialProvider({
         },
         parentId
       )
+
+      if (vault) {
+        await addToVault(vault, credential)
+      }
 
       setIsLoading(false)
       setIsOpen(false)

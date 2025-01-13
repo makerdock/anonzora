@@ -12,7 +12,7 @@ import {
   YStack,
 } from '@anonworld/ui'
 import { NewERC20CredentialProvider, useNewERC20Credential } from './context'
-import { FungiblePosition, getChain, getZerionChain } from '@anonworld/common'
+import { FungiblePosition, getChain, getZerionChain, Vault } from '@anonworld/common'
 import { useAccount } from 'wagmi'
 import { formatAddress } from '@anonworld/common'
 import { useEffect, useMemo, useState } from 'react'
@@ -28,12 +28,14 @@ export function ERC20CredentialForm({
   isOpen,
   setIsOpen,
   parentId,
+  vault,
 }: {
   initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
   parentId?: string
+  vault?: Vault
 }) {
   const { address } = useAccount()
 
@@ -44,6 +46,7 @@ export function ERC20CredentialForm({
       isOpen={isOpen}
       setIsOpen={setIsOpen}
       parentId={parentId}
+      vault={vault}
     >
       <YStack gap="$2">
         <ERC20WalletField />

@@ -431,4 +431,18 @@ export class AnonWorldSDK {
       data: { score: number; credential: CredentialWithId; posts: number }[]
     }>('/leaderboard')
   }
+
+  async createVault() {
+    return await this.request<Vault>('/auth/vaults', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    })
+  }
+
+  async deleteVault(vaultId: string) {
+    return await this.request<{ success: boolean }>(`/auth/vaults/${vaultId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({}),
+    })
+  }
 }
