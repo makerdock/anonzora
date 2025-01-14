@@ -131,6 +131,10 @@ export function PostDisplay({
           ref={(scrollView) => {
             scrollView?.scrollToEnd({ animated: false })
           }}
+          contentContainerStyle={{
+            fg: 1,
+            jc: 'flex-end',
+          }}
         >
           <XStack ai="center" gap="$2">
             {!disableActions && post.relationships.length > 0 && (
