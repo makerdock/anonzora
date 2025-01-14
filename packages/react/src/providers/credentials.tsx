@@ -71,8 +71,15 @@ export const CredentialsProvider = ({
     getInitialCredentials()
   )
   const { signMessageAsync } = useSignMessage()
-  const { data: vaults, isFetched, refetch: refetchVaults } = useVaults()
+  const { data, isFetched, refetch: refetchVaults } = useVaults()
   const [vault, setVault] = useState<Vault | null>(getInitialVault())
+  const [vaults, setVaults] = useState<Vault[]>([])
+
+  useEffect(() => {
+    if (data && vaults.length === 0) {
+      setVaults(data)
+    }
+  }, [data, vaults])
 
   const isInitialized = useMemo(() => {
     return localCredentials !== null
@@ -154,14 +161,30 @@ export const CredentialsProvider = ({
   }
 
   const addToVault = async (vault: Vault, credential: CredentialWithId) => {
-    await sdk.addToVault(vault.id, credential.id)
+    setVaults(
+      (prev) =>
+        prev?.map((v) =>
+          v.id === vault.id
+            ? { ...vault, credentials: [...v.credentials, credential] }
+            : { ...v, credentials: v.credentials.filter((c) => c.id !== credential.id) }
+        ) ?? null
+    )
     setLocalCredentials(
       (prev) => prev?.filter((cred) => cred.id !== credential.id) ?? null
     )
-    await refetchVaults()
+    sdk.addToVault(vault.id, credential.id)
+    refetchVaults()
   }
 
   const removeFromVault = async (vaultId: string, credential: CredentialWithId) => {
+    setVaults(
+      (prev) =>
+        prev?.map((v) =>
+          v.id === vaultId
+            ? { ...v, credentials: v.credentials.filter((c) => c.id !== credential.id) }
+            : v
+        ) ?? null
+    )
     setLocalCredentials((prev) => {
       const creds = [...(prev ?? [])]
       creds.push({
@@ -171,8 +194,8 @@ export const CredentialsProvider = ({
       })
       return creds
     })
-    await sdk.removeFromVault(vaultId, credential.id)
-    await refetchVaults()
+    sdk.removeFromVault(vaultId, credential.id)
+    refetchVaults()
   }
 
   const addVault = async () => {
