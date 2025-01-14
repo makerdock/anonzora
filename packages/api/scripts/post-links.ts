@@ -95,7 +95,7 @@ export async function handleTwitterPosts() {
     if (!tweet.success) {
       if (tweet.error) {
         console.error(`[post-links] [twitter] failed to create tweet for ${link}`)
-        return tweet.rateLimitReset ?? currentTimestamp + 60 * 5
+        return (tweet.rateLimitReset ?? currentTimestamp) + 60 * 10
       }
       console.error(`[post-links] [twitter] skipping tweet for ${link}`)
       await db.relationships.delete('twitter', replyToTweetId)

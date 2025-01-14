@@ -85,10 +85,20 @@ const updateTwitterAccounts = async () => {
 
 const main = async () => {
   let i = 0
+  let twitterWaitUntilTimestamp: number | undefined = undefined
   while (true) {
     try {
       await handleFarcasterPosts()
-      await handleTwitterPosts()
+      if (
+        twitterWaitUntilTimestamp === undefined ||
+        twitterWaitUntilTimestamp < new Date().getTime() / 1000
+      ) {
+        twitterWaitUntilTimestamp = await handleTwitterPosts()
+      } else {
+        console.log(
+          `[updates] [twitter] waiting for ${twitterWaitUntilTimestamp - new Date().getTime() / 1000} seconds`
+        )
+      }
       if (i % 10 === 0) {
         await updateTokens()
       }
