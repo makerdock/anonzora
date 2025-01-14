@@ -142,7 +142,7 @@ export class FeedService {
     const BATCH_SIZE = 100
     const casts: Record<string, FarcasterCast> = {}
 
-    const cached = await redis.getPosts(hashes)
+    const cached = await redis.getCasts(hashes)
     for (let i = 0; i < hashes.length; i++) {
       const item = cached[i]
       if (item) {
@@ -160,7 +160,7 @@ export class FeedService {
         response.result.casts.forEach((cast) => {
           casts[cast.hash] = cast
         })
-        await redis.setPosts(response.result.casts)
+        await redis.setCasts(response.result.casts)
       }
     }
 

@@ -5,17 +5,19 @@ export function Badge({
   icon,
   onPress,
   destructive = false,
+  highlight = false,
 }: {
   children?: React.ReactNode
   icon?: React.ReactNode
   onPress?: () => void
   destructive?: boolean
+  highlight?: boolean
 }) {
   return (
     <View
       theme="surface3"
-      bg={destructive ? '$red3' : '$background'}
-      bc={destructive ? '$red9' : '$borderColor'}
+      bg={destructive ? '$red3' : highlight ? '$green3' : '$background'}
+      bc={destructive ? '$red9' : highlight ? '$green9' : '$borderColor'}
       bw="$0.25"
       br="$12"
       px={children ? '$2' : '$1.5'}
@@ -29,7 +31,10 @@ export function Badge({
     >
       {icon}
       {children && (
-        <Text fos="$1" color={destructive ? '$red12' : undefined}>
+        <Text
+          fos="$1"
+          color={destructive ? '$red12' : highlight ? '$green12' : undefined}
+        >
           {children}
         </Text>
       )}

@@ -1,7 +1,12 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { credentialsTable, vaultsTable, postCredentialsTable } from '../schema'
+import {
+  credentialsTable,
+  vaultsTable,
+  postCredentialsTable,
+  postRelationshipsTable,
+} from '../schema'
 import { DBCredential } from '../types'
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 
 export class CredentialsRepository {
   private db: ReturnType<typeof drizzle>
@@ -38,6 +43,25 @@ export class CredentialsRepository {
   }
 
   async getByHash(hash: string) {
+    const [cred] = await this.db
+      .select()
+      .from(credentialsTable)
+      .where(eq(credentialsTable.hash, hash))
+      .limit(1)
+
+    return cred as DBCredential | null
+  }
+
+  async getChildren(parentId: string) {
+    const creds = await this.db
+      .select()
+      .from(credentialsTable)
+      .where(eq(credentialsTable.parent_id, parentId))
+
+    return creds as DBCredential[]
+  }
+
+  async getByHashWithVault(hash: string) {
     const [cred] = await this.db
       .select()
       .from(credentialsTable)
@@ -95,14 +119,10 @@ export class CredentialsRepository {
       .where(eq(credentialsTable.vault_id, vaultId))
   }
 
-  async getPosts(hash: string) {
+  async getPostsForCredentialIds(credentialIds: string[]) {
     return await this.db
       .select()
       .from(postCredentialsTable)
-      .innerJoin(
-        credentialsTable,
-        eq(postCredentialsTable.credential_id, credentialsTable.id)
-      )
-      .where(eq(credentialsTable.hash, hash))
+      .where(inArray(postCredentialsTable.credential_id, credentialIds))
   }
 }

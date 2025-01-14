@@ -171,66 +171,70 @@ const getSubscription = async (lastEventId?: number) => {
   return subscription
 }
 
-async function live() {
-  let lastEventId = Number(await redis.getLastEventId())
+async function live(lastEventId: number) {
+  let eventId = lastEventId
+  console.log(`[live] fromId: ${eventId}`)
 
-  let sets = await getFidSets()
+  let intervalId: ReturnType<typeof setInterval> | undefined
 
-  console.log(`[live] fromId: ${lastEventId}`)
+  try {
+    let sets = await getFidSets()
 
-  let subscription = await getSubscription(lastEventId)
+    let subscription = await getSubscription(lastEventId)
 
-  let i = 0
-  let lastEventTime = Date.now()
+    let i = 0
+    let lastEventTime = Date.now()
 
-  const intervalId = setInterval(() => {
-    const now = Date.now()
-    if (now - lastEventTime > 5000) {
-      console.log('[live] No events received for 5 seconds, closing subscription...')
-      subscription.destroy()
-      clearInterval(intervalId)
+    intervalId = setInterval(() => {
+      const now = Date.now()
+      if (now - lastEventTime > 5000) {
+        console.log('[live] No events received for 5 seconds, closing subscription...')
+        subscription.destroy()
+        clearInterval(intervalId)
+      }
+    }, 1000)
+
+    for await (const event of subscription) {
+      if (subscription.closed || subscription.destroyed) {
+        break
+      }
+
+      try {
+        await handleEvent(sets, event as HubEvent)
+      } catch (e) {
+        console.error(e)
+      }
+
+      lastEventTime = Date.now()
+      eventId = event.id
+
+      i++
+      if (i > 1000) {
+        i = 0
+        await redis.setLastEventId(event.id.toString())
+        console.log(`[live] lastEventId: ${event.id}`)
+      }
     }
-  }, 1000)
-
-  for await (const event of subscription) {
-    if (subscription.closed || subscription.destroyed) {
-      break
-    }
-
-    try {
-      await handleEvent(sets, event as HubEvent)
-    } catch (e) {
+  } catch (e) {
+    if (
+      e instanceof Error &&
+      !['Premature close', 'Response message parsing'].some((m) => e.message.includes(m))
+    ) {
       console.error(e)
     }
-
-    lastEventTime = Date.now()
-
-    i++
-    if (i > 1000) {
-      i = 0
-      lastEventId = event.id
-      await redis.setLastEventId(event.id.toString())
-      console.log(`[live] lastEventId: ${event.id}`)
+  } finally {
+    if (intervalId) {
+      clearInterval(intervalId)
     }
   }
 
-  clearInterval(intervalId)
+  return eventId
 }
 
 async function main() {
+  let lastEventId = Number(await redis.getLastEventId())
   while (true) {
-    try {
-      await live()
-    } catch (e) {
-      if (
-        e instanceof Error &&
-        !['Premature close', 'Response message parsing'].some((m) =>
-          e.message.includes(m)
-        )
-      ) {
-        console.error(e)
-      }
-    }
+    lastEventId = await live(lastEventId)
   }
 }
 

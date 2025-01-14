@@ -143,9 +143,9 @@ export function CredentialPostFeed({ hash }: { hash: string }) {
           </Link>
         ))
       )}
-      <YStack ai="center" ref={loadMoreRef} p="$2">
+      {/* <YStack ai="center" ref={loadMoreRef} p="$2">
         {hasNextPage && <Spinner color="$color12" />}
-      </YStack>
+      </YStack> */}
     </YStack>
   )
 }

@@ -127,7 +127,7 @@ export function Header() {
                 </Text>
               </View>
             </Link>
-            {/* <Link href="/leaderboard" style={{ textDecoration: 'none' }}>
+            <Link href="/leaderboard" style={{ textDecoration: 'none' }}>
               <View
                 bg={pathname.startsWith(Pathname.LEADERBOARD) ? '$color12' : '$color1'}
                 py="$2"
@@ -152,7 +152,7 @@ export function Header() {
                   Leaderboard
                 </Text>
               </View>
-            </Link> */}
+            </Link>
           </View>
         </View>
         <View fd="row" gap="$3" ai="center">

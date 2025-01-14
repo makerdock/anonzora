@@ -426,15 +426,16 @@ export class AnonWorldSDK {
     )
   }
 
-  async getLeaderboard() {
+  async getLeaderboard(timeframe: 'all-time' | 'week' | 'last-week', community?: string) {
     return await this.request<{
       data: {
         score: number
         credential: CredentialWithId
         posts: number
         likes: number
+        replies: number
       }[]
-    }>('/leaderboard')
+    }>(`/leaderboard?timeframe=${timeframe}${community ? `&community=${community}` : ''}`)
   }
 
   async createVault() {

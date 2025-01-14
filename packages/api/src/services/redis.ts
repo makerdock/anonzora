@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis'
-import { FarcasterCast } from '@anonworld/common'
+import { FarcasterCast, FarcasterUser } from '@anonworld/common'
 
 export class RedisService {
   private readonly client: Redis
@@ -42,6 +42,15 @@ export class RedisService {
 
   async setPosts(posts: FarcasterCast[]) {
     const args = posts.flatMap((post) => [`post:v2:${post.hash}`, JSON.stringify(post)])
+    return this.client.mset(args)
+  }
+
+  async getCasts(hashes: string[]) {
+    return this.client.mget(hashes.map((hash) => `cast:v2:${hash}`))
+  }
+
+  async setCasts(posts: FarcasterCast[]) {
+    const args = posts.flatMap((post) => [`cast:v2:${post.hash}`, JSON.stringify(post)])
     return this.client.mset(args)
   }
 
@@ -111,12 +120,42 @@ export class RedisService {
     return this.client.set(`vault:challenge:${nonce}`, challenge, 'EX', 60 * 5)
   }
 
-  async getLeaderboard() {
-    return this.client.get('leaderboard')
+  async getLeaderboard(timeframe: string) {
+    return this.client.get(`leaderboard:${timeframe}`)
   }
 
-  async setLeaderboard(leaderboard: string) {
-    return this.client.set('leaderboard', leaderboard)
+  async setLeaderboard(timeframe: string, leaderboard: string) {
+    return this.client.set(`leaderboard:${timeframe}`, leaderboard)
+  }
+
+  async getCredentialPostsFeed(credentialId: string) {
+    return this.client.get(`credential:posts:feed:${credentialId}`)
+  }
+
+  async setCredentialPostsFeed(credentialId: string, feed: string) {
+    return this.client.set(`credential:posts:feed:${credentialId}`, feed, 'EX', 60 * 5)
+  }
+
+  async getVaultPostsFeed(vaultId: string) {
+    return this.client.get(`vault:posts:feed:${vaultId}`)
+  }
+
+  async setVaultPostsFeed(vaultId: string, feed: string) {
+    return this.client.set(`vault:posts:feed:${vaultId}`, feed, 'EX', 60 * 5)
+  }
+
+  async getFarcasterUsers(fids: number[]) {
+    return this.client.mget(fids.map((fid) => `farcaster:user:${fid}`))
+  }
+
+  async setFarcasterUsers(users: FarcasterUser[]) {
+    const pipeline = this.client.pipeline()
+
+    users.forEach((user) => {
+      pipeline.set(`farcaster:user:${user.fid}`, JSON.stringify(user), 'EX', 60 * 60)
+    })
+
+    return pipeline.exec()
   }
 }
 

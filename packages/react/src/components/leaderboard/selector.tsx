@@ -1,10 +1,11 @@
 import { Button, Popover, Text, View, XStack, YGroup } from '@anonworld/ui'
 import { ChevronDown } from '@tamagui/lucide-icons'
+import { useState } from 'react'
 
 const timeframes: Record<string, string> = {
   week: 'This Week',
   'last-week': 'Last Week',
-  all: 'All Time',
+  'all-time': 'All Time',
 }
 
 export function LeaderboardSelector({
@@ -14,9 +15,10 @@ export function LeaderboardSelector({
   selected: 'week' | 'last-week' | 'all-time'
   setSelected: (selected: 'week' | 'last-week' | 'all-time') => void
 }) {
+  const [isOpen, setIsOpen] = useState(false)
   return (
     <View ai="flex-end">
-      <Popover size="$5" placement="bottom">
+      <Popover size="$5" placement="bottom" open={isOpen} onOpenChange={setIsOpen}>
         <Popover.Trigger
           onPress={(e) => {
             e.stopPropagation()
@@ -51,14 +53,26 @@ export function LeaderboardSelector({
         >
           <YGroup>
             <ActionButton label="Timeframe" fow="600" bbw="$0.5" />
-            <ActionButton label={timeframes.week} onPress={() => setSelected('week')} />
             <ActionButton
-              label={timeframes['last-week']}
-              onPress={() => setSelected('last-week')}
+              label={timeframes.week}
+              onPress={() => {
+                setSelected('week')
+                setIsOpen(false)
+              }}
             />
             <ActionButton
-              label={timeframes.all}
-              onPress={() => setSelected('all-time')}
+              label={timeframes['last-week']}
+              onPress={() => {
+                setSelected('last-week')
+                setIsOpen(false)
+              }}
+            />
+            <ActionButton
+              label={timeframes['all-time']}
+              onPress={() => {
+                setSelected('all-time')
+                setIsOpen(false)
+              }}
             />
           </YGroup>
         </Popover.Content>

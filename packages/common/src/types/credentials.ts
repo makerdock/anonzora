@@ -29,7 +29,7 @@ export type FarcasterFidMetadata = {
 
 type BaseCredential = {
   id?: string
-  hash: string | null
+  hash: string
   credential_id: string
   proof?: CredentialProof
   verified_at: string | Date

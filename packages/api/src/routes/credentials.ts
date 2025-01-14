@@ -7,6 +7,7 @@ import { Credential, CredentialType, getChain } from '@anonworld/common'
 import { db } from '../db'
 import { CredentialsManager } from '@anonworld/credentials'
 import { feed } from '../services/feed'
+import { redis } from '../services/redis'
 
 export const credentialsRoutes = createElysia({ prefix: '/credentials' })
   .post(
@@ -117,16 +118,32 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
       reverified_id: undefined,
     }
   })
-  .get('/:hash/posts', async ({ params }) => {
-    const credentialPosts = await db.credentials.getPosts(params.hash)
-    const hashes = credentialPosts.map((p) => p.post_credentials.post_hash)
+  .get('/:hash/posts', async ({ params, error }) => {
+    const cached = await redis.getCredentialPostsFeed(params.hash)
+    if (cached) {
+      return { data: JSON.parse(cached) }
+    }
+
+    const credential = await db.credentials.getByHash(params.hash)
+    if (!credential) {
+      return error(404, 'Credential not found')
+    }
+
+    const children = await db.credentials.getChildren(credential.parent_id)
+    const credentialPosts = await db.credentials.getPostsForCredentialIds(
+      children.map((c) => c.id)
+    )
+    const hashes = credentialPosts.map((p) => p.post_hash)
     if (hashes.length === 0) return { data: [] }
 
-    const rawPosts = await db.posts.getFeedForHashes(hashes)
-    const posts = rawPosts.map((p) => p.parent_posts ?? p.posts)
+    const posts = await db.posts.getFeedForHashes(hashes)
+    console.log(credentialPosts.length, posts.length)
+    const result = await feed.getFeed(posts.map((p) => p.posts))
+    const data = result.filter((p) => !p.parent_hash)
 
-    const result = await feed.getFeed(posts)
+    await redis.setCredentialPostsFeed(params.hash, JSON.stringify(data))
+
     return {
-      data: result.filter((p) => !p.parent_hash),
+      data,
     }
   })

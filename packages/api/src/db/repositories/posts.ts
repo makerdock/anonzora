@@ -100,7 +100,6 @@ export class PostsRepository {
   }
 
   async getFeedForHashes(hashes: string[]) {
-    const parentPosts = alias(postsTable, 'parent_posts')
     const posts = await this.db
       .select()
       .from(postsTable)
@@ -108,7 +107,6 @@ export class PostsRepository {
         postRelationshipsTable,
         eq(postsTable.hash, postRelationshipsTable.target_id)
       )
-      .leftJoin(parentPosts, eq(parentPosts.hash, postRelationshipsTable.post_hash))
       .where(
         and(
           isNull(postsTable.deleted_at),
@@ -120,7 +118,6 @@ export class PostsRepository {
 
     return posts as {
       posts: DBPost
-      parent_posts: DBPost | null
       post_relationships: DBPostRelationship | null
     }[]
   }
