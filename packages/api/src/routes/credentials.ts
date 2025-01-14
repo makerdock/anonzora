@@ -137,9 +137,8 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
     if (hashes.length === 0) return { data: [] }
 
     const posts = await db.posts.getFeedForHashes(hashes)
-    console.log(credentialPosts.length, posts.length)
     const result = await feed.getFeed(posts.map((p) => p.posts))
-    const data = result.filter((p) => !p.parent_hash)
+    const data = result.filter((p) => !p.parent_hash && p.author.fid === 899289)
 
     await redis.setCredentialPostsFeed(params.hash, JSON.stringify(data))
 
