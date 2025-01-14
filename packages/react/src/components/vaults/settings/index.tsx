@@ -18,7 +18,7 @@ import { VaultAvatar } from '../avatar'
 import { useUploadImage } from '../../../hooks/use-upload-image'
 import { Pencil, X } from '@tamagui/lucide-icons'
 import { useMutation } from '@tanstack/react-query'
-import { useSDK } from '../../../providers'
+import { useCredentials, useSDK } from '../../../providers'
 import { useVaults } from '../../../hooks/use-vaults'
 import { useVault } from '../../../hooks'
 
@@ -35,6 +35,7 @@ export function VaultSettings({
   const { sdk } = useSDK()
   const { refetch: refetchVaults } = useVaults()
   const { refetch: refetchVault } = useVault(vault.id)
+  const credentials = useCredentials()
   const { mutate, isPending, error } = useMutation({
     mutationFn: async (args: { imageUrl: string | null; username: string | null }) => {
       const res = await sdk.updateVaultSettings(vault.id, args)
@@ -54,15 +55,10 @@ export function VaultSettings({
     error: deleteError,
   } = useMutation({
     mutationFn: async () => {
-      const res = await sdk.deleteVault(vault.id)
-      if (!res.data?.success) {
-        throw new Error('Failed to delete vault')
-      }
-      return res
+      await credentials.deleteVault(vault.id)
     },
     onSuccess: async () => {
       setIsOpen(false)
-      await refetchVaults()
     },
   })
 

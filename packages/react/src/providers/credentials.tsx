@@ -203,9 +203,11 @@ export const CredentialsProvider = ({
     if (response.error) {
       throw new Error(response.error.message)
     }
-    setVault(response.data)
-    localStorage.setItem(LOCAL_STORAGE_VAULT_KEY, JSON.stringify(response.data))
-    await refetchVaults()
+
+    const v = { ...response.data, credentials: [] }
+    setVaults((prev) => [...(prev ?? []), v])
+    localStorage.setItem(LOCAL_STORAGE_VAULT_KEY, JSON.stringify(v))
+    refetchVaults()
     return response.data
   }
 
@@ -215,11 +217,13 @@ export const CredentialsProvider = ({
       throw new Error(response.error.message)
     }
 
-    if (response.data.success) {
+    if (vault?.id === vaultId) {
       setVault(null)
-      localStorage.removeItem(LOCAL_STORAGE_VAULT_KEY)
-      await refetchVaults()
     }
+
+    setVaults((prev) => prev?.filter((v) => v.id !== vaultId) ?? null)
+    localStorage.removeItem(LOCAL_STORAGE_VAULT_KEY)
+    refetchVaults()
   }
 
   const switchVault = (vault: Vault) => {
