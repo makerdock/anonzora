@@ -4,6 +4,8 @@ import { PostImage } from '@/components/post-image'
 
 const sdk = new AnonWorldSDK(process.env.NEXT_PUBLIC_API_URL)
 
+export const revalidate = 60 * 5
+
 async function loadFont() {
   const response = await fetch(
     new URL(

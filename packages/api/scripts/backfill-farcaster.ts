@@ -8,7 +8,7 @@ const backfillReplies = async () => {
 
   console.log(`[backfill-replies] ${posts.length} posts`)
 
-  const toInsert = []
+  let toInsert = []
 
   for (let i = 0; i < posts.length; i++) {
     const post = posts[i]
@@ -49,24 +49,21 @@ const backfillReplies = async () => {
 
     if (i % 100 === 0) {
       console.log(`[backfill-replies] ${i} / ${posts.length}`)
+      await db.db
+        .insert(postRepliesTable)
+        .values(toInsert)
+        .onConflictDoUpdate({
+          target: [
+            postRepliesTable.post_hash,
+            postRepliesTable.fid,
+            postRepliesTable.reply_hash,
+          ],
+          set: {
+            created_at: sql`EXCLUDED.created_at`,
+          },
+        })
+      toInsert = []
     }
-  }
-
-  for (let i = 0; i < toInsert.length; i += 1000) {
-    console.log(`[backfill-replies] inserting ${i} / ${toInsert.length}`)
-    await db.db
-      .insert(postRepliesTable)
-      .values(toInsert.slice(i, i + 1000))
-      .onConflictDoUpdate({
-        target: [
-          postRepliesTable.post_hash,
-          postRepliesTable.fid,
-          postRepliesTable.reply_hash,
-        ],
-        set: {
-          created_at: sql`EXCLUDED.created_at`,
-        },
-      })
   }
 }
 
@@ -75,7 +72,7 @@ const backfillLikes = async () => {
 
   console.log(`[backfill-likes] ${posts.length} posts`)
 
-  const toInsert = []
+  let toInsert = []
 
   for (let i = 0; i < posts.length; i++) {
     const post = posts[i]
@@ -111,20 +108,17 @@ const backfillLikes = async () => {
 
     if (i % 100 === 0) {
       console.log(`[backfill-likes] ${i} / ${posts.length}`)
+      await db.db
+        .insert(postLikesTable)
+        .values(toInsert)
+        .onConflictDoUpdate({
+          target: [postLikesTable.post_hash, postLikesTable.fid],
+          set: {
+            created_at: sql`EXCLUDED.created_at`,
+          },
+        })
+      toInsert = []
     }
-  }
-
-  for (let i = 0; i < toInsert.length; i += 1000) {
-    console.log(`[backfill-likes] inserting ${i} / ${toInsert.length}`)
-    await db.db
-      .insert(postLikesTable)
-      .values(toInsert.slice(i, i + 1000))
-      .onConflictDoUpdate({
-        target: [postLikesTable.post_hash, postLikesTable.fid],
-        set: {
-          created_at: sql`EXCLUDED.created_at`,
-        },
-      })
   }
 }
 
@@ -139,3 +133,5 @@ export async function backfill() {
   await deleteIrrelevantReplies()
   await backfillLikes()
 }
+
+backfill()

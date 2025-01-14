@@ -4,6 +4,8 @@ import { CommunityImage } from '@/components/community-image'
 
 const sdk = new AnonWorldSDK(process.env.NEXT_PUBLIC_API_URL)
 
+export const revalidate = 60 * 5
+
 async function loadFont(weight: number) {
   const response = await fetch(
     new URL(`https://fonts.googleapis.com/css2?family=Geist:wght@${weight}&display=swap`)
