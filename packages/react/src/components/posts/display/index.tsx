@@ -119,20 +119,28 @@ export function PostDisplay({
       {post.embeds?.map((embed, index) => (
         <PostEmbed key={index} embed={embed} />
       ))}
-      <XStack jc="space-between" ai="flex-end">
+      <XStack jc="space-between" ai="center" gap="$2">
         <XStack ai="center" gap="$2">
           <LikeButton post={post} disableActions={disableActions} />
           <ReplyButton post={post} showCount disableActions={disableActions} />
           {post.reveal?.phrase && <RevealBadge reveal={post.reveal} />}
         </XStack>
-        <XStack ai="center" gap="$2">
-          {!disableActions && post.relationships.length > 0 && (
-            <View onPress={(e) => e.stopPropagation()}>
-              <PostCommunities post={post} />
-            </View>
-          )}
-          <Badge>{timeAgo(post.timestamp)}</Badge>
-        </XStack>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          ref={(scrollView) => {
+            scrollView?.scrollToEnd({ animated: false })
+          }}
+        >
+          <XStack ai="center" gap="$2">
+            {!disableActions && post.relationships.length > 0 && (
+              <View onPress={(e) => e.stopPropagation()}>
+                <PostCommunities post={post} />
+              </View>
+            )}
+            <Badge>{timeAgo(post.timestamp)}</Badge>
+          </XStack>
+        </ScrollView>
       </XStack>
       {!disableActions && (
         <View position="absolute" top="$2" right="$3" onPress={(e) => e.preventDefault()}>

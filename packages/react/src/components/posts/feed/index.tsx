@@ -5,7 +5,10 @@ import { useNewPosts, useTrendingPosts } from '../../../hooks'
 import { useEffect, useRef } from 'react'
 import { useCredentialPosts } from '../../../hooks/use-credential-posts'
 
-export function TrendingFeed({ fid }: { fid: number }) {
+export function TrendingFeed({
+  fid,
+  disableActions,
+}: { fid: number; disableActions?: boolean }) {
   const { data, isLoading } = useTrendingPosts({ fid })
 
   if (isLoading) {
@@ -24,25 +27,9 @@ export function TrendingFeed({ fid }: { fid: number }) {
     <YStack gap="$4" $xs={{ gap: '$0', bbw: '$0.5', bc: '$borderColor' }}>
       {data?.map((post) => (
         <Link key={post.hash} href={`/posts/${post.hash}`}>
-          <PostDisplay post={post} hoverable />
+          <PostDisplay post={post} hoverable disableActions={disableActions} />
         </Link>
       ))}
-      <Link href="/new">
-        <YStack ai="center" p="$2" gap="$1">
-          <Text fos="$2" fow="500" color="$color11" textAlign="center">
-            You reached the end.
-          </Text>
-          <Text
-            fos="$2"
-            fow="400"
-            color="$color11"
-            textAlign="center"
-            textDecorationLine="underline"
-          >
-            View new posts
-          </Text>
-        </YStack>
-      </Link>
     </YStack>
   )
 }
