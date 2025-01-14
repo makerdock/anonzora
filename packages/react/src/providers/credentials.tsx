@@ -53,6 +53,10 @@ type CredentialsContextType = {
   addVault: () => Promise<Vault>
   deleteVault: (vaultId: string) => Promise<void>
   switchVault: (vault: Vault) => void
+  updateVault: (
+    vaultId: string,
+    { imageUrl, username }: { imageUrl: string | null; username: string | null }
+  ) => Promise<void>
   vaults: Vault[]
   vault: Vault | null
 }
@@ -161,11 +165,23 @@ export const CredentialsProvider = ({
   }
 
   const addToVault = async (vault: Vault, credential: CredentialWithId) => {
+    const credentialWithNewVault = {
+      ...credential,
+      vault_id: vault.id,
+      vault: vault,
+    }
+
     setVaults(
       (prev) =>
         prev?.map((v) =>
           v.id === vault.id
-            ? { ...vault, credentials: [...v.credentials, credential] }
+            ? {
+                ...vault,
+                credentials: [
+                  ...v.credentials.filter((c) => c.id !== credential.id),
+                  credentialWithNewVault,
+                ],
+              }
             : { ...v, credentials: v.credentials.filter((c) => c.id !== credential.id) }
         ) ?? null
     )
@@ -231,6 +247,20 @@ export const CredentialsProvider = ({
     localStorage.setItem(LOCAL_STORAGE_VAULT_KEY, JSON.stringify(vault))
   }
 
+  const updateVault = async (
+    vaultId: string,
+    { imageUrl, username }: { imageUrl: string | null; username: string | null }
+  ) => {
+    setVaults(
+      (prev) =>
+        prev?.map((v) =>
+          v.id === vaultId ? { ...v, image_url: imageUrl, username } : v
+        ) ?? null
+    )
+    sdk.updateVaultSettings(vaultId, { imageUrl, username })
+    refetchVaults()
+  }
+
   return (
     <CredentialsContext.Provider
       value={{
@@ -249,6 +279,7 @@ export const CredentialsProvider = ({
         vault,
         addVault,
         deleteVault,
+        updateVault,
       }}
     >
       {children}

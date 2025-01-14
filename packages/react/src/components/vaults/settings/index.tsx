@@ -18,9 +18,7 @@ import { VaultAvatar } from '../avatar'
 import { useUploadImage } from '../../../hooks/use-upload-image'
 import { Pencil, X } from '@tamagui/lucide-icons'
 import { useMutation } from '@tanstack/react-query'
-import { useCredentials, useSDK } from '../../../providers'
-import { useVaults } from '../../../hooks/use-vaults'
-import { useVault } from '../../../hooks'
+import { useCredentials } from '../../../providers'
 
 export function VaultSettings({
   vault,
@@ -32,21 +30,13 @@ export function VaultSettings({
   const [isOpen, setIsOpen] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(vault.image_url)
   const [username, setUsername] = useState<string | null>(vault.username)
-  const { sdk } = useSDK()
-  const { refetch: refetchVaults } = useVaults()
-  const { refetch: refetchVault } = useVault(vault.id)
   const credentials = useCredentials()
   const { mutate, isPending, error } = useMutation({
     mutationFn: async (args: { imageUrl: string | null; username: string | null }) => {
-      const res = await sdk.updateVaultSettings(vault.id, args)
-      if (!res.data?.success) {
-        throw new Error(res.data?.error)
-      }
-      return res
+      await credentials.updateVault(vault.id, args)
     },
     onSuccess: async () => {
       setIsOpen(false)
-      await Promise.all([refetchVaults, refetchVault])
     },
   })
   const {
