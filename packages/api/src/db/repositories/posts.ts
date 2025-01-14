@@ -133,10 +133,20 @@ export class PostsRepository {
     return result.count
   }
 
-  async replyFromFarcaster(hash: string, replyFid: number, replyHash: string) {
+  async replyFromFarcaster(
+    hash: string,
+    replyFid: number,
+    replyHash: string,
+    timestamp: number
+  ) {
     await this.db
       .insert(postRepliesTable)
-      .values({ post_hash: hash, fid: replyFid, reply_hash: replyHash })
+      .values({
+        post_hash: hash,
+        fid: replyFid,
+        reply_hash: replyHash,
+        created_at: new Date(timestamp),
+      })
       .onConflictDoNothing()
   }
 
@@ -147,10 +157,10 @@ export class PostsRepository {
       .returning()
   }
 
-  async likeFromFarcaster(fid: number, hash: string) {
+  async likeFromFarcaster(fid: number, hash: string, timestamp: number) {
     await this.db
       .insert(postLikesTable)
-      .values({ fid, post_hash: hash })
+      .values({ fid, post_hash: hash, created_at: new Date(timestamp) })
       .onConflictDoNothing()
   }
 

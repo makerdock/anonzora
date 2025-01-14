@@ -13,7 +13,6 @@ import { neynar } from '../services/neynar'
 import { FarcasterUser } from '@anonworld/common'
 import { DBCredential } from '../db/types'
 import { DBVault } from '../db/types'
-import { keccak256 } from 'viem'
 
 export const leaderboardRoutes = createElysia({ prefix: '/leaderboard' }).get(
   '/',
@@ -24,11 +23,12 @@ export const leaderboardRoutes = createElysia({ prefix: '/leaderboard' }).get(
         data: JSON.parse(cached).slice(0, 100),
       }
     }
-    return { data: [] }
+    const data = await updateLeaderboard()
+    return { data }
   }
 )
 
-export async function updateLeaderboard() {
+async function getLikesByCredentialId() {
   const result = await db.db
     .select()
     .from(postCredentialsTable)
@@ -37,54 +37,93 @@ export async function updateLeaderboard() {
       eq(postCredentialsTable.post_hash, postLikesTable.post_hash)
     )
 
-  const fidLikes: Record<string, number[]> = {}
-  const passkeyLikes: Record<string, string[]> = {}
-
+  const likes: Record<string, { passkey: string[]; fid: number[] }> = {}
   for (const row of result) {
     const credentialId = row.post_credentials.credential_id
     if (row.post_likes.fid) {
-      if (!fidLikes[credentialId]) {
-        fidLikes[credentialId] = []
+      if (!likes[credentialId]) {
+        likes[credentialId] = { fid: [], passkey: [] }
       }
-      fidLikes[credentialId].push(row.post_likes.fid)
+      likes[credentialId].fid.push(row.post_likes.fid)
     }
     if (row.post_likes.passkey_id) {
-      if (!passkeyLikes[credentialId]) {
-        passkeyLikes[credentialId] = []
+      if (!likes[credentialId]) {
+        likes[credentialId] = { fid: [], passkey: [] }
       }
-      passkeyLikes[credentialId].push(row.post_likes.passkey_id)
+      likes[credentialId].passkey.push(row.post_likes.passkey_id)
     }
   }
 
-  const uniqueFids = new Set(Object.values(fidLikes).flat())
-  const farcasterUsers = await getFarcasterUsers(Array.from(uniqueFids))
-  const maxFollowers = Math.max(...farcasterUsers.map((user) => user.follower_count))
+  return likes
+}
 
-  const scores: Record<string, number> = {}
+async function getFarcasterUsers(fids: number[]) {
+  const batchSize = 100
+  const users: FarcasterUser[] = []
 
-  for (const [credentialId, fids] of Object.entries(fidLikes)) {
-    if (!scores[credentialId]) {
-      scores[credentialId] = 0
+  for (let i = 0; i < fids.length; i += batchSize) {
+    const batch = fids.slice(i, i + batchSize)
+    const response = await neynar.getBulkUsersByFids(batch)
+    users.push(...response.users)
+  }
+
+  return users.reduce(
+    (acc, user) => {
+      acc[user.fid] = user
+      return acc
+    },
+    {} as Record<number, FarcasterUser>
+  )
+}
+
+async function getScores(likes: Record<string, { fid: number[]; passkey: string[] }>) {
+  const farcasterUsers = await getFarcasterUsers(
+    Array.from(new Set(Object.values(likes).flatMap((like) => like.fid)))
+  )
+  const maxFollowerCount = Math.max(
+    ...Object.values(farcasterUsers).map((user) => user.follower_count)
+  )
+
+  const scores: Record<
+    string,
+    {
+      credentialId: string
+      score: number
+      likes: number
     }
-    for (const fid of fids) {
-      const user = farcasterUsers.find((user) => user.fid === fid)
+  > = {}
+
+  for (const [credentialId, credentialLikes] of Object.entries(likes)) {
+    if (!scores[credentialId]) {
+      scores[credentialId] = {
+        credentialId,
+        score: 0,
+        likes: credentialLikes.fid.length + credentialLikes.passkey.length,
+      }
+    }
+
+    for (const fid of credentialLikes.fid) {
+      const user = farcasterUsers[fid]
       if (user) {
-        scores[credentialId] += Math.floor((user.follower_count / maxFollowers) * 100)
+        scores[credentialId].score += Math.floor(
+          (user.follower_count / maxFollowerCount) * 100
+        )
       }
     }
+
+    scores[credentialId].likes += 25 * credentialLikes.passkey.length
   }
 
-  for (const [credentialId, passkeyIds] of Object.entries(passkeyLikes)) {
-    if (!scores[credentialId]) {
-      scores[credentialId] = 0
-    }
-    scores[credentialId] += 25 * passkeyIds.length
-  }
+  return Object.values(scores)
+    .sort((a, b) => b.score - a.score)
+    .filter((score) => score.score > 0)
+}
 
-  const topThousand = Object.entries(scores)
-    .sort((a, b) => b[1] - a[1])
-    .filter(([_, score]) => score > 0)
-    .slice(0, 1000)
+export async function updateLeaderboard() {
+  const likes = await getLikesByCredentialId()
+  const scores = await getScores(likes)
+
+  const topThousand = scores.slice(0, 1000)
 
   const credentials = await db.db
     .select()
@@ -93,7 +132,7 @@ export async function updateLeaderboard() {
     .where(
       inArray(
         credentialsTable.id,
-        topThousand.map(([id]) => id)
+        topThousand.map((score) => score.credentialId)
       )
     )
 
@@ -112,7 +151,7 @@ export async function updateLeaderboard() {
       and(
         inArray(
           credentialsTable.parent_id,
-          topThousand.map(([id]) => id)
+          topThousand.map((score) => score.credentialId)
         ),
         isNull(postsTable.deleted_at),
         eq(postsTable.fid, 899289)
@@ -148,45 +187,38 @@ export async function updateLeaderboard() {
 
   const tokens = await db.tokens.getBulk(Array.from(tokenIds))
 
-  const data = topThousand.map(([id, score]) => ({
-    score,
-    credential: {
-      ...credentialsById[id],
-      token:
-        'chainId' in credentialsById[id].metadata
-          ? tokens[
-              `${credentialsById[id].metadata.chainId}:${credentialsById[id].metadata.tokenAddress}`
-            ]
+  const data = topThousand.map((score) => {
+    const credential = credentialsById[score.credentialId]
+
+    let tokenId: string | undefined
+    if ('chainId' in credential.metadata) {
+      tokenId = `${credential.metadata.chainId}:${credential.metadata.tokenAddress}`
+    }
+
+    return {
+      score: score.score,
+      posts: postCountsById[score.credentialId] ?? 0,
+      likes: score.likes,
+      credential: {
+        ...credential,
+        token: tokenId ? tokens[tokenId] : undefined,
+        vault: credential.vault
+          ? {
+              ...credential.vault,
+              passkey_id: undefined,
+              credentials: [],
+              created_at: credential.created_at.toISOString(),
+            }
           : undefined,
-      vault: credentialsById[id].vault
-        ? {
-            ...credentialsById[id].vault,
-            credentials: [],
-            created_at: credentialsById[id].created_at.toISOString(),
-          }
-        : undefined,
-      id: undefined,
-      proof: undefined,
-      parent_id: undefined,
-      reverified_id: undefined,
-    },
-    posts: postCountsById[id],
-  }))
+        id: undefined,
+        proof: undefined,
+        parent_id: undefined,
+        reverified_id: undefined,
+      },
+    }
+  })
 
   await redis.setLeaderboard(JSON.stringify(data))
 
   return data
-}
-
-const getFarcasterUsers = async (fids: number[]) => {
-  const batchSize = 100
-  const users: FarcasterUser[] = []
-
-  for (let i = 0; i < fids.length; i += batchSize) {
-    const batch = fids.slice(i, i + batchSize)
-    const response = await neynar.getBulkUsersByFids(batch)
-    users.push(...response.users)
-  }
-
-  return users
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { View, XStack } from '@anonworld/ui'
-import { Bell, HelpCircle, Home, UsersRound, WalletMinimal } from '@tamagui/lucide-icons'
+import { Bell, Home, UsersRound, WalletMinimal } from '@tamagui/lucide-icons'
 import { usePathname, useRouter } from 'next/navigation'
 import { NamedExoticComponent, ReactNode } from 'react'
 import { Pathname } from './header'
@@ -62,11 +62,11 @@ export function Tabs() {
           <NotificationsCount />
         </View>
       </TabButton>
-      <TabButton
-        Icon={HelpCircle}
-        active={pathname === Pathname.ABOUT}
-        onPress={() => router.push('/about')}
-      />
+      {/* <TabButton
+        Icon={Trophy}
+        active={pathname === Pathname.LEADERBOARD}
+        onPress={() => router.push('/leaderboard')}
+      /> */}
     </XStack>
   )
 }

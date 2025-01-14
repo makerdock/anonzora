@@ -104,6 +104,12 @@ export function VaultSettings({
           w={600}
         >
           <Dialog.Title fos="$5">Edit Profile</Dialog.Title>
+          <View bg="$red2" p="$3" br="$4" bc="$red8" bw="$0.5">
+            <Text fos="$2" fow="400" color="$red12">
+              Deleting a profile will permanently remove all data associated with it,
+              including leaderboard positions. This is an irreversible action.
+            </Text>
+          </View>
           <EditImage vault={vault} imageUrl={imageUrl} setImageUrl={setImageUrl} />
           <EditUsername vault={vault} username={username} setUsername={setUsername} />
           <YStack gap="$2">

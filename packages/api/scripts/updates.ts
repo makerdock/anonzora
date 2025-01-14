@@ -87,19 +87,19 @@ const main = async () => {
   let i = 0
   while (true) {
     try {
-      await handleFarcasterPosts()
-      await handleTwitterPosts()
-      if (i % 10 === 0) {
-        await updateTokens()
-      }
-      if (i % 2 === 0) {
-        await updateFeeds()
-        await updateCommunities()
-      }
-      if (i % 20 === 0) {
-        await updateFarcasterAccounts()
-        await updateTwitterAccounts()
-      }
+      // await handleFarcasterPosts()
+      // await handleTwitterPosts()
+      // if (i % 10 === 0) {
+      //   await updateTokens()
+      // }
+      // if (i % 2 === 0) {
+      //   await updateFeeds()
+      //   await updateCommunities()
+      // }
+      // if (i % 20 === 0) {
+      //   await updateFarcasterAccounts()
+      //   await updateTwitterAccounts()
+      // }
       if (i % 100 === 0) {
         console.log('[leaderboard] updating leaderboard')
         await updateLeaderboard()

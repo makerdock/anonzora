@@ -1,30 +1,35 @@
-import { RefreshCw, Trash, UserRound } from '@tamagui/lucide-icons'
-import { Dialog, Text, YGroup, XStack } from '@anonworld/ui'
+import { RefreshCw, Trash, UserRound, X } from '@tamagui/lucide-icons'
+import {
+  Dialog,
+  Text,
+  YGroup,
+  XStack,
+  View,
+  Unspaced,
+  Sheet,
+  Adapt,
+  Button,
+  Spinner,
+} from '@anonworld/ui'
 import { CredentialType, formatHexId } from '@anonworld/common'
 import { NewCredential, useCredentials, useToken, VaultAvatar } from '../../../..'
-import { NamedExoticComponent, ReactNode } from 'react'
+import { NamedExoticComponent, ReactNode, useState } from 'react'
 import { CredentialWithId } from '@anonworld/common'
 import { formatUnits } from 'viem'
 import { Check } from '@tamagui/lucide-icons'
+import { useMutation } from '@tanstack/react-query'
 
 export function CredentialActionsContent({
   credential,
 }: {
   credential: CredentialWithId
 }) {
-  const { delete: deleteCredential } = useCredentials()
-
   return (
     <YGroup>
       <ActionItem label="Profile" fow="600" bbw="$0.5" />
       <VaultSelect credential={credential} />
       <ReverifyButton credential={credential} />
-      <ActionItem
-        label="Delete"
-        onPress={() => deleteCredential(credential.id)}
-        Icon={Trash}
-        destructive
-      />
+      <DeleteButton credential={credential} />
     </YGroup>
   )
 }
@@ -151,5 +156,127 @@ function ActionItem({
         {selected && <Check size={16} color="$color12" />}
       </XStack>
     </YGroup.Item>
+  )
+}
+
+function DeleteButton({ credential }: { credential: CredentialWithId }) {
+  const { delete: deleteCredential } = useCredentials()
+  const [isOpen, setIsOpen] = useState(false)
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => deleteCredential(credential.id),
+    onSuccess: () => {
+      setIsOpen(false)
+    },
+  })
+
+  return (
+    <Dialog modal open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog.Trigger asChild>
+        <ActionItem
+          label="Delete"
+          onPress={() => setIsOpen(true)}
+          Icon={Trash}
+          destructive
+        />
+      </Dialog.Trigger>
+
+      <Adapt when="sm">
+        <Sheet
+          animation="quicker"
+          zIndex={200000}
+          modal
+          dismissOnSnapToBottom
+          snapPointsMode="fit"
+        >
+          {isOpen && (
+            <Sheet.Frame padding="$3" pb="$5" gap="$3" bg="$color2">
+              <Adapt.Contents />
+            </Sheet.Frame>
+          )}
+          <Sheet.Overlay
+            animation="quicker"
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+          />
+        </Sheet>
+      </Adapt>
+
+      <Dialog.Portal>
+        <Dialog.Overlay
+          key="overlay"
+          animation="quicker"
+          enterStyle={{ opacity: 0 }}
+          exitStyle={{ opacity: 0 }}
+        />
+
+        <Dialog.Content
+          bordered
+          elevate
+          key="content"
+          animateOnly={['transform', 'opacity']}
+          animation={[
+            'quicker',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+          gap="$3"
+          w={600}
+        >
+          <Dialog.Title fos="$5">Delete Credential</Dialog.Title>
+          <Dialog.Description fow="400">
+            Deleting a credential will permanently remove all data associated with it,
+            including leaderboard positions. This is an irreversible action. Are you sure
+            you want to delete this credential?
+          </Dialog.Description>
+          <View ai="flex-end" jc="flex-end">
+            <Button
+              bg="$red8"
+              br="$4"
+              disabledStyle={{ opacity: 0.5, bg: '$red8' }}
+              hoverStyle={{ opacity: 0.9, bg: '$red8' }}
+              pressStyle={{ opacity: 0.9, bg: '$red8' }}
+              onPress={() => {
+                mutate()
+              }}
+              disabled={isPending}
+            >
+              {!isPending ? (
+                <Text fos="$3" fow="600" color="$color12">
+                  Delete
+                </Text>
+              ) : (
+                <XStack gap="$2" alignItems="center">
+                  <Spinner color="$color12" />
+                  <Text fos="$2" fow="600" color="$color12">
+                    Deleting
+                  </Text>
+                </XStack>
+              )}
+            </Button>
+          </View>
+          <Unspaced>
+            <Dialog.Close asChild>
+              <View
+                bg="$background"
+                p="$2"
+                br="$12"
+                hoverStyle={{ bg: '$color5' }}
+                cursor="pointer"
+                pos="absolute"
+                top="$3"
+                right="$3"
+              >
+                <X size={20} />
+              </View>
+            </Dialog.Close>
+          </Unspaced>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
   )
 }

@@ -428,7 +428,12 @@ export class AnonWorldSDK {
 
   async getLeaderboard() {
     return await this.request<{
-      data: { score: number; credential: CredentialWithId; posts: number }[]
+      data: {
+        score: number
+        credential: CredentialWithId
+        posts: number
+        likes: number
+      }[]
     }>('/leaderboard')
   }
 

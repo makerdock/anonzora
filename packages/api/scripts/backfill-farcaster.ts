@@ -1,6 +1,6 @@
 import { db } from '../src/db'
 import { postLikesTable, postRepliesTable, postsTable } from '../src/db/schema'
-import { eq, inArray, isNull } from 'drizzle-orm'
+import { eq, inArray, isNull, sql } from 'drizzle-orm'
 import { neynar } from '../src/services/neynar'
 
 const backfillReplies = async () => {
@@ -26,6 +26,7 @@ const backfillReplies = async () => {
             post_hash: post.hash,
             fid: cast.author.fid,
             reply_hash: cast.hash,
+            created_at: new Date(cast.timestamp),
           })
         }
         cursor = conversation.next.cursor
@@ -56,7 +57,16 @@ const backfillReplies = async () => {
     await db.db
       .insert(postRepliesTable)
       .values(toInsert.slice(i, i + 1000))
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: [
+          postRepliesTable.post_hash,
+          postRepliesTable.fid,
+          postRepliesTable.reply_hash,
+        ],
+        set: {
+          created_at: sql`EXCLUDED.created_at`,
+        },
+      })
   }
 }
 
@@ -78,6 +88,7 @@ const backfillLikes = async () => {
           toInsert.push({
             post_hash: post.hash,
             fid: like.user.fid,
+            created_at: new Date(like.reaction_timestamp),
           })
         }
         cursor = response.next.cursor
@@ -108,7 +119,12 @@ const backfillLikes = async () => {
     await db.db
       .insert(postLikesTable)
       .values(toInsert.slice(i, i + 1000))
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: [postLikesTable.post_hash, postLikesTable.fid],
+        set: {
+          created_at: sql`EXCLUDED.created_at`,
+        },
+      })
   }
 }
 

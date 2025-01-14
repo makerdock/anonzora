@@ -16,6 +16,7 @@ export enum Pathname {
   ABOUT = '/about',
   NOT_FOUND = '/404',
   NOTIFICATIONS = '/notifications',
+  LEADERBOARD = '/leaderboard',
 }
 
 export function Header() {
@@ -126,6 +127,32 @@ export function Header() {
                 </Text>
               </View>
             </Link>
+            {/* <Link href="/leaderboard" style={{ textDecoration: 'none' }}>
+              <View
+                bg={pathname.startsWith(Pathname.LEADERBOARD) ? '$color12' : '$color1'}
+                py="$2"
+                px="$3"
+                br="$12"
+                disabledStyle={{
+                  opacity: 0.5,
+                  bg: pathname.startsWith(Pathname.LEADERBOARD) ? '$color12' : '$color1',
+                }}
+                hoverStyle={{
+                  opacity: 0.9,
+                  bg: pathname.startsWith(Pathname.LEADERBOARD) ? '$color12' : '$color5',
+                }}
+              >
+                <Text
+                  fow="600"
+                  fos="$2"
+                  color={
+                    pathname.startsWith(Pathname.LEADERBOARD) ? '$color1' : '$color12'
+                  }
+                >
+                  Leaderboard
+                </Text>
+              </View>
+            </Link> */}
           </View>
         </View>
         <View fd="row" gap="$3" ai="center">

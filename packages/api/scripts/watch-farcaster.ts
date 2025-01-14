@@ -1,6 +1,7 @@
 import {
   bytesToHexString,
   createDefaultMetadataKeyInterceptor,
+  FARCASTER_EPOCH,
   getSSLHubRpcClient,
   HubEvent,
   HubEventType,
@@ -84,7 +85,8 @@ async function handleEvent(
       await db.posts.replyFromFarcaster(
         hashValue.value,
         messageData.fid,
-        messageHashValue.value
+        messageHashValue.value,
+        FARCASTER_EPOCH + messageData.timestamp
       )
     } catch (e) {
       console.error(e)
@@ -131,7 +133,11 @@ async function handleEvent(
     if (messageData.type === MessageType.REACTION_ADD) {
       console.log(`[like] ${messageData.fid} liked ${hashValue.value}`)
       try {
-        await db.posts.likeFromFarcaster(messageData.fid, hashValue.value)
+        await db.posts.likeFromFarcaster(
+          messageData.fid,
+          hashValue.value,
+          FARCASTER_EPOCH + messageData.timestamp
+        )
       } catch (e) {
         if (e instanceof DrizzleError) {
           // TODO: Backfill first post of communities before 1/13/2025
