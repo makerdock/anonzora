@@ -27,9 +27,19 @@ export function Field({
       gap="$1"
       minWidth={minWidth}
       ai={ai}
-      $xs={{ flexDirection: 'row-reverse', gap: '$2', jc: 'flex-end' }}
+      $xs={{
+        flexDirection: 'row-reverse',
+        gap: '$2',
+        jc: 'space-between',
+      }}
     >
-      <XStack ai="center" gap="$2" f={1} maxWidth={minWidth}>
+      <XStack
+        ai="center"
+        gap="$2"
+        f={1}
+        maxWidth={minWidth}
+        $xs={{ jc: 'flex-end', ai: 'flex-end' }}
+      >
         {imageComponent}
         {image && <Image src={image} w={16} h={16} br="$12" />}
         {!image && imageFallbackText && (

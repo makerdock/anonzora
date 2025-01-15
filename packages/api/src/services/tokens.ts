@@ -20,8 +20,8 @@ class TokensService {
     }
   }
   async getOrCreateERC20(chainId: number, tokenAddress: string) {
-    const token = await redis.getToken(chainId, tokenAddress)
-    if (token) return JSON.parse(token)
+    // const token = await redis.getToken(chainId, tokenAddress)
+    // if (token) return JSON.parse(token)
     return this.syncERC20(chainId, tokenAddress)
   }
 
@@ -30,13 +30,11 @@ class TokensService {
     const token = await db.tokens.get(id)
     if (token) {
       if (token.type === ContractType.ERC721) {
-        await this.updateERC721(token)
-      } else {
-        await this.updateERC20(token)
+        return await this.updateERC721(token)
       }
-    } else {
-      await this.createERC20(chainId, tokenAddress)
+      return await this.updateERC20(token)
     }
+    return await this.createERC20(chainId, tokenAddress)
   }
 
   async updateERC20(token: DBToken) {
@@ -179,7 +177,6 @@ class TokensService {
     }
 
     const fields = {
-      name: collection.name,
       image_url: collection.image_url,
       price_usd: floorPrice.toFixed(8),
       market_cap: Math.round(floorPrice * collection.distinct_nft_count),

@@ -88,3 +88,17 @@ export type CredentialRequirementTypeMap = {
   [CredentialType.ERC721_BALANCE]: ERC721CredentialRequirement
   [CredentialType.FARCASTER_FID]: FarcasterFidCredentialRequirement
 }
+
+export type CredentialRequirements =
+  | {
+      type: CredentialType.ERC20_BALANCE
+      data: ERC20CredentialRequirement
+    }
+  | {
+      type: CredentialType.ERC721_BALANCE
+      data: ERC721CredentialRequirement
+    }
+  | {
+      type: CredentialType.FARCASTER_FID
+      data: FarcasterFidCredentialRequirement
+    }

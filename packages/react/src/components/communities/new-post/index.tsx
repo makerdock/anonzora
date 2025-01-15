@@ -3,15 +3,15 @@ import {
   Community,
   CredentialType,
   ERC20CredentialRequirement,
-  ERC721CredentialRequirement,
+  validateCredentialRequirements,
 } from '@anonworld/common'
-import { useActions } from '../../../hooks/use-actions'
 import { useCredentials } from '../../../providers'
 import { getUsableCredential } from '@anonworld/common'
 import { NewPostProvider } from '../../posts/new/context'
 import { NewPostDialog } from '../../posts/new/dialog'
 import { NewPostButton } from '../../posts/new'
 import { NewCredential } from '../../credentials'
+import { useCommunityActions } from '../../../hooks/use-community-actions'
 import { formatUnits } from 'viem'
 
 export function NewPost() {
@@ -29,9 +29,9 @@ export function NewCommunityPost({
 }: {
   community: Community
 }) {
-  const { data: actions } = useActions()
+  const { data: actions } = useCommunityActions(community.id)
   const { credentials } = useCredentials()
-  const relevantAction = actions?.find((action) => {
+  const action = actions?.find((action) => {
     if (
       action.type === ActionType.COPY_POST_FARCASTER &&
       action.metadata.fid === community.fid
@@ -42,66 +42,53 @@ export function NewCommunityPost({
     return null
   })
 
-  const credential = relevantAction
-    ? getUsableCredential(credentials, relevantAction)
-    : null
+  if (!action) return null
 
-  if (!actions) return null
+  const credential = getUsableCredential(credentials, action)
+  let validCredentials = credential ? [credential] : []
+  let missingCredentials = !credential
+    ? [{ type: action.credential_id?.split(':')[0], data: action.credential_requirement }]
+    : []
 
-  if (!credential) {
-    let minimumBalance: number | undefined = undefined
-    for (const action of actions) {
-      const credentialType = action.credential_id?.split(':')[0] as
-        | CredentialType
-        | undefined
+  if (action.credentials) {
+    validCredentials = []
+    missingCredentials = []
 
-      if (
-        !action.community ||
-        action.community.id !== community.id ||
-        !action.credential_requirement ||
-        !credentialType
-      )
-        continue
-
-      switch (credentialType) {
-        case CredentialType.ERC20_BALANCE:
-        case CredentialType.ERC721_BALANCE: {
-          const credentialRequirement = action.credential_requirement as
-            | ERC20CredentialRequirement
-            | ERC721CredentialRequirement
-            | undefined
-
-          if (!credentialRequirement) {
-            continue
-          }
-
-          const balance = credentialRequirement.minimumBalance
-          const value = Number.parseFloat(
-            formatUnits(BigInt(balance), community.token.decimals)
-          )
-          if (!minimumBalance || value < minimumBalance) {
-            minimumBalance = value
-          }
-          break
-        }
-        default:
-          continue
+    for (const cred of action.credentials) {
+      const usableCredential = validateCredentialRequirements(credentials, cred)
+      if (usableCredential) {
+        validCredentials.push(usableCredential)
+      } else {
+        missingCredentials.push(cred)
       }
     }
+  }
 
+  if (missingCredentials.length > 0) {
+    const cred = missingCredentials[0]
+    let initialBalance = 0
+    if (cred.data && 'minimumBalance' in cred.data) {
+      let decimals = cred.type === CredentialType.ERC20_BALANCE ? 18 : 0
+      if (cred.data.tokenAddress === community.token.address) {
+        decimals = community.token.decimals
+      }
+      initialBalance = Number.parseInt(
+        formatUnits(BigInt(cred.data.minimumBalance), decimals).toString()
+      )
+    }
     return (
       <NewCredential
         initialTokenId={{
           chainId: community.token.chain_id,
           address: community.token.address,
         }}
-        initialBalance={minimumBalance ?? 0}
+        initialBalance={initialBalance}
       />
     )
   }
 
   return (
-    <NewPostProvider initialCredentials={credential ? [credential] : undefined}>
+    <NewPostProvider initialCredentials={validCredentials}>
       <NewPostDialog>
         <NewPostButton />
       </NewPostDialog>

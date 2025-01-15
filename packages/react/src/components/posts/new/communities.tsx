@@ -1,5 +1,5 @@
 import { Image, Popover, ScrollView, Text, XStack } from '@anonworld/ui'
-import { Action, ActionType } from '@anonworld/common'
+import { Action, ActionType, validateCredentialRequirements } from '@anonworld/common'
 import { useNewPost } from './context'
 import { Badge } from '../../badge'
 import { useEffect, useMemo, useState } from 'react'
@@ -14,7 +14,13 @@ export function NewPostCommunities() {
   const actions = useMemo(() => {
     return (
       data?.filter((action) => {
-        return getUsableCredential(credentials, action)
+        const usableCredential = getUsableCredential(credentials, action)
+        if (action.credentials) {
+          return action.credentials.every((cred) =>
+            validateCredentialRequirements(credentials, cred)
+          )
+        }
+        return usableCredential
       }) ?? []
     )
   }, [data, credentials])

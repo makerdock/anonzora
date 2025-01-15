@@ -28,7 +28,11 @@ export function CommunityPage({ id }: { id: string }) {
     <Content>
       <CommunityDisplay community={community} disableActions={isFrame} />
       {!isFrame && (
-        <XStack ai="center" jc="space-between" $xs={{ px: '$2' }}>
+        <XStack
+          ai="center"
+          jc="space-between"
+          $xs={{ px: '$2', flexDirection: 'column-reverse', gap: '$4', ai: 'flex-start' }}
+        >
           <XStack gap="$2">
             <View
               bg="$color12"

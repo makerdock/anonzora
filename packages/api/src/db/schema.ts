@@ -20,6 +20,7 @@ export const actionsTable = pgTable('actions', {
   metadata: jsonb('metadata'),
   trigger: varchar({ length: 255 }),
   community_id: uuid('community_id').references(() => communitiesTable.id),
+  credentials: jsonb('credentials'),
   hidden: boolean('hidden').notNull().default(false),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),

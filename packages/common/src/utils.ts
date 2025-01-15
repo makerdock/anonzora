@@ -1,5 +1,6 @@
 import {
   Action,
+  CredentialRequirements,
   CredentialType,
   CredentialWithId,
   ERC20CredentialRequirement,
@@ -95,6 +96,55 @@ export function getUsableCredential(credentials: CredentialWithId[], action: Act
         if (
           BigInt(credential.metadata.balance) >=
           BigInt(credentialRequirement.minimumBalance)
+        ) {
+          return credential
+        }
+        break
+      }
+      default:
+        break
+    }
+  }
+}
+
+export function validateCredentialRequirements(
+  credentials: CredentialWithId[],
+  credentialRequirement: CredentialRequirements
+) {
+  if (credentials.length === 0) {
+    return
+  }
+
+  const potentialCredentials = credentials
+    .filter(
+      (credential) =>
+        credential.type === credentialRequirement.type &&
+        new Date(credential.verified_at).getTime() + CREDENTIAL_EXPIRATION_TIME >
+          Date.now()
+    )
+    .sort((a, b) => {
+      const aBalance = BigInt('balance' in a.metadata ? a.metadata.balance : 0)
+      const bBalance = BigInt('balance' in b.metadata ? b.metadata.balance : 0)
+      if (aBalance === bBalance) {
+        return 0
+      }
+      return aBalance < bBalance ? -1 : 1
+    })
+
+  for (const credential of potentialCredentials) {
+    switch (credential.type) {
+      case CredentialType.ERC20_BALANCE:
+      case CredentialType.ERC721_BALANCE: {
+        if (
+          credentialRequirement.type !== CredentialType.ERC20_BALANCE &&
+          credentialRequirement.type !== CredentialType.ERC721_BALANCE
+        ) {
+          continue
+        }
+
+        if (
+          BigInt(credential.metadata.balance) >=
+          BigInt(credentialRequirement.data.minimumBalance)
         ) {
           return credential
         }

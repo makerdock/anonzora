@@ -2,20 +2,24 @@ import { Image, Separator, Text, useToastController, XStack, YStack } from '@ano
 import { Field } from '../../field'
 import {
   ContractType,
+  CredentialRequirement,
   CredentialType,
   ERC20CredentialRequirement,
   ERC721CredentialRequirement,
   formatAddress,
   formatAmount,
+  Token,
+  validateCredentialRequirements,
 } from '@anonworld/common'
-import { formatEther, formatUnits } from 'viem'
-import { useActions } from '../../../hooks/use-actions'
-import { Action, ActionType, Community, getChain } from '@anonworld/common'
+import { formatUnits } from 'viem'
+import { ActionType, Community, getChain } from '@anonworld/common'
 import { useCredentials } from '../../../providers'
 import { getUsableCredential } from '@anonworld/common'
 import { CircleCheck, CircleX, Coins, Copy } from '@tamagui/lucide-icons'
 import { TokenImage } from '../../tokens/image'
 import { Link } from 'solito/link'
+import { useCommunityActions } from '../../../hooks/use-community-actions'
+import { useToken } from '../../../hooks/use-token'
 
 export function CommunityToken({ community }: { community: Community }) {
   const chain = getChain(Number(community.token.chain_id))
@@ -115,125 +119,125 @@ export function CommunityToken({ community }: { community: Community }) {
   )
 }
 
-type CommunityAction = {
-  value: string
-  action: Action
-  twitter: string[]
-  farcaster: string[]
+const formatRequirement = (req: CredentialRequirement | null, token?: Token) => {
+  if (req && 'minimumBalance' in req) {
+    return {
+      value: Number.parseFloat(
+        formatUnits(BigInt(req.minimumBalance), token?.decimals ?? 18)
+      ),
+      label: token?.symbol,
+    }
+  }
+  return null
 }
 
 export function CommunityActions({ community }: { community: Community }) {
-  const { data: actions } = useActions()
+  const { data: actions } = useCommunityActions(community.id)
+  const { credentials } = useCredentials()
 
-  const communityActions: Record<number, CommunityAction> = {}
-
-  for (const action of actions ?? []) {
-    const credentialType = action.credential_id?.split(':')[0] as
-      | CredentialType
-      | undefined
-
-    if (
-      !action.community ||
-      action.community.id !== community.id ||
-      !action.credential_requirement ||
-      !credentialType
-    ) {
-      continue
-    }
-
-    let value: number | undefined = undefined
-
-    switch (credentialType) {
-      case CredentialType.ERC20_BALANCE:
-      case CredentialType.ERC721_BALANCE: {
-        const credentialRequirement = action.credential_requirement as
-          | ERC20CredentialRequirement
-          | ERC721CredentialRequirement
-          | undefined
-
-        if (!credentialRequirement) {
-          continue
-        }
-
-        value = Number.parseFloat(
-          formatEther(BigInt(credentialRequirement.minimumBalance))
-        )
-        if (!communityActions[value]) {
-          communityActions[value] = {
-            value: credentialRequirement.minimumBalance,
-            action,
-            twitter: [],
-            farcaster: [],
-          }
-        }
-        break
-      }
-      default:
-        continue
-    }
-
-    switch (action.type) {
-      case ActionType.COPY_POST_TWITTER:
-        communityActions[value].twitter.unshift('Post')
-        break
-      case ActionType.COPY_POST_FARCASTER:
-        communityActions[value].farcaster.unshift('Post')
-        break
-      case ActionType.DELETE_POST_TWITTER:
-        communityActions[value].twitter.unshift('Delete')
-        break
-      case ActionType.DELETE_POST_FARCASTER:
-        communityActions[value].farcaster.unshift('Delete')
-        break
-    }
-  }
-
-  if (Object.keys(communityActions).length === 0) {
+  if (actions && actions.length === 0) {
     return null
   }
 
   return (
     <YStack gap="$2.5" theme="surface3" themeShallow br="$4" mt="$2">
-      {Object.entries(communityActions)
-        .sort((a, b) => Number(a[0]) - Number(b[0]))
-        .map(([_, action], i) => (
-          <CommunityActionItem key={i} action={action} />
-        ))}
+      {actions
+        ?.sort((a, b) => {
+          let reqA = formatRequirement(a.credential_requirement, a.community?.token)
+          let reqB = formatRequirement(b.credential_requirement, b.community?.token)
+          return (reqA?.value ?? 0) - (reqB?.value ?? 0)
+        })
+        .map((action, i) => {
+          let label = ''
+          switch (action.type) {
+            case ActionType.COPY_POST_TWITTER:
+              label = 'Post to Twitter'
+              break
+            case ActionType.COPY_POST_FARCASTER:
+              label = 'Post to Farcaster'
+              break
+            case ActionType.DELETE_POST_TWITTER:
+              label = 'Delete from Twitter'
+              break
+            case ActionType.DELETE_POST_FARCASTER:
+              label = 'Delete from Farcaster'
+              break
+          }
+
+          let reqs = []
+          switch (action.credential_id?.split(':')[0] as CredentialType) {
+            case CredentialType.ERC20_BALANCE:
+              reqs.push(
+                <ERC20Label
+                  req={action.credential_requirement as ERC20CredentialRequirement}
+                />
+              )
+              break
+            case CredentialType.ERC721_BALANCE:
+              reqs.push(
+                <ERC721Label
+                  req={action.credential_requirement as ERC721CredentialRequirement}
+                />
+              )
+              break
+          }
+
+          let isValidCredentials = [!!getUsableCredential(credentials, action)]
+
+          if (action.credentials) {
+            reqs = action.credentials.map((cred) => {
+              switch (cred.type) {
+                case CredentialType.ERC20_BALANCE:
+                  return <ERC20Label req={cred.data as ERC20CredentialRequirement} />
+                case CredentialType.ERC721_BALANCE:
+                  return <ERC721Label req={cred.data as ERC721CredentialRequirement} />
+              }
+            })
+            isValidCredentials = action.credentials.map(
+              (cred) => !!validateCredentialRequirements(credentials, cred)
+            )
+          }
+
+          return (
+            <XStack key={i} gap="$2" ai="center">
+              <XStack
+                gap="$2"
+                ai="center"
+                $xs={{ flexDirection: 'column', ai: 'flex-start' }}
+              >
+                <Text fos="$2" fow="400">
+                  {label}:
+                </Text>
+                <XStack gap="$2.5">
+                  {reqs.map((r, i) => (
+                    <XStack gap="$1.5" ai="center" key={i}>
+                      {isValidCredentials[i] ? (
+                        <CircleCheck size={16} color="$green11" />
+                      ) : (
+                        <CircleX size={16} color="$red11" />
+                      )}
+                      <Text fow="500" fos="$2">
+                        {r}
+                      </Text>
+                    </XStack>
+                  ))}
+                </XStack>
+              </XStack>
+            </XStack>
+          )
+        })}
     </YStack>
   )
 }
 
-function CommunityActionItem({ action }: { action: CommunityAction }) {
-  const { credentials } = useCredentials()
-
-  const amount = Number.parseFloat(
-    formatUnits(BigInt(action.value), action.action.community?.token.decimals ?? 18)
-  )
-
-  const labels = []
-  if (action.twitter.length > 0) {
-    labels.push(`${action.twitter.join('/')} on Twitter`)
-  }
-  if (action.farcaster.length > 0) {
-    labels.push(`${action.farcaster.join('/')} on Farcaster`)
-  }
-
-  const credential = getUsableCredential(credentials, action.action)
-
+function ERC20Label({ req }: { req: ERC20CredentialRequirement }) {
+  const { data: token } = useToken({ chainId: req.chainId, address: req.tokenAddress })
   return (
-    <XStack gap="$2" ai="center">
-      {credential ? (
-        <CircleCheck size={16} color="$green11" />
-      ) : (
-        <CircleX size={16} color="$red11" />
-      )}
-      <Text
-        fos="$2"
-        fow="500"
-      >{`${amount.toLocaleString()} ${action.action.community?.token.symbol || ''}`}</Text>
-      <Text fos="$2" fow="400" color="$color11">
-        {labels.join(', ')}
-      </Text>
-    </XStack>
+    <>{`${formatUnits(BigInt(req.minimumBalance), token?.decimals ?? 18).toLocaleString()} ${token?.symbol || ''}`}</>
   )
+}
+
+function ERC721Label({ req }: { req: ERC721CredentialRequirement }) {
+  const { data: token } = useToken({ chainId: req.chainId, address: req.tokenAddress })
+  return <>{`${req?.minimumBalance?.toLocaleString()} ${token?.name || ''}`}</>
 }

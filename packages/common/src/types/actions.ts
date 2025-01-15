@@ -1,5 +1,5 @@
 import { Community } from './community'
-import { Credential, CredentialRequirement } from './credentials'
+import { Credential, CredentialRequirement, CredentialRequirements } from './credentials'
 
 export type ActionRequest = {
   data: any
@@ -21,6 +21,7 @@ type BaseAction = {
   updated_at: Date
   credential_id: string | null
   credential_requirement: CredentialRequirement | null
+  credentials: CredentialRequirements[] | null
   trigger: string
   community: Community | null
 }

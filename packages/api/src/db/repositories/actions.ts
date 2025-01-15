@@ -62,6 +62,25 @@ export class ActionsRepository {
     return response as (DBAction & { community: DBCommunity & { token: DBToken } })[]
   }
 
+  async listByCommunity(communityId: string) {
+    const actions = await this.db
+      .select()
+      .from(actionsTable)
+      .leftJoin(communitiesTable, eq(actionsTable.community_id, communitiesTable.id))
+      .leftJoin(tokensTable, eq(communitiesTable.token_id, tokensTable.id))
+      .where(eq(actionsTable.community_id, communityId))
+
+    const response = actions.map((action) => ({
+      ...action.actions,
+      community: {
+        ...action.communities,
+        token: action.tokens,
+      },
+    }))
+
+    return response as (DBAction & { community: DBCommunity & { token: DBToken } })[]
+  }
+
   async logExecution(params: typeof actionExecutionsTable.$inferInsert) {
     await this.db.insert(actionExecutionsTable).values(params)
   }

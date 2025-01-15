@@ -182,6 +182,18 @@ export const communitiesRoutes = createElysia({ prefix: '/communities' })
       }),
     }
   )
+  .get(
+    '/:id/actions',
+    async ({ params }) => {
+      const data = await db.actions.listByCommunity(params.id)
+      return { data }
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+    }
+  )
   .post(
     '/:id/actions',
     async ({ body, params, passkeyId }) => {

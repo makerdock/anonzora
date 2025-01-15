@@ -172,6 +172,10 @@ export class AnonWorldSDK {
     )
   }
 
+  async getCommunityActions(communityId: string) {
+    return await this.request<{ data: Action[] }>(`/communities/${communityId}/actions`)
+  }
+
   async createCredential({
     proof,
     publicInputs,
