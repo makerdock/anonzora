@@ -143,6 +143,13 @@ export function validateCredentialRequirements(
         }
 
         if (
+          credential.metadata.tokenAddress !== credentialRequirement.data.tokenAddress ||
+          credential.metadata.chainId !== credentialRequirement.data.chainId
+        ) {
+          continue
+        }
+
+        if (
           BigInt(credential.metadata.balance) >=
           BigInt(credentialRequirement.data.minimumBalance)
         ) {
