@@ -6,6 +6,7 @@ import {
   formatHexId,
   NewCredential,
   NewVault,
+  useAuth,
   useCredentials,
   Vault,
   VaultAvatar,
@@ -17,6 +18,7 @@ import { Plus, Settings } from '@tamagui/lucide-icons'
 
 export default function Credentials() {
   const { vaults, localCredentials, isInitialized } = useCredentials()
+  const { passkeyId } = useAuth()
 
   if (!isInitialized) {
     return (
@@ -31,7 +33,7 @@ export default function Credentials() {
       <XStack ai="center" jc="space-between" $xs={{ px: '$2' }}>
         <View />
         <XStack gap="$2" ai="center">
-          <NewVault />
+          {passkeyId && <NewVault />}
           <NewCredential />
         </XStack>
       </XStack>

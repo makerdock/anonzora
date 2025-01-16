@@ -90,6 +90,26 @@ async function getStorageSlot(
 
   let slotWithData = null
 
+  // Milady Cult // unsupported in circuit because of storage key computation
+  if (
+    chainId === 1 &&
+    contractAddress.toLowerCase() === '0x0000000000c5dc95539589fbd24be07c6c14eca4'
+  ) {
+    const seed = '0x87a211a2'
+    const storageKey = keccak256(
+      concat([walletAddress as `0x${string}`, pad(seed, { size: 12 })])
+    )
+    const data = await chain.client.getStorageAt({
+      address: contractAddress as `0x${string}`,
+      slot: storageKey,
+    })
+
+    if (data) {
+      if (BigInt(data) === value) return null
+    }
+    return null
+  }
+
   for (let slot = 0; slot < 200; slot++) {
     const storageKey = keccak256(
       concat([pad(walletAddress as `0x${string}`), pad(toHex(slot))])

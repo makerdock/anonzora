@@ -84,10 +84,10 @@ const buildTrendingFeed = async (fid: number, posts: Array<Post>) => {
     .sort((a, b) => {
       const aScore =
         (a.aggregate.likes || 0) /
-        ((now - new Date(a.timestamp).getTime()) / 3600000 + 2) ** 1.5
+        ((now - new Date(a.timestamp).getTime()) / 3600000 + 2) ** 2
       const bScore =
         (b.aggregate.likes || 0) /
-        ((now - new Date(b.timestamp).getTime()) / 3600000 + 2) ** 1.5
+        ((now - new Date(b.timestamp).getTime()) / 3600000 + 2) ** 2
       return bScore - aScore
     })
     .slice(0, 25)

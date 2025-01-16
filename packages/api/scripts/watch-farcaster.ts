@@ -209,7 +209,7 @@ async function live(lastEventId: number) {
       eventId = event.id
 
       i++
-      if (i > 1000) {
+      if (i > 100) {
         i = 0
         await redis.setLastEventId(event.id.toString())
         console.log(`[live] lastEventId: ${event.id}`)

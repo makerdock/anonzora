@@ -61,7 +61,7 @@ export function ResetCountdown() {
 
   return (
     <Text fos="$2" fow="500" color="$green12">
-      Rewards start in {timeLeft}
+      Rewards in {timeLeft}
     </Text>
   )
 }
