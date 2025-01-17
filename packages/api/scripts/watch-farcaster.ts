@@ -171,7 +171,7 @@ const getSubscription = async (lastEventId?: number) => {
   return subscription
 }
 
-async function live(lastEventId: number) {
+async function live(lastEventId?: number) {
   let eventId = lastEventId
   console.log(`[live] fromId: ${eventId}`)
 
@@ -228,11 +228,13 @@ async function live(lastEventId: number) {
     }
   }
 
-  return eventId
+  if (eventId && eventId > 522729148256258) {
+    return eventId
+  }
 }
 
 async function main() {
-  let lastEventId = Number(await redis.getLastEventId())
+  let lastEventId: number | undefined = Number(await redis.getLastEventId())
   while (true) {
     lastEventId = await live(lastEventId)
   }
