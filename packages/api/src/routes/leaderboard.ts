@@ -12,7 +12,7 @@ import {
 import { redis } from '../services/redis'
 import { createElysia } from '../utils'
 import { neynar } from '../services/neynar'
-import { FarcasterUser } from '@anonworld/common'
+import { Community, FarcasterUser } from '@anonworld/common'
 import { DBCredential } from '../db/types'
 import { DBVault } from '../db/types'
 import { t } from 'elysia'
@@ -64,7 +64,7 @@ type CredentialData = {
   }[]
 }
 
-async function getDataByCredentialId(communityFid?: number) {
+async function getDataByCredentialId(community?: Community) {
   const posts = await db.db
     .select()
     .from(postCredentialsTable)
@@ -73,7 +73,7 @@ async function getDataByCredentialId(communityFid?: number) {
       and(
         sql`${postsTable.data}->>'reply' IS NULL`,
         isNull(postsTable.deleted_at),
-        communityFid ? eq(postsTable.fid, communityFid) : undefined
+        community ? eq(postsTable.fid, community.fid) : undefined
       )
     )
 
@@ -100,7 +100,23 @@ async function getDataByCredentialId(communityFid?: number) {
         verified_at: credentialsTable.verified_at,
       })
       .from(credentialsTable)
-      .where(inArray(credentialsTable.id, credentialIds)),
+      .where(
+        and(
+          inArray(credentialsTable.id, credentialIds),
+          community
+            ? or(
+                eq(
+                  credentialsTable.credential_id,
+                  `ERC20_BALANCE:${community.token.chain_id}:${community.token.address.toLowerCase()}`
+                ),
+                eq(
+                  credentialsTable.credential_id,
+                  `ERC721_BALANCE:${community.token.chain_id}:${community.token.address.toLowerCase()}`
+                )
+              )
+            : undefined
+        )
+      ),
   ])
 
   const allPostHashes = Array.from(
@@ -180,6 +196,10 @@ async function getDataByCredentialId(communityFid?: number) {
     seenPosts.add(post.hash)
 
     const credentialId = parentMap[row.post_credentials.credential_id]
+    if (!credentialId) {
+      continue
+    }
+
     if (!data[credentialId]) {
       data[credentialId] = {
         credentialId: latestMap[credentialId].id,
@@ -206,7 +226,7 @@ async function getDataByCredentialId(communityFid?: number) {
     }
 
     if (
-      (communityFid || post.targetFid === 899289) &&
+      (community || post.targetFid === 899289) &&
       !data[credentialId].posts.find((p) => p.hash === post.hash)
     ) {
       data[credentialId].posts.push(post)
@@ -221,6 +241,10 @@ async function getDataByCredentialId(communityFid?: number) {
     seenPosts.add(post.hash)
 
     const credentialId = parentMap[row.post_credentials.credential_id]
+    if (!credentialId) {
+      continue
+    }
+
     if (!data[credentialId]) {
       data[credentialId] = {
         credentialId: latestMap[credentialId].id,
@@ -237,7 +261,7 @@ async function getDataByCredentialId(communityFid?: number) {
     })
 
     if (
-      (communityFid || post.targetFid === 899289) &&
+      (community || post.targetFid === 899289) &&
       !data[credentialId].posts.find((p) => p.hash === post.hash)
     ) {
       data[credentialId].posts.push(post)
@@ -250,6 +274,10 @@ async function getDataByCredentialId(communityFid?: number) {
     }
 
     const credentialId = parentMap[row.credentialId]
+    if (!credentialId) {
+      continue
+    }
+
     if (!data[credentialId]) {
       data[credentialId] = {
         credentialId: latestMap[credentialId].id,
@@ -259,7 +287,7 @@ async function getDataByCredentialId(communityFid?: number) {
       }
     }
 
-    if (communityFid || row.targetFid === 899289) {
+    if (community || row.targetFid === 899289) {
       data[credentialId].posts.push(row)
     }
   }
@@ -457,7 +485,7 @@ export async function updateLeaderboard() {
 
   const communities = await db.communities.list()
   for (const community of communities) {
-    const data = await getDataByCredentialId(community.fid)
+    const data = await getDataByCredentialId(community)
     console.log(`[leaderboard] [${community.fid}] formatting all time leaderboard`)
     const communityAllTimeLeaderboard = await updateAllTimeLeaderboard(
       data,
