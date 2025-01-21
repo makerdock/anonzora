@@ -125,7 +125,7 @@ function TokenField() {
     if (!token) {
       setToken(null)
       setTokenId(undefined)
-      setBalance(0)
+      setBalance('0')
       return
     }
 
@@ -142,7 +142,7 @@ function TokenField() {
     if (!chain?.zerionId) return
 
     setTokenId({ chainId: chain.id, address: impl.address ?? '' })
-    setBalance(Math.floor(token.attributes.quantity.float / 2))
+    setBalance(Math.floor(token.attributes.quantity.float / 2).toString())
   }
 
   return (
@@ -256,9 +256,9 @@ function BalanceField() {
         Balance
       </Label>
       <Slider
-        value={[Math.min(balance, maxBalance)]}
+        value={[Math.min(Number(balance), maxBalance)]}
         max={maxBalance}
-        onValueChange={(value) => setBalance(value[0])}
+        onValueChange={(value) => setBalance(value[0].toString())}
         step={0.1}
       >
         <Slider.Track bg="$color5">
@@ -270,7 +270,7 @@ function BalanceField() {
         <Input
           unstyled
           value={balance.toString()}
-          onChangeText={(value) => setBalance(Number(value))}
+          onChangeText={(value) => setBalance(value)}
           bc="$borderColor"
           bw="$0.5"
           br="$2"
@@ -281,7 +281,7 @@ function BalanceField() {
           bg="$background"
         />
         <View
-          onPress={() => setBalance(maxBalance)}
+          onPress={() => setBalance(maxBalance.toString())}
           cursor="pointer"
           opacity={0.75}
           hoverStyle={{ opacity: 1 }}
@@ -302,8 +302,8 @@ function NativeBalanceSubmitButton() {
   return (
     <SubmitButton
       onSubmit={handleAddCredential}
-      disabled={!address || balance === 0}
-      disabledText={balance === 0 ? 'Select a token' : 'Connect Wallet'}
+      disabled={!address || Number(balance) === 0}
+      disabledText={Number(balance) === 0 ? 'Select a token' : 'Connect Wallet'}
       error={error}
       isLoading={isLoading}
       text={parentId ? 'Reverify Credential' : 'Add Credential'}

@@ -11,8 +11,8 @@ interface NewNativeBalanceCredentialContextValue {
   isConnecting: boolean
   tokenId: { chainId: number; address: string } | undefined
   setTokenId: (token?: { chainId: number; address: string }) => void
-  balance: number
-  setBalance: (balance: number) => void
+  balance: string
+  setBalance: (balance: string) => void
   handleAddCredential: () => void
   isLoading: boolean
   error: string | undefined
@@ -43,7 +43,7 @@ export function NewNativeBalanceCredentialProvider({
   const [tokenId, setTokenId] = useState<
     { chainId: number; address: string } | undefined
   >()
-  const [balance, setBalance] = useState<number>(initialBalance ?? 0)
+  const [balance, setBalance] = useState<string>(initialBalance?.toString() ?? '0')
   const { address } = useAccount()
   const { add, addToVault } = useCredentials()
   const [isLoading, setIsLoading] = useState(false)
@@ -62,9 +62,9 @@ export function NewNativeBalanceCredentialProvider({
   useEffect(() => {
     if (maxBalance) {
       if (initialBalance) {
-        setBalance(Math.min(maxBalance, initialBalance))
+        setBalance(Math.min(maxBalance, initialBalance).toString())
       } else {
-        setBalance(maxBalance)
+        setBalance(maxBalance.toString())
       }
     }
   }, [maxBalance])
@@ -86,7 +86,7 @@ export function NewNativeBalanceCredentialProvider({
   useEffect(() => {
     if (isOpen) {
       if (initialBalance) {
-        setBalance(initialBalance)
+        setBalance(initialBalance.toString())
       }
     }
   }, [isOpen, initialBalance])
@@ -105,7 +105,7 @@ export function NewNativeBalanceCredentialProvider({
         {
           address,
           chainId: tokenId.chainId,
-          verifiedBalance: parseUnits(balance.toString(), 18),
+          verifiedBalance: parseUnits(balance, 18),
         },
         parentId
       )
