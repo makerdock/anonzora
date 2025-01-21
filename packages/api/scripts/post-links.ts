@@ -115,28 +115,3 @@ export async function handleTwitterPosts() {
     console.log(`[post-links] [twitter] ${parentLink} -> ${childLink}`)
   }
 }
-
-async function main() {
-  let farcasterDisabledUntil: number | undefined = undefined
-  // let twitterDisabledUntil: number | undefined = undefined
-  while (true) {
-    const currentTimestamp = new Date().getTime() / 1000
-    if (farcasterDisabledUntil && farcasterDisabledUntil >= currentTimestamp) {
-      console.log(
-        `[post-links] [farcaster] waiting for ${farcasterDisabledUntil - currentTimestamp} seconds`
-      )
-    } else {
-      farcasterDisabledUntil = await handleFarcasterPosts()
-    }
-    // if (twitterDisabledUntil && twitterDisabledUntil >= currentTimestamp) {
-    //   console.log(
-    //     `[post-links] [twitter] waiting for ${twitterDisabledUntil - currentTimestamp} seconds`
-    //   )
-    // } else {
-    //   twitterDisabledUntil = await handleTwitterPosts()
-    // }
-
-    // Wait 30 seconds before checking again
-    await new Promise((resolve) => setTimeout(resolve, 30_000))
-  }
-}

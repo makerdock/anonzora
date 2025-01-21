@@ -6,6 +6,7 @@ import {
   CredentialRequirement,
   ERC721CredentialRequirement,
   FarcasterFidCredentialRequirement,
+  NativeCredentialRequirement,
 } from '@anonworld/common'
 import { ERC20BalanceDisplay } from './erc20-balance/display'
 import { ERC20BalanceRequirement } from './erc20-balance/requirement'
@@ -19,6 +20,10 @@ import { FarcasterFidDisplay } from './farcaster-fid/display'
 import { FarcasterFidRequirement } from './farcaster-fid/requirement'
 import { FarcasterFidBadge } from './farcaster-fid/badge'
 import { FarcasterFidSelect } from './farcaster-fid/select'
+import { NativeBalanceDisplay } from './native-balance/display'
+import { NativeBalanceRequirement } from './native-balance/requirement'
+import { NativeBalanceBadge } from './native-balance/badge'
+import { NativeBalanceSelect } from './native-balance/select'
 
 export function CredentialTypeDisplay({ credential }: { credential: Credential }) {
   switch (credential.type) {
@@ -28,6 +33,8 @@ export function CredentialTypeDisplay({ credential }: { credential: Credential }
       return <ERC721BalanceDisplay credential={credential} />
     case CredentialType.FARCASTER_FID:
       return <FarcasterFidDisplay credential={credential} />
+    case CredentialType.NATIVE_BALANCE:
+      return <NativeBalanceDisplay credential={credential} />
     default:
       return null
   }
@@ -63,6 +70,13 @@ export function CredentialTypeRequirement({
           req={req as FarcasterFidCredentialRequirement}
         />
       )
+    case CredentialType.NATIVE_BALANCE:
+      return (
+        <NativeBalanceRequirement
+          action={action}
+          req={req as NativeCredentialRequirement}
+        />
+      )
     default:
       return null
   }
@@ -76,6 +90,8 @@ export function CredentialTypeBadge({ credential }: { credential: Credential }) 
       return <ERC721BalanceBadge credential={credential} />
     case CredentialType.FARCASTER_FID:
       return <FarcasterFidBadge credential={credential} />
+    case CredentialType.NATIVE_BALANCE:
+      return <NativeBalanceBadge credential={credential} />
     default:
       return null
   }
@@ -89,6 +105,8 @@ export function CredentialTypeSelect({ credential }: { credential: Credential })
       return <ERC721BalanceSelect credential={credential} />
     case CredentialType.FARCASTER_FID:
       return <FarcasterFidSelect credential={credential} />
+    case CredentialType.NATIVE_BALANCE:
+      return <NativeBalanceSelect credential={credential} />
     default:
       return null
   }

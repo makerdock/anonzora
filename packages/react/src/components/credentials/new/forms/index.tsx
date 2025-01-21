@@ -3,6 +3,7 @@ import { CredentialType, Vault } from '@anonworld/common'
 import { ERC20CredentialForm } from './erc20-balance'
 import { ERC721CredentialForm } from './erc721-balance'
 import { FarcasterFidForm } from './farcaster-fid'
+import { NativeBalanceCredentialForm } from './native-balance'
 
 export function NewCredentialForm({
   credentialType,
@@ -48,6 +49,16 @@ export function NewCredentialForm({
   if (credentialType === CredentialType.FARCASTER_FID) {
     return (
       <FarcasterFidForm
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        parentId={parentId}
+        vault={vault}
+      />
+    )
+  }
+  if (credentialType === CredentialType.NATIVE_BALANCE) {
+    return (
+      <NativeBalanceCredentialForm
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         parentId={parentId}

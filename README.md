@@ -11,6 +11,5 @@ TODO: Make this more dev friendly
 2. Implement credential verifier in `packages/credentials/src/verifiers`
 3. Add UI display components to `packages/react/src/components/credentials/types`
 4. Add UI verification form to `packages/react/src/components/credentials/new/form`
-5. Add credential reply post format to `packages/api/scripts/post-links.ts`
-6. Add opengraph image to `apps/anonworld/app/posts/[hash]/opengraph-image.tsx`
-7. Add opengraph metadata generation to `apps/anonworld/app/posts/[hash]/page.tsx`
+5. Add opengraph image to `apps/anonworld/app/posts/[hash]/opengraph-image.tsx`
+6. Add opengraph metadata generation to `apps/anonworld/app/posts/[hash]/page.tsx`

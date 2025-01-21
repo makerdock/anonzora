@@ -4,6 +4,7 @@ import { Vault } from './vaults'
 export enum CredentialType {
   ERC20_BALANCE = 'ERC20_BALANCE',
   ERC721_BALANCE = 'ERC721_BALANCE',
+  NATIVE_BALANCE = 'NATIVE_BALANCE',
   FARCASTER_FID = 'FARCASTER_FID',
 }
 
@@ -25,6 +26,11 @@ export type TokenBalanceMetadata = {
 
 export type FarcasterFidMetadata = {
   fid: number
+}
+
+export type NativeBalanceMetadata = {
+  chainId: number
+  balance: string
 }
 
 type BaseCredential = {
@@ -55,11 +61,16 @@ export type FarcasterFidCredential = BaseCredential & {
   metadata: FarcasterFidMetadata
 }
 
+export type NativeBalanceCredential = BaseCredential & {
+  type: CredentialType.NATIVE_BALANCE
+  metadata: NativeBalanceMetadata
+}
+
 export type Credential =
   | ERC20BalanceCredential
   | ERC721BalanceCredential
   | FarcasterFidCredential
-
+  | NativeBalanceCredential
 export type CredentialWithId = Credential & { id: string }
 
 export type ERC20CredentialRequirement = {
@@ -78,15 +89,22 @@ export type FarcasterFidCredentialRequirement = {
   fid: number
 }
 
+export type NativeCredentialRequirement = {
+  chainId: number
+  minimumBalance: string
+}
+
 export type CredentialRequirement =
   | ERC20CredentialRequirement
   | ERC721CredentialRequirement
   | FarcasterFidCredentialRequirement
+  | NativeCredentialRequirement
 
 export type CredentialRequirementTypeMap = {
   [CredentialType.ERC20_BALANCE]: ERC20CredentialRequirement
   [CredentialType.ERC721_BALANCE]: ERC721CredentialRequirement
   [CredentialType.FARCASTER_FID]: FarcasterFidCredentialRequirement
+  [CredentialType.NATIVE_BALANCE]: NativeCredentialRequirement
 }
 
 export type CredentialRequirements =
@@ -101,4 +119,8 @@ export type CredentialRequirements =
   | {
       type: CredentialType.FARCASTER_FID
       data: FarcasterFidCredentialRequirement
+    }
+  | {
+      type: CredentialType.NATIVE_BALANCE
+      data: NativeCredentialRequirement
     }

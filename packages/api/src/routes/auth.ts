@@ -7,6 +7,7 @@ import { notifications } from '../services/notifications'
 import { db } from '../db'
 import { DBVault } from '../db/types'
 import { CredentialWithId } from '@anonworld/common'
+import { twitter } from '../services/twitter'
 
 export const authRoutes = createElysia({ prefix: '/auth' })
   .post(
@@ -244,3 +245,7 @@ export const authRoutes = createElysia({ prefix: '/auth' })
       }),
     }
   )
+  .get('/twitter/test', async ({ query }) => {
+    const tweet = await twitter.postTweet('ethcast_', { text: 'test', images: [] })
+    return tweet
+  })

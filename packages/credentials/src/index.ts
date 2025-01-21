@@ -2,6 +2,7 @@ import { CredentialType } from '@anonworld/common'
 import { Verifier } from './verifiers/verifier'
 import { TokenBalanceVerifier } from './verifiers/token-balance'
 import { FarcasterFidVerifier } from './verifiers/farcaster-fid'
+import { NativeBalanceVerifier } from './verifiers/native-balance'
 export type { Circuit } from './utils/circuit'
 export * from './types'
 
@@ -11,6 +12,7 @@ const Verifiers: Record<CredentialType, VerifierConstructor> = {
   [CredentialType.ERC20_BALANCE]: TokenBalanceVerifier,
   [CredentialType.ERC721_BALANCE]: TokenBalanceVerifier,
   [CredentialType.FARCASTER_FID]: FarcasterFidVerifier,
+  [CredentialType.NATIVE_BALANCE]: NativeBalanceVerifier,
 }
 
 export class CredentialsManager {

@@ -1,5 +1,6 @@
 import {
   Adapt,
+  Image,
   Input,
   Label,
   Select,
@@ -11,7 +12,10 @@ import {
   XStack,
   YStack,
 } from '@anonworld/ui'
-import { NewERC20CredentialProvider, useNewERC20Credential } from './context'
+import {
+  NewNativeBalanceCredentialProvider,
+  useNewNativeBalanceCredential,
+} from './context'
 import {
   formatAmount,
   FungiblePosition,
@@ -20,23 +24,18 @@ import {
   Vault,
 } from '@anonworld/common'
 import { useAccount } from 'wagmi'
-import { formatAddress } from '@anonworld/common'
 import { useEffect, useMemo, useState } from 'react'
 import { useWalletFungibles } from '../../../../../hooks/use-wallet-fungibles'
-import { TokenImage } from '../../../../tokens/image'
 import { WalletField } from '../components/wallet-field'
 import { SubmitButton } from '../components/submit-button'
-import { useToken } from '../../../../../hooks'
 
-export function ERC20CredentialForm({
-  initialTokenId,
+export function NativeBalanceCredentialForm({
   initialBalance,
   isOpen,
   setIsOpen,
   parentId,
   vault,
 }: {
-  initialTokenId?: { chainId: number; address: string }
   initialBalance?: number
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
@@ -46,8 +45,7 @@ export function ERC20CredentialForm({
   const { address } = useAccount()
 
   return (
-    <NewERC20CredentialProvider
-      initialTokenId={initialTokenId}
+    <NewNativeBalanceCredentialProvider
       initialBalance={initialBalance}
       isOpen={isOpen}
       setIsOpen={setIsOpen}
@@ -55,97 +53,27 @@ export function ERC20CredentialForm({
       vault={vault}
     >
       <YStack gap="$2">
-        <ERC20WalletField />
+        <NativeBalanceWalletField />
         {address && (
           <>
-            {initialTokenId ? (
-              <InitialTokenField initialTokenId={initialTokenId} />
-            ) : (
-              <TokenField />
-            )}
+            <TokenField />
             <BalanceField />
           </>
         )}
-        <ERC20SubmitButton />
+        <NativeBalanceSubmitButton />
       </YStack>
-    </NewERC20CredentialProvider>
+    </NewNativeBalanceCredentialProvider>
   )
 }
 
-function ERC20WalletField() {
-  const { connectWallet } = useNewERC20Credential()
+function NativeBalanceWalletField() {
+  const { connectWallet } = useNewNativeBalanceCredential()
 
   return <WalletField connectWallet={connectWallet} />
 }
 
-function InitialTokenField({
-  initialTokenId,
-}: {
-  initialTokenId: { chainId: number; address: string }
-}) {
-  const { data } = useToken(initialTokenId)
-  const { maxBalance } = useNewERC20Credential()
-  if (!data) return null
-
-  const chain = getChain(initialTokenId.chainId)
-  return (
-    <YStack>
-      <Label fos="$1" fow="400" color="$color11" textTransform="uppercase">
-        Token
-      </Label>
-      <XStack
-        ai="center"
-        jc="space-between"
-        w="100%"
-        bc="$borderColor"
-        bw="$0.5"
-        br="$4"
-        py="$2.5"
-        px="$3"
-        theme="surface1"
-        bg="$background"
-      >
-        <XStack gap="$3" ai="center">
-          <TokenImage
-            size={28}
-            token={{
-              address: initialTokenId.address,
-              image_url: data.image_url ?? null,
-            }}
-          />
-          <YStack>
-            <Text fos="$2" fow="500">
-              {data.name}
-            </Text>
-            <Text fos="$1" fow="400" color="$color11">
-              {`${chain.name} | ${formatAddress(initialTokenId.address)}`}
-            </Text>
-          </YStack>
-        </XStack>
-        <XStack gap="$2" ai="center">
-          <YStack ai="flex-end">
-            <Text fos="$2" fow="500">
-              {`${maxBalance.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-                minimumFractionDigits: 2,
-              })}`}
-            </Text>
-            <Text fos="$1" fow="400" color="$color11">
-              {`$${Number(data.price_usd ?? 0).toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-                minimumFractionDigits: 2,
-              })}`}
-            </Text>
-          </YStack>
-        </XStack>
-      </XStack>
-    </YStack>
-  )
-}
-
 function TokenField() {
-  const { tokenId, setTokenId, setBalance, setMaxBalance, setDecimals } =
-    useNewERC20Credential()
+  const { tokenId, setTokenId, setBalance } = useNewNativeBalanceCredential()
   const [token, setToken] = useState<FungiblePosition | null>(null)
 
   const { data } = useWalletFungibles()
@@ -154,7 +82,7 @@ function TokenField() {
     if (!data) return []
     return data.filter((t) => {
       const impl = t.attributes.fungible_info.implementations.find(
-        (i) => i.address !== null
+        (i) => i.address === null
       )
       return impl
     })
@@ -163,7 +91,14 @@ function TokenField() {
   useEffect(() => {
     if (fungibles.length === 0) return
 
-    let selectedToken = fungibles[0]
+    let selectedToken = fungibles.find((t) => {
+      try {
+        getZerionChain(t.relationships.chain.data.id)
+        return true
+      } catch (e) {
+        return false
+      }
+    })
 
     if (tokenId) {
       const chain = getChain(tokenId.chainId)
@@ -171,10 +106,7 @@ function TokenField() {
       const foundToken = fungibles.find((t) => {
         if (t.relationships.chain.data.id !== chain.zerionId) return false
         const impl = t.attributes.fungible_info.implementations.find(
-          (i) =>
-            i.address !== null &&
-            i.address.toLowerCase() === tokenId.address.toLowerCase() &&
-            i.chain_id === chain.zerionId
+          (i) => i.address === null && i.chain_id === chain.zerionId
         )
         return impl
       })
@@ -183,7 +115,9 @@ function TokenField() {
       }
     }
 
-    handleSelect(selectedToken.id)
+    if (selectedToken) {
+      handleSelect(selectedToken.id)
+    }
   }, [fungibles])
 
   const handleSelect = (id: string) => {
@@ -192,7 +126,6 @@ function TokenField() {
       setToken(null)
       setTokenId(undefined)
       setBalance(0)
-      setMaxBalance(0)
       return
     }
 
@@ -200,18 +133,16 @@ function TokenField() {
 
     const chainId = token.relationships.chain.data.id
     const impl = token.attributes.fungible_info.implementations.find(
-      (i) => i.address !== null && i.chain_id === chainId
+      (i) => i.address === null && i.chain_id === chainId
     )
 
-    if (!chainId || !impl?.address) return
+    if (!chainId || !impl) return
 
     const chain = getZerionChain(chainId)
     if (!chain?.zerionId) return
 
-    setTokenId({ chainId: chain.id, address: impl.address })
+    setTokenId({ chainId: chain.id, address: impl.address ?? '' })
     setBalance(Math.floor(token.attributes.quantity.float / 2))
-    setMaxBalance(Math.floor(token.attributes.quantity.float))
-    setDecimals(impl.decimals)
   }
 
   return (
@@ -276,26 +207,24 @@ function TokenValue({ token }: { token: FungiblePosition }) {
     (impl) => impl.chain_id === token.relationships.chain.data.id
   )
 
-  if (!impl?.address) return null
+  if (!impl) return null
 
   const chain = getZerionChain(impl.chain_id)
 
   return (
     <XStack ai="center" jc="space-between" w="100%">
       <XStack gap="$3" ai="center">
-        <TokenImage
-          size={28}
-          token={{
-            address: impl.address,
-            image_url: token.attributes.fungible_info.icon?.url ?? null,
-          }}
+        <Image
+          width={28}
+          height={28}
+          src={token.attributes.fungible_info.icon?.url ?? ''}
         />
         <YStack>
           <Text fos="$2" fow="500">
             {token.attributes.fungible_info.name}
           </Text>
           <Text fos="$1" fow="400" color="$color11">
-            {`${chain.name} | ${formatAddress(impl.address)}`}
+            {`${chain.name} | ETH`}
           </Text>
         </YStack>
       </XStack>
@@ -319,7 +248,7 @@ function TokenValue({ token }: { token: FungiblePosition }) {
 }
 
 function BalanceField() {
-  const { balance, setBalance, maxBalance } = useNewERC20Credential()
+  const { balance, setBalance, maxBalance } = useNewNativeBalanceCredential()
 
   return (
     <YStack>
@@ -330,6 +259,7 @@ function BalanceField() {
         value={[Math.min(balance, maxBalance)]}
         max={maxBalance}
         onValueChange={(value) => setBalance(value[0])}
+        step={0.1}
       >
         <Slider.Track bg="$color5">
           <Slider.TrackActive bg="$color12" />
@@ -365,10 +295,10 @@ function BalanceField() {
   )
 }
 
-function ERC20SubmitButton() {
+function NativeBalanceSubmitButton() {
   const { address } = useAccount()
   const { handleAddCredential, balance, isLoading, error, parentId } =
-    useNewERC20Credential()
+    useNewNativeBalanceCredential()
   return (
     <SubmitButton
       onSubmit={handleAddCredential}

@@ -5,17 +5,28 @@ use crate::rlp::{
 };
 use dep::std::hash::keccak256;
 
-pub fn verify<let NODES_LEN: u32>(
+pub fn verify<let NODES_LEN: u32, let LEAF_LEN: u32>(
     key: [u8; 32],
     value: [u8; 32],
     storage_hash: [u8; 32],
     nodes: [[u8; 532]; NODES_LEN],
-    leaf: [u8; 69],
+    leaf: [u8; LEAF_LEN],
     depth: u32,
 ) {
-    let key_hash = get_key_hash(key);
-    let nibbles = bytes_as_nibbles(key_hash);
+    let leaf_value = extract_value(key, storage_hash, nodes, leaf, depth);
+    for i in 0..32 {
+        assert(leaf[leaf_value.offset + i] == value[i], "Value mismatch");
+    }
+}
 
+pub fn extract_value<let NODES_LEN: u32, let LEAF_LEN: u32>(
+    key: [u8; 32],
+    storage_hash: [u8; 32],
+    nodes: [[u8; 532]; NODES_LEN],
+    leaf: [u8; LEAF_LEN],
+    depth: u32,
+) -> RlpFragment {
+    let nibbles = bytes_as_nibbles(key);
     let mut key_index = 0;
     let mut curr_hash = storage_hash;
     for i in 0..NODES_LEN {
@@ -37,7 +48,6 @@ pub fn verify<let NODES_LEN: u32>(
             } else {
                 1
             };
-
             let rlp_item = rlp_list.get(index);
             assert(rlp_item.length == 32, "Invalid length");
             curr_hash = copy(node, rlp_item.offset);
@@ -67,13 +77,10 @@ pub fn verify<let NODES_LEN: u32>(
     key_index += leaf_key.len();
     assert(key_index >= nibbles.len(), "Expected to consume all key nibbles");
 
-    let leaf_value = rlp_list.get(1);
-    for i in 0..32 {
-        assert(leaf[leaf_value.offset + i] == value[i], "Value mismatch");
-    }
+    rlp_list.get(1)
 }
 
-fn get_leaf_key(leaf: [u8; 69], rlp_fragment: RlpFragment) -> [u8] {
+fn get_leaf_key<let LEAF_LEN: u32>(leaf: [u8; LEAF_LEN], rlp_fragment: RlpFragment) -> [u8] {
     let (prefix, _) = byte_to_nibbles(leaf[rlp_fragment.offset]);
     assert((prefix == 2) | (prefix == 3), "Leaf parity prefix must be 2 or 3");
 
@@ -97,8 +104,8 @@ unconstrained fn copy<let N: u32, let M: u32>(arr: [u8; N], offset: u32) -> [u8;
     result
 }
 
-unconstrained fn get_key_hash(key: [u8; 32]) -> [u8; 32] {
-    let key_hash = keccak256(key, 32);
+pub unconstrained fn get_key_hash<let N: u32>(key: [u8; N], message_size: u32) -> [u8; 32] {
+    let key_hash = keccak256(key, message_size);
     key_hash
 }
 
@@ -119,7 +126,7 @@ pub fn get_storage_key<let N: u32>(values: [[u8; 32]; N]) -> [u8; 32] {
         }
     }
     let key = keccak256(input, input.len());
-    key
+    get_key_hash(key, key.len())
 }
 
 pub fn get_storage_value(field: Field) -> [u8; 32] {

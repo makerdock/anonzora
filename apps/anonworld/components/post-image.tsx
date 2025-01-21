@@ -182,7 +182,7 @@ function CredentialBadge({ credential }: { credential: Credential & { token?: To
       return (
         <Badge
           image={<TokenImage token={credential.token} />}
-        >{`${formatAmount(Number(amount))} ${credential.token.symbol}`}</Badge>
+        >{`${formatAmount(Number(amount))}+ ${credential.token.symbol}`}</Badge>
       )
     }
     case CredentialType.ERC721_BALANCE: {
@@ -208,6 +208,21 @@ function CredentialBadge({ credential }: { credential: Credential & { token?: To
             />
           }
         >{`< ${formatAmount(credential.metadata.fid)} FID`}</Badge>
+      )
+    }
+    case CredentialType.NATIVE_BALANCE: {
+      return (
+        <Badge
+          image={
+            <img
+              src="https://chain-icons.s3.amazonaws.com/ethereum.png"
+              alt="ETH"
+              height={40}
+              width={40}
+              style={{ borderRadius: 40 }}
+            />
+          }
+        >{`${formatAmount(Number(credential.metadata.balance))}+ ETH`}</Badge>
       )
     }
     default:

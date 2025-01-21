@@ -8,6 +8,9 @@ import { db } from '../db'
 import { CredentialsManager } from '@anonworld/credentials'
 import { feed } from '../services/feed'
 import { redis } from '../services/redis'
+import { TokenBalancePublicData } from '@anonworld/credentials/src/verifiers/token-balance'
+import { FarcasterFidPublicData } from '@anonworld/credentials/src/verifiers/farcaster-fid'
+import { NativeBalancePublicData } from '@anonworld/credentials/src/verifiers/native-balance'
 
 export const credentialsRoutes = createElysia({ prefix: '/credentials' })
   .post(
@@ -29,12 +32,7 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
         throw new Error('Invalid proof')
       }
 
-      const metadata = circuit.parseData(body.publicInputs)
-      const address =
-        'tokenAddress' in metadata ? metadata.tokenAddress : metadata.contractAddress
-      const credentialId = `${body.type}:${metadata.chainId}:${address.toLowerCase()}`
-      const slot = 'balanceSlot' in metadata ? metadata.balanceSlot : metadata.storageSlot
-
+      let credentialId = ''
       const id = keccak256(new Uint8Array(body.proof))
       const existingCredential = await db.credentials.get(id)
       if (existingCredential) {
@@ -44,20 +42,57 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
         }
       }
 
+      const metadata = circuit.parseData(body.publicInputs)
       const chain = getChain(metadata.chainId)
-
       const block = await chain.client.getBlock({
         blockNumber: BigInt(metadata.blockNumber),
       })
 
-      const ethProof = await chain.client.getProof({
-        address: address as `0x${string}`,
-        storageKeys: [keccak256(concat([pad(zeroAddress), pad(toHex(slot))]))],
-        blockNumber: BigInt(metadata.blockNumber),
-      })
+      switch (credentialType) {
+        case CredentialType.ERC20_BALANCE:
+        case CredentialType.ERC721_BALANCE: {
+          const typedMetadata = metadata as TokenBalancePublicData
+          const address = typedMetadata.tokenAddress
+          credentialId = `${body.type}:${typedMetadata.chainId}:${address.toLowerCase()}`
+          const slot = typedMetadata.balanceSlot
 
-      if (ethProof.storageHash !== metadata.storageHash) {
-        throw new Error('Invalid storage hash')
+          const ethProof = await chain.client.getProof({
+            address: address as `0x${string}`,
+            storageKeys: [keccak256(concat([pad(zeroAddress), pad(toHex(slot))]))],
+            blockNumber: BigInt(metadata.blockNumber),
+          })
+
+          if (ethProof.storageHash !== typedMetadata.storageHash) {
+            throw new Error('Invalid storage hash')
+          }
+          break
+        }
+        case CredentialType.FARCASTER_FID: {
+          const typedMetadata = metadata as FarcasterFidPublicData
+          credentialId = `${body.type}:${typedMetadata.chainId}:${typedMetadata.fid}`
+          const slot = typedMetadata.storageSlot
+
+          const ethProof = await chain.client.getProof({
+            address: typedMetadata.contractAddress as `0x${string}`,
+            storageKeys: [keccak256(concat([pad(zeroAddress), pad(toHex(slot))]))],
+            blockNumber: BigInt(metadata.blockNumber),
+          })
+
+          if (ethProof.storageHash !== typedMetadata.storageHash) {
+            throw new Error('Invalid storage hash')
+          }
+          break
+        }
+        case CredentialType.NATIVE_BALANCE: {
+          const typedMetadata = metadata as NativeBalancePublicData
+          credentialId = `${body.type}:${typedMetadata.chainId}`
+
+          console.log(block.stateRoot, typedMetadata.stateRoot)
+          if (block.stateRoot !== typedMetadata.stateRoot) {
+            throw new Error('Invalid state root')
+          }
+          break
+        }
       }
 
       let parent: Credential | null = null

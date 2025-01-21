@@ -1,5 +1,5 @@
 import { CredentialType } from '@anonworld/common'
-import { CredentialArgsTypeMap, CredentialPublicData } from '../types'
+import { CredentialArgsTypeMap, CredentialMetadataMap } from '../types'
 
 export abstract class Verifier {
   abstract type: CredentialType
@@ -12,5 +12,5 @@ export abstract class Verifier {
     publicInputs: string[]
   }>
   abstract verifyProof(proof: any): Promise<boolean>
-  abstract parseData(inputs: any): CredentialPublicData
+  abstract parseData(inputs: any): CredentialMetadataMap[CredentialType]
 }

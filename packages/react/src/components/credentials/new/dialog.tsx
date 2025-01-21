@@ -21,7 +21,7 @@ export function NewCredentialDialog({
   vault?: Vault
 }) {
   const [credentialType, setCredentialType] = useState<CredentialType>(
-    initialCredentialType || CredentialType.ERC20_BALANCE
+    initialCredentialType || CredentialType.NATIVE_BALANCE
   )
   const [isOpen, setIsOpen] = useState(false)
   return (
