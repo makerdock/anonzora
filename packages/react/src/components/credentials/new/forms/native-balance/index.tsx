@@ -250,22 +250,26 @@ function TokenValue({ token }: { token: FungiblePosition }) {
 function BalanceField() {
   const { balance, setBalance, maxBalance } = useNewNativeBalanceCredential()
 
+  const flooredMaxBalance = Math.floor(maxBalance * 10) / 10
+
   return (
     <YStack>
       <Label fos="$1" fow="400" color="$color11" textTransform="uppercase">
         Balance
       </Label>
-      <Slider
-        value={[Math.min(Number(balance), maxBalance)]}
-        max={maxBalance}
-        onValueChange={(value) => setBalance(value[0].toString())}
-        step={0.1}
-      >
-        <Slider.Track bg="$color5">
-          <Slider.TrackActive bg="$color12" />
-        </Slider.Track>
-        <Slider.Thumb size="$1" index={0} circular />
-      </Slider>
+      {flooredMaxBalance >= 0.1 && (
+        <Slider
+          value={[Math.min(Number(balance), flooredMaxBalance)]}
+          max={flooredMaxBalance}
+          onValueChange={(value) => setBalance(value[0].toString())}
+          step={0.1}
+        >
+          <Slider.Track bg="$color5">
+            <Slider.TrackActive bg="$color12" />
+          </Slider.Track>
+          <Slider.Thumb size="$1" index={0} circular />
+        </Slider>
+      )}
       <XStack jc="space-between" mt="$3" ai="center">
         <Input
           unstyled

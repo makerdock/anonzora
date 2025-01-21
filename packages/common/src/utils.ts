@@ -107,7 +107,10 @@ export function getUsableCredential(credentials: Credential[], action: Action) {
         const req = action.credential_requirement as NativeCredentialRequirement
         const isChainValid =
           req.chainId === 0 || req.chainId === credential.metadata.chainId
-        return isChainValid && credential.metadata.balance >= req.minimumBalance
+        return (
+          isChainValid &&
+          BigInt(credential.metadata.balance) >= BigInt(req.minimumBalance)
+        )
       }
 
       return false
@@ -162,7 +165,10 @@ export function validateCredentialRequirements(
         const req = credentialRequirement.data as NativeCredentialRequirement
         const isChainValid =
           req.chainId === 0 || req.chainId === credential.metadata.chainId
-        return isChainValid && credential.metadata.balance >= req.minimumBalance
+        return (
+          isChainValid &&
+          BigInt(credential.metadata.balance) >= BigInt(req.minimumBalance)
+        )
       }
 
       return false

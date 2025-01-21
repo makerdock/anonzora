@@ -56,7 +56,7 @@ export function NewNativeBalanceCredentialProvider({
 
   const maxBalance = useMemo(() => {
     if (!maxBalanceRaw) return 0
-    return Math.floor(Number(formatUnits(maxBalanceRaw.value, maxBalanceRaw.decimals)))
+    return Number(formatUnits(maxBalanceRaw.value, maxBalanceRaw.decimals))
   }, [maxBalanceRaw])
 
   useEffect(() => {
@@ -137,7 +137,7 @@ export function NewNativeBalanceCredentialProvider({
         isLoading,
         error,
         parentId,
-        maxBalance,
+        maxBalance: maxBalance,
       }}
     >
       {children}

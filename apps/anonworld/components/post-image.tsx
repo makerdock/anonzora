@@ -178,7 +178,7 @@ function CredentialBadge({ credential }: { credential: Credential & { token?: To
         return null
       }
       const amount =
-        BigInt(credential.metadata.balance) / BigInt(10 ** credential.token.decimals)
+        Number(BigInt(credential.metadata.balance)) / 10 ** credential.token.decimals
       return (
         <Badge
           image={<TokenImage token={credential.token} />}
@@ -211,6 +211,7 @@ function CredentialBadge({ credential }: { credential: Credential & { token?: To
       )
     }
     case CredentialType.NATIVE_BALANCE: {
+      const amount = Number(BigInt(credential.metadata.balance)) / 10 ** 18
       return (
         <Badge
           image={
@@ -222,7 +223,7 @@ function CredentialBadge({ credential }: { credential: Credential & { token?: To
               style={{ borderRadius: 40 }}
             />
           }
-        >{`${formatAmount(Number(credential.metadata.balance))}+ ETH`}</Badge>
+        >{`${formatAmount(Number(amount))}+ ETH`}</Badge>
       )
     }
     default:
