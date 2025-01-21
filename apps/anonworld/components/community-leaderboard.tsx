@@ -144,7 +144,7 @@ export function CommunityLeaderboardPage({ id }: { id: string }) {
             <ResetCountdown />
           </XStack>
         </View>
-        <Leaderboard timeframe={selected} community={community.id} />
+        <Leaderboard timeframe={selected} community={community} />
       </YStack>
     </Content>
   )

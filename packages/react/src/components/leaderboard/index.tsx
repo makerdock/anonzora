@@ -3,18 +3,22 @@ import { PostCredential } from '../posts/display/credential'
 import { useLeaderboard } from '../../hooks/use-leaderboard'
 import { VaultAvatar } from '../vaults'
 import { Link } from 'solito/link'
-import { formatHexId } from '@anonworld/common'
+import { Community, formatAmount, formatHexId } from '@anonworld/common'
 import { Badge } from '../badge'
 import { keccak256 } from 'viem'
 import { useCredentials } from '../../providers'
 import { useMemo } from 'react'
+import { Gift, MessageCircle } from '@tamagui/lucide-icons'
+import { COMMUNITY_REWARD_THRESHOLD, getBalances } from '../communities/utils'
 export { LeaderboardSelector } from './selector'
 
 export function Leaderboard({
   timeframe,
   community,
-}: { timeframe: 'all-time' | 'week' | 'last-week'; community?: string }) {
-  const { data, isLoading } = useLeaderboard(timeframe, community)
+}: { timeframe: 'all-time' | 'week' | 'last-week'; community?: Community }) {
+  const { weth } = getBalances(community)
+  const hasRewards = weth >= COMMUNITY_REWARD_THRESHOLD
+  const { data, isLoading } = useLeaderboard(timeframe, community?.id)
   const { credentials } = useCredentials()
 
   const hashes = useMemo(() => {
@@ -27,7 +31,7 @@ export function Leaderboard({
 
   return (
     <YStack gap="$3" $xs={{ gap: '$0', bbw: '$0.5', bc: '$borderColor' }}>
-      {data?.map(({ credential, score, posts, likes, replies }, i) => {
+      {data?.map(({ credential, score, posts }, i) => {
         return (
           <Link key={credential.hash} href={`/credentials/${credential.hash}`}>
             <XStack
@@ -77,9 +81,17 @@ export function Leaderboard({
                     <PostCredential credential={credential} />
                     {hashes.includes(credential.hash) && <Badge highlight>You</Badge>}
                   </XStack>
-                  <Text fos="$2" fow="400" color="$color11">
-                    {`${posts} post${posts > 1 ? 's' : ''}`}
-                  </Text>
+                  <XStack gap="$2" ai="center">
+                    {hasRewards && i < 10 && (
+                      <Badge
+                        icon={<Gift size={12} />}
+                        highlight
+                      >{`${formatAmount(weth / Math.min(10, data.length))} ETH`}</Badge>
+                    )}
+                    <Badge
+                      icon={<MessageCircle size={12} />}
+                    >{`${posts} post${posts > 1 ? 's' : ''}`}</Badge>
+                  </XStack>
                 </XStack>
               </YStack>
             </XStack>

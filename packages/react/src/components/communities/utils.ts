@@ -3,10 +3,10 @@ import { formatUnits } from 'viem'
 
 const WETH_ADDRESS = '0x4200000000000000000000000000000000000006'
 
-export const COMMUNITY_REWARD_THRESHOLD = 0.05
+export const COMMUNITY_REWARD_THRESHOLD = 0.1
 
-export const getBalances = (community: Community) => {
-  if (!community.wallet_metadata?.fees) return { weth: 0, token: 0 }
+export const getBalances = (community?: Community) => {
+  if (!community?.wallet_metadata?.fees) return { weth: 0, token: 0 }
   const { collected, uncollected } = community.wallet_metadata.fees
   const collectedWeth = collected[WETH_ADDRESS] ?? 0
   const uncollectedWeth = uncollected[WETH_ADDRESS] ?? 0
