@@ -7,14 +7,13 @@ import { X } from '../../svg/x'
 import { Community, FarcasterUser, TwitterUser } from '@anonworld/common'
 import { Link } from 'solito/link'
 import { Gift } from '@tamagui/lucide-icons'
-import { COMMUNITY_REWARD_THRESHOLD, getBalances } from '../utils'
+import { getBalances } from '../utils'
 
 export function CommunityDisplay({
   community,
   hoverable,
 }: { community: Community; hoverable?: boolean }) {
-  const { weth } = getBalances(community)
-  const hasRewards = weth >= COMMUNITY_REWARD_THRESHOLD
+  const { roundedWeth, hasRewards } = getBalances(community)
 
   return (
     <YStack
@@ -86,7 +85,7 @@ export function CommunityDisplay({
         <XStack gap="$2">
           <Badge>{timeAgo(community.created_at)}</Badge>
           {hasRewards && (
-            <Badge icon={<Gift size={12} />}>{`${formatAmount(weth)} ETH`}</Badge>
+            <Badge icon={<Gift size={12} />}>{`${formatAmount(roundedWeth)} ETH`}</Badge>
           )}
         </XStack>
         <XStack gap="$2" $xs={{ display: 'none' }}>

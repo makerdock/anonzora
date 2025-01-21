@@ -9,15 +9,15 @@ import { keccak256 } from 'viem'
 import { useCredentials } from '../../providers'
 import { useMemo } from 'react'
 import { Gift, MessageCircle } from '@tamagui/lucide-icons'
-import { COMMUNITY_REWARD_THRESHOLD, getBalances } from '../communities/utils'
+import { getBalances } from '../communities/utils'
 export { LeaderboardSelector } from './selector'
 
 export function Leaderboard({
   timeframe,
   community,
 }: { timeframe: 'all-time' | 'week' | 'last-week'; community?: Community }) {
-  const { weth } = getBalances(community)
-  const hasRewards = weth >= COMMUNITY_REWARD_THRESHOLD
+  const { roundedWeth, hasRewards, recipients } = getBalances(community)
+
   const { data, isLoading } = useLeaderboard(timeframe, community?.id)
   const { credentials } = useCredentials()
 
@@ -82,11 +82,10 @@ export function Leaderboard({
                     {hashes.includes(credential.hash) && <Badge highlight>You</Badge>}
                   </XStack>
                   <XStack gap="$2" ai="center">
-                    {hasRewards && i < 10 && (
-                      <Badge
-                        icon={<Gift size={12} />}
-                        highlight
-                      >{`${formatAmount(weth / Math.min(10, data.length))} ETH`}</Badge>
+                    {hasRewards && i < recipients && (
+                      <Badge icon={<Gift size={12} />} highlight>
+                        0.1 ETH
+                      </Badge>
                     )}
                     <Badge
                       icon={<MessageCircle size={12} />}

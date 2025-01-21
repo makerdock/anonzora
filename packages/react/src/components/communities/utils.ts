@@ -19,8 +19,15 @@ export const getBalances = (community?: Community) => {
   const formattedWethBalance = formatUnits(wethBalance, 18)
   const formattedTokenBalance = formatUnits(tokenBalance, community.token.decimals)
 
+  const roundedWeth = Math.floor(Number(formattedWethBalance) * 10) / 10
+  const roundedToken = Math.floor(Number(formattedTokenBalance) * 10) / 10
+
   return {
     weth: Number(formattedWethBalance),
+    roundedWeth,
     token: Number(formattedTokenBalance),
+    roundedToken,
+    hasRewards: roundedWeth >= COMMUNITY_REWARD_THRESHOLD,
+    recipients: Math.floor(roundedWeth / COMMUNITY_REWARD_THRESHOLD),
   }
 }

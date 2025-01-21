@@ -21,8 +21,8 @@ export function CommunityFeed({ sort }: { sort: string }) {
 
   const filteredCommunities = sortedCommunities?.filter((community) => {
     if (sort === 'rewards') {
-      const { weth } = getBalances(community)
-      return weth >= COMMUNITY_REWARD_THRESHOLD
+      const { hasRewards } = getBalances(community)
+      return hasRewards
     }
     return true
   })

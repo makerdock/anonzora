@@ -42,10 +42,12 @@ export default function Page() {
           resets every Wednesday at 4pm UTC.
         </Text>
         <Text fos="$2" fow="400" color="$green12">
-          Starting January 15th, top posters in communities with anon.world-launched
-          tokens will earn rewards. Rewards are funded by trading fees generated from the
-          community token and will be anonymously claimable through Veil. The first
-          distribution will be on January 22nd. Full details coming soon.
+          Communities with anon.world-launched tokens that have generated at least 0.1 ETH
+          in fees will be eligible for rewards. Top poster(s) in these communities will
+          each receive 0.1 ETH. The number of recipients is determined by the amount in
+          the rewards pool. For example, if the rewards pool is 0.5 ETH, there will be 5
+          recipients. Rewards will be anonymously claimable through Veil starting January
+          22nd.
         </Text>
         <Text fos="$2" fow="400" color="$green12">
           Leaderboards and rewards are an experimental feature and subject to change.
