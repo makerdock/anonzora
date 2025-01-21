@@ -52,6 +52,11 @@ export function Header() {
               <Text fow="600" fos="$3">
                 ANON.WORLD
               </Text>
+              <View bg="$green9" px="$1.5" py="$1" br="$2">
+                <Text fos="$1" fow="600" color="$green12">
+                  BETA
+                </Text>
+              </View>
             </View>
           </Link>
           <View fd="row" gap="$2" ai="center" $xs={{ display: 'none' }}>

@@ -6,7 +6,13 @@ import { CopyPostTwitter } from '../actions/copy-post-twitter'
 import { DeletePostTwitter } from '../actions/delete-post-twitter'
 import { DeletePostFarcaster } from '../actions/delete-post-farcaster'
 import { BaseAction } from '../actions/base'
-import { ActionRequest, ActionType } from '@anonworld/common'
+import {
+  Action,
+  ActionRequest,
+  ActionType,
+  getUsableCredential,
+  validateCredentialRequirements,
+} from '@anonworld/common'
 import { db } from '../db'
 
 export const CREDENTIAL_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7 // 7 days
@@ -16,22 +22,22 @@ async function getActionInstance(request: ActionRequest) {
 
   let actionInstance: BaseAction | undefined
 
-  const validCredentials = request.credentials.filter(
-    (c) => new Date(c.verified_at).getTime() + CREDENTIAL_EXPIRATION_TIME > Date.now()
-  )
-
-  if (validCredentials.length === 0) {
-    throw new Error('No valid credentials provided')
-  }
-
-  if (action.credential_id) {
-    const credential = validCredentials.find(
-      (credential) =>
-        credential.credential_id.toLowerCase() === action.credential_id?.toLowerCase()
-    )
-
-    if (!credential) {
-      throw new Error('Missing required credential')
+  if (action.credential_requirement) {
+    if (action.credential_id) {
+      const credential = getUsableCredential(
+        request.credentials,
+        action as unknown as Action
+      )
+      if (!credential) {
+        throw new Error('Missing required credential')
+      }
+    } else if (action.credentials) {
+      for (const req of action.credentials) {
+        const credential = validateCredentialRequirements(request.credentials, req)
+        if (!credential) {
+          throw new Error('Missing required credential')
+        }
+      }
     }
   }
 

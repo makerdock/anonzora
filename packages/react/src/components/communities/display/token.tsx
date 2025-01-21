@@ -8,10 +8,11 @@ import {
   ERC721CredentialRequirement,
   formatAddress,
   formatAmount,
+  NativeCredentialRequirement,
   Token,
   validateCredentialRequirements,
 } from '@anonworld/common'
-import { formatUnits } from 'viem'
+import { formatUnits, zeroAddress } from 'viem'
 import { ActionType, Community, getChain } from '@anonworld/common'
 import { useCredentials } from '../../../providers'
 import { getUsableCredential } from '@anonworld/common'
@@ -40,11 +41,13 @@ export function CommunityToken({ community }: { community: Community }) {
         <YStack gap="$1" minWidth="$12">
           <Link
             href={
-              community.token.type === ContractType.ERC721
-                ? `https://opensea.io/assets/${chain.name.toLowerCase()}/${community.token.address}`
-                : `https://dexscreener.com/${chain.name.toLowerCase()}/${community.token.address}`
+              community.token.address === zeroAddress
+                ? '#'
+                : community.token.type === ContractType.ERC721
+                  ? `https://opensea.io/assets/${chain.name.toLowerCase()}/${community.token.address}`
+                  : `https://dexscreener.com/${chain.name.toLowerCase()}/${community.token.address}`
             }
-            target="_blank"
+            target={community.token.address === zeroAddress ? undefined : '_blank'}
           >
             <XStack ai="center" gap="$2">
               <TokenImage token={community.token} />
@@ -106,12 +109,14 @@ export function CommunityToken({ community }: { community: Community }) {
             minWidth="$8"
             ai="flex-end"
           />
-          <Field
-            label="Holders"
-            value={formatAmount(community.token.holders)}
-            minWidth="$8"
-            ai="flex-end"
-          />
+          {community.token.holders > 0 && (
+            <Field
+              label="Holders"
+              value={formatAmount(community.token.holders)}
+              minWidth="$8"
+              ai="flex-end"
+            />
+          )}
         </XStack>
       </XStack>
       <CommunityActions community={community} />
@@ -180,6 +185,13 @@ export function CommunityActions({ community }: { community: Community }) {
                 />
               )
               break
+            case CredentialType.NATIVE_BALANCE:
+              reqs.push(
+                <NativeLabel
+                  req={action.credential_requirement as NativeCredentialRequirement}
+                />
+              )
+              break
           }
 
           let isValidCredentials = [!!getUsableCredential(credentials, action)]
@@ -191,6 +203,8 @@ export function CommunityActions({ community }: { community: Community }) {
                   return <ERC20Label req={cred.data as ERC20CredentialRequirement} />
                 case CredentialType.ERC721_BALANCE:
                   return <ERC721Label req={cred.data as ERC721CredentialRequirement} />
+                case CredentialType.NATIVE_BALANCE:
+                  return <NativeLabel req={cred.data as NativeCredentialRequirement} />
               }
             })
             isValidCredentials = action.credentials.map(
@@ -228,6 +242,10 @@ export function CommunityActions({ community }: { community: Community }) {
         })}
     </YStack>
   )
+}
+
+function NativeLabel({ req }: { req: NativeCredentialRequirement }) {
+  return <>{`${formatUnits(BigInt(req.minimumBalance), 18).toLocaleString()} ETH`}</>
 }
 
 function ERC20Label({ req }: { req: ERC20CredentialRequirement }) {

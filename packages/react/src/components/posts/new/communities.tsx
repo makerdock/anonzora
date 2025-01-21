@@ -49,7 +49,7 @@ export function NewPostCommunities() {
       <Text fos="$1" fow="500" col="$color11">
         Posting as
       </Text>
-      <VaultBadge vault={vault?.vault} vaultId={vault?.vault_id} />
+      <VaultBadge vault={vault?.vault ?? undefined} vaultId={vault?.vault_id} />
       {actions.length > 0 && (
         <>
           <Text fos="$1" fow="500" col="$color11">

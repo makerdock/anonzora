@@ -4,7 +4,7 @@ import { DBToken } from '../db/types'
 import { redis } from './redis'
 import { simplehash } from './simplehash'
 import { zerion } from './zerion'
-import { formatUnits } from 'viem'
+import { formatUnits, zeroAddress } from 'viem'
 
 class TokensService {
   async getOrCreate({
@@ -83,6 +83,36 @@ class TokensService {
     }
   }
 
+  async updateNative(token: DBToken) {
+    const zerionToken = await zerion.getFungible(token.chain_id, token.address)
+
+    const prices = [zerionToken?.attributes.market_data.price?.toFixed(10), '0']
+
+    for (const price of prices) {
+      if (!price) continue
+
+      const marketCap = token.total_supply * Number(price)
+      const fields = {
+        price_usd: price,
+        market_cap: Math.round(marketCap),
+      }
+
+      try {
+        await db.tokens.update(token.id, fields)
+      } catch (e) {
+        continue
+      }
+
+      const result = {
+        ...token,
+        ...fields,
+      }
+      await redis.setToken(token.chain_id, token.address, JSON.stringify(result))
+
+      return result
+    }
+  }
+
   async createERC20(chainId: number, tokenAddress: string) {
     const id = `${chainId}:${tokenAddress}`
     const zerionToken = await zerion.getFungible(chainId, tokenAddress)
@@ -109,7 +139,7 @@ class TokensService {
       total_supply: Math.round(zerionToken.attributes.market_data.total_supply ?? 0),
       holders: simpleHashToken?.holder_count ?? 0,
       balance_slot: null,
-      type: 'ERC20',
+      type: tokenAddress === zeroAddress ? 'NATIVE' : 'ERC20',
     }
     await db.tokens.create(token)
     await redis.setToken(chainId, tokenAddress, JSON.stringify(token))
@@ -219,7 +249,7 @@ class TokensService {
       market_cap: Math.round(floorPrice * collection.distinct_nft_count),
       total_supply: collection.distinct_nft_count,
       holders: collection.distinct_owner_count,
-      type: 'ERC721',
+      type: tokenAddress === zeroAddress ? 'NATIVE' : 'ERC721',
     }
     await db.tokens.create(token)
     await redis.setToken(chainId, tokenAddress, JSON.stringify(token))

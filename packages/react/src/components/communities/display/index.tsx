@@ -63,9 +63,7 @@ export function CommunityDisplay({
         </YStack>
       </XStack>
       <CommunityToken community={community} />
-      {community.token.platform === 'clanker' && (
-        <CommunityWallet community={community} />
-      )}
+      {community.wallet_metadata && <CommunityWallet community={community} />}
       {!disableActions && (
         <View position="absolute" top="$2" right="$3">
           <CommunityActions community={community} />

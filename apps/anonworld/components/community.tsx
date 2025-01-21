@@ -24,9 +24,12 @@ export function CommunityPage({ id }: { id: string }) {
     return null
   }
 
+  const isNative =
+    community.token.address === '0x0000000000000000000000000000000000000000'
+
   return (
     <Content>
-      <CommunityDisplay community={community} disableActions={isFrame} />
+      <CommunityDisplay community={community} disableActions={isFrame || isNative} />
       {!isFrame && (
         <XStack
           ai="center"
@@ -71,12 +74,14 @@ export function CommunityPage({ id }: { id: string }) {
             </Link>
           </XStack>
           <XStack gap="$2">
-            <SwapTokens
-              initialBuyToken={{
-                chainId: community.token.chain_id,
-                address: community.token.address,
-              }}
-            />
+            {!isNative && (
+              <SwapTokens
+                initialBuyToken={{
+                  chainId: community.token.chain_id,
+                  address: community.token.address,
+                }}
+              />
+            )}
             <NewCommunityPost community={community} />
           </XStack>
         </XStack>

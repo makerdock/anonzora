@@ -22,6 +22,8 @@ const updateTokens = async () => {
       await tokens.updateERC20(token)
     } else if (token.type === 'ERC721') {
       await tokens.updateERC721(token)
+    } else if (token.type === 'NATIVE') {
+      await tokens.updateNative(token)
     }
   }
 }

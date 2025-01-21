@@ -6,6 +6,7 @@ import {
   FarcasterFidMetadata,
   FarcasterUser,
   TwitterUser,
+  CredentialRequirements,
 } from '@anonworld/common'
 import {
   communitiesTable,
@@ -23,7 +24,9 @@ import {
   passkeysTable,
 } from './schema'
 
-export type DBAction = typeof actionsTable.$inferSelect
+export type DBAction = typeof actionsTable.$inferSelect & {
+  credentials: CredentialRequirements[] | null
+}
 export type DBFarcasterAccount = typeof farcasterAccountsTable.$inferSelect & {
   metadata: FarcasterUser
 }

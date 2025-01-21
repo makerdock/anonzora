@@ -1,7 +1,7 @@
 import { db } from '../db'
 import { neynar } from '../services/neynar'
 import { BaseAction } from './base'
-import { ActionRequest, PostData } from '@anonworld/common'
+import { Action, ActionRequest, getUsableCredential, PostData } from '@anonworld/common'
 
 const INVALID_REGEXES = [
   // biome-ignore lint/suspicious/noMisleadingCharacterClass: regex
@@ -83,27 +83,12 @@ export class CreatePost extends BaseAction<CreatePostMetadata, CreatePostData> {
     const nextActions: ActionRequest[] = []
 
     for (const action of actions) {
-      const credentialRequirements = action.credential_requirement as {
-        minimumBalance: string
-      } | null
-
-      if (!action.credential_id || !credentialRequirements) {
-        continue
-      }
-
-      const credential = this.credentials.find(
-        (c) => c.credential_id === action.credential_id
+      const credential = getUsableCredential(
+        this.credentials,
+        action as unknown as Action
       )
+
       if (!credential) {
-        continue
-      }
-
-      const credentialMetadata = credential.metadata as { balance: string } | undefined
-
-      if (
-        credentialMetadata?.balance &&
-        BigInt(credentialMetadata.balance) < BigInt(credentialRequirements.minimumBalance)
-      ) {
         continue
       }
 
