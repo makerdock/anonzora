@@ -6,8 +6,8 @@ export function CommunityFeedSelector({
   selected,
   onSelect,
 }: {
-  selected: 'popular' | 'new'
-  onSelect: (sort: 'popular' | 'new') => void
+  selected: 'popular' | 'new' | 'rewards'
+  onSelect: (sort: 'popular' | 'new' | 'rewards') => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
   return (
@@ -59,6 +59,13 @@ export function CommunityFeedSelector({
               onPress={() => {
                 setIsOpen(false)
                 onSelect('new')
+              }}
+            />
+            <ActionButton
+              label="With Rewards"
+              onPress={() => {
+                setIsOpen(false)
+                onSelect('rewards')
               }}
             />
           </YGroup>

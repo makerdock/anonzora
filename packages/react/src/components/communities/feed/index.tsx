@@ -2,6 +2,8 @@ import { Spinner, YStack } from '@anonworld/ui'
 import { CommunityDisplay } from './display'
 import { useCommunities } from '../../../hooks/use-communities'
 import { Link } from 'solito/link'
+import { COMMUNITY_REWARD_THRESHOLD } from '../utils'
+import { getBalances } from '../utils'
 
 export function CommunityFeed({ sort }: { sort: string }) {
   const { data: communities, isLoading } = useCommunities()
@@ -11,15 +13,23 @@ export function CommunityFeed({ sort }: { sort: string }) {
   }
 
   const sortedCommunities = communities?.sort((a, b) => {
-    if (sort === 'popular') {
-      return b.posts - a.posts
+    if (sort === 'popular' || sort === 'rewards') {
+      return b.followers - a.followers
     }
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   })
 
+  const filteredCommunities = sortedCommunities?.filter((community) => {
+    if (sort === 'rewards') {
+      const { weth } = getBalances(community)
+      return weth >= COMMUNITY_REWARD_THRESHOLD
+    }
+    return true
+  })
+
   return (
     <YStack gap="$4" $xs={{ gap: '$0', bbw: '$0.5', bc: '$borderColor' }}>
-      {sortedCommunities?.map((community) => (
+      {filteredCommunities?.map((community) => (
         <Link key={community.id} href={`/communities/${community.id}`}>
           <CommunityDisplay community={community} hoverable />
         </Link>

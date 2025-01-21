@@ -4,6 +4,7 @@ import { updateLeaderboard } from '../src/routes/leaderboard'
 import { neynar } from '../src/services/neynar'
 import { tokens } from '../src/services/tokens'
 import { handleFarcasterPosts, handleTwitterPosts } from './post-links'
+import { syncCommunityWallet } from './sync-fees'
 
 const updateFeeds = async () => {
   const accounts = await db.socials.listFarcasterAccounts()
@@ -36,6 +37,7 @@ const updateCommunities = async () => {
       posts,
       followers,
     })
+    await syncCommunityWallet(community)
   }
 }
 
@@ -104,13 +106,13 @@ const main = async () => {
       }
       if (i % 2 === 0) {
         await updateFeeds()
-        await updateCommunities()
       }
       if (i % 20 === 0) {
         await updateFarcasterAccounts()
         await updateTwitterAccounts()
       }
       if (i % 100 === 0) {
+        await updateCommunities()
         console.log('[leaderboard] updating leaderboard')
         await updateLeaderboard()
       }

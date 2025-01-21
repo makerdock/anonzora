@@ -3,13 +3,13 @@ import { Field } from '../../field'
 import { formatAddress, formatAmount, mainnet } from '@anonworld/common'
 import { Community, getChain } from '@anonworld/common'
 import { Copy, WalletMinimal } from '@tamagui/lucide-icons'
-import { useReadContract } from 'wagmi'
-import { erc20Abi, formatUnits } from 'viem'
 import { Link } from 'solito/link'
+import { getBalances } from '../utils'
 
 export function CommunityWallet({ community }: { community: Community }) {
   const chain = getChain(Number(community.token.chain_id))
   const toast = useToastController()
+  const { weth, token } = getBalances(community)
 
   return (
     <YStack gap="$4" mt="$2" $xs={{ gap: '$2' }}>
@@ -67,60 +67,22 @@ export function CommunityWallet({ community }: { community: Community }) {
           fg={1}
           $xs={{ flexDirection: 'column', gap: '$2', px: '$2', ai: 'flex-end' }}
         >
-          <Balance
-            contractAddress={community.token.address}
-            chainId={community.token.chain_id}
-            walletAddress={community.wallet_address}
-            decimals={community.token.decimals}
-            label={community.token.symbol}
+          <Field
             image={community.token.image_url ?? ''}
+            label={community.token.symbol}
+            value={formatAmount(token)}
+            minWidth="$10"
+            ai="flex-end"
           />
-          <Balance
-            contractAddress={'0x4200000000000000000000000000000000000006'}
-            chainId={community.token.chain_id}
-            walletAddress={community.wallet_address}
-            decimals={18}
-            label="ETH"
+          <Field
             image={mainnet.imageUrl}
+            label="ETH"
+            value={formatAmount(weth)}
+            minWidth="$10"
+            ai="flex-end"
           />
         </XStack>
       </XStack>
     </YStack>
-  )
-}
-
-function Balance({
-  contractAddress,
-  chainId,
-  walletAddress,
-  decimals,
-  label,
-  image,
-}: {
-  contractAddress: string
-  chainId: number
-  walletAddress: string
-  decimals: number
-  label: string
-  image: string
-}) {
-  const { data, isLoading } = useReadContract({
-    chainId,
-    address: contractAddress as `0x${string}`,
-    abi: erc20Abi,
-    functionName: 'balanceOf',
-    args: [walletAddress as `0x${string}`],
-  })
-
-  if (!data) return null
-
-  return (
-    <Field
-      image={image}
-      label={label}
-      value={formatAmount(Number.parseFloat(formatUnits(data, decimals)))}
-      minWidth="$10"
-      ai="flex-end"
-    />
   )
 }

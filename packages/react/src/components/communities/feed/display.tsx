@@ -7,14 +7,17 @@ import { X } from '../../svg/x'
 import { Community, FarcasterUser, TwitterUser } from '@anonworld/common'
 import { Link } from 'solito/link'
 import { Gift } from '@tamagui/lucide-icons'
+import { COMMUNITY_REWARD_THRESHOLD, getBalances } from '../utils'
 
 export function CommunityDisplay({
   community,
   hoverable,
 }: { community: Community; hoverable?: boolean }) {
+  const { weth } = getBalances(community)
+  const hasRewards = weth >= COMMUNITY_REWARD_THRESHOLD
+
   return (
     <YStack
-      key={community.id}
       theme="surface1"
       themeShallow
       bg="$background"
@@ -35,7 +38,7 @@ export function CommunityDisplay({
       f={1}
     >
       <XStack ai="center" jc="space-between" $xs={{ ai: 'flex-start' }}>
-        <XStack ai="center" gap="$3">
+        <XStack ai="center" gap="$3" f={1}>
           <Image
             src={community.image_url}
             w="$4"
@@ -44,8 +47,10 @@ export function CommunityDisplay({
             bc="$borderColor"
             bw="$0.5"
           />
-          <YStack gap="$1" minWidth="$10">
-            <Text fow="600">{community.name}</Text>
+          <YStack gap="$1" f={1}>
+            <Text fow="600" numberOfLines={1}>
+              {community.name}
+            </Text>
             <Text fos="$1" fow="400" color="$color11" textTransform="uppercase">
               {community.token.symbol}
             </Text>
@@ -80,11 +85,11 @@ export function CommunityDisplay({
       <XStack gap="$2" ai="center" jc="space-between">
         <XStack gap="$2">
           <Badge>{timeAgo(community.created_at)}</Badge>
-          {community.token.platform === 'clanker' && (
-            <Badge icon={<Gift size={12} />}>Rewards</Badge>
+          {hasRewards && (
+            <Badge icon={<Gift size={12} />}>{`${formatAmount(weth)} ETH`}</Badge>
           )}
         </XStack>
-        <XStack gap="$2">
+        <XStack gap="$2" $xs={{ display: 'none' }}>
           {community.farcaster && <FarcasterBadge farcaster={community.farcaster} />}
           {community.twitter && <TwitterBadge twitter={community.twitter} />}
         </XStack>

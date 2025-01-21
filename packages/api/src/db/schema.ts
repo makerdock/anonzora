@@ -169,6 +169,7 @@ export const communitiesTable = pgTable('communities', {
   passkey_id: varchar({ length: 255 }).references(() => passkeysTable.id),
   wallet_id: varchar({ length: 255 }).notNull(),
   wallet_address: varchar({ length: 255 }).notNull(),
+  wallet_metadata: jsonb('wallet_metadata'),
   posts: integer('posts').notNull().default(0),
   followers: integer('followers').notNull().default(0),
   hidden: boolean('hidden').notNull().default(false),

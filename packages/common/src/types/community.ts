@@ -18,4 +18,10 @@ export type Community = {
   farcaster: FarcasterUser
   twitter?: TwitterUser
   created_at: string
+  wallet_metadata?: {
+    fees: {
+      collected: Record<string, string>
+      uncollected: Record<string, string>
+    }
+  }
 }

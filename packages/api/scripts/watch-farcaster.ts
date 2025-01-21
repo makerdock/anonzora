@@ -86,7 +86,7 @@ async function handleEvent(
         hashValue.value,
         messageData.fid,
         messageHashValue.value,
-        FARCASTER_EPOCH + messageData.timestamp
+        FARCASTER_EPOCH + messageData.timestamp * 1000
       )
     } catch (e) {
       console.error(e)
@@ -136,7 +136,7 @@ async function handleEvent(
         await db.posts.likeFromFarcaster(
           messageData.fid,
           hashValue.value,
-          FARCASTER_EPOCH + messageData.timestamp
+          FARCASTER_EPOCH + messageData.timestamp * 1000
         )
       } catch (e) {
         if (e instanceof DrizzleError) {
