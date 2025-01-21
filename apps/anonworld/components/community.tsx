@@ -52,26 +52,28 @@ export function CommunityPage({ id }: { id: string }) {
                 Posts
               </Text>
             </View>
-            <Link
-              href={`/communities/${id}/leaderboard`}
-              style={{ textDecoration: 'none' }}
-            >
-              <View
-                bg="$color1"
-                py="$2"
-                px="$3"
-                br="$12"
-                hoverStyle={{
-                  opacity: 0.9,
-                  bg: '$color5',
-                }}
-                cursor="pointer"
+            {community.token.platform === 'clanker' && (
+              <Link
+                href={`/communities/${id}/leaderboard`}
+                style={{ textDecoration: 'none' }}
               >
-                <Text fow="600" fos="$2" color="$color12">
-                  Leaderboard
-                </Text>
-              </View>
-            </Link>
+                <View
+                  bg="$color1"
+                  py="$2"
+                  px="$3"
+                  br="$12"
+                  hoverStyle={{
+                    opacity: 0.9,
+                    bg: '$color5',
+                  }}
+                  cursor="pointer"
+                >
+                  <Text fow="600" fos="$2" color="$color12">
+                    Leaderboard
+                  </Text>
+                </View>
+              </Link>
+            )}
           </XStack>
           <XStack gap="$2">
             {!isNative && (

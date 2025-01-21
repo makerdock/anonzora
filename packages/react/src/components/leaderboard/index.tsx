@@ -97,6 +97,11 @@ export function Leaderboard({
           </Link>
         )
       })}
+      {(!data || data.length === 0) && (
+        <Text fos="$2" fow="400" color="$color12">
+          No leaderboard data yet.
+        </Text>
+      )}
     </YStack>
   )
 }
