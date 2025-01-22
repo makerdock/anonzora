@@ -633,19 +633,24 @@ function getTimeframeWindow(
   // For all-time, use a very old start date
   if (timeframe === 'all-time') {
     return {
-      start: new Date(0), // Unix epoch
-      end: new Date(now.getTime() + 86400000), // tomorrow to include today
+      start: new Date(0),
+      end: new Date(now.getTime() + 86400000),
     }
   }
 
   // Find the next Wednesday 20:00 UTC
   const currentDay = now.getUTCDay()
-  const daysToWednesday = (3 - currentDay + 7) % 7 // Changed from 4 to 3 for Wednesday
+  const currentHour = now.getUTCHours()
+
+  // If it's Wednesday after 20:00 UTC, we need to look at next Wednesday
+  // If it's any other day, we look at the upcoming Wednesday
+  const daysToWednesday = (3 - currentDay + 7) % 7
+  const adjustedDaysToWednesday =
+    currentDay === 3 && currentHour >= 20 ? 7 : daysToWednesday
 
   const nextWednesday = new Date(now)
-  nextWednesday.setUTCDate(now.getUTCDate() + daysToWednesday)
+  nextWednesday.setUTCDate(now.getUTCDate() + adjustedDaysToWednesday)
   nextWednesday.setUTCHours(20, 0, 0, 0)
-
   // Last Wednesday was 7 days before
   const lastWednesday = new Date(nextWednesday)
   lastWednesday.setUTCDate(nextWednesday.getUTCDate() - 7)
