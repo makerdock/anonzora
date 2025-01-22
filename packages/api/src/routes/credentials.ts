@@ -11,6 +11,8 @@ import { redis } from '../services/redis'
 import { TokenBalancePublicData } from '@anonworld/credentials/src/verifiers/token-balance'
 import { FarcasterFidPublicData } from '@anonworld/credentials/src/verifiers/farcaster-fid'
 import { NativeBalancePublicData } from '@anonworld/credentials/src/verifiers/native-balance'
+import { claimNotesTable } from '../db/schema'
+import { inArray } from 'drizzle-orm'
 
 export const credentialsRoutes = createElysia({ prefix: '/credentials' })
   .post(
@@ -181,3 +183,18 @@ export const credentialsRoutes = createElysia({ prefix: '/credentials' })
       data,
     }
   })
+  .post(
+    '/claims',
+    async ({ body, error }) => {
+      const data = await db.db
+        .select()
+        .from(claimNotesTable)
+        .where(inArray(claimNotesTable.credential_id, body.credentialIds))
+      return { data }
+    },
+    {
+      body: t.Object({
+        credentialIds: t.Array(t.String()),
+      }),
+    }
+  )

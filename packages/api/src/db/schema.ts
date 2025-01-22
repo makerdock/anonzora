@@ -233,3 +233,12 @@ export const postLinksTable = pgTable(
     }),
   })
 )
+
+export const claimNotesTable = pgTable('claim_notes', {
+  note: varchar({ length: 255 }).primaryKey(),
+  credential_id: varchar({ length: 255 })
+    .references(() => credentialsTable.id)
+    .notNull(),
+  created_at: timestamp().notNull().defaultNow(),
+  updated_at: timestamp().notNull().defaultNow(),
+})

@@ -2,6 +2,8 @@ import { CredentialWithId } from '@anonworld/common'
 import { db } from '../src/db'
 import { redis } from '../src/services/redis'
 
+const DISTRIBUTOR_ADDRESS = '0x8117efF53BA83D42408570c69C6da85a2Bb6CA05'
+
 async function main() {
   const communities = await db.communities.list()
   for (const community of communities) {
@@ -46,8 +48,12 @@ async function main() {
     const recipients = Math.round(rewards / 0.1)
     for (let i = 0; i < recipients; i++) {
       const recipient = leaderboard[i]
+      const credential = await db.credentials.getByHash(recipient.credential.hash)
+      if (!credential) {
+        throw new Error(`Credential not found for ${recipient.credential.hash}`)
+      }
       console.log(
-        `[${community.name}] [${i + 1}/${recipients}] ${recipient.credential.hash} ${recipient.score}`
+        `[${community.name}] [${i + 1}/${recipients}] ${credential.parent_id} ${recipient.score}`
       )
     }
   }

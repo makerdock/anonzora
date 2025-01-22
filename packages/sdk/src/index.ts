@@ -455,4 +455,14 @@ export class AnonWorldSDK {
       body: JSON.stringify({}),
     })
   }
+
+  async getClaims(credentialIds: string[]) {
+    return await this.request<{ data: { note: string; credential_id: string }[] }>(
+      '/credentials/claims',
+      {
+        method: 'POST',
+        body: JSON.stringify({ credentialIds }),
+      }
+    )
+  }
 }

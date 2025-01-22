@@ -22,7 +22,13 @@ export function Leaderboard({
   const { credentials } = useCredentials()
 
   const hashes = useMemo(() => {
-    return credentials.map((c) => keccak256(c.id as `0x${string}`)) as string[]
+    return credentials.flatMap((c) => {
+      const hash = keccak256(c.id as `0x${string}`)
+      if (c.parent_id) {
+        return [hash, keccak256(c.parent_id as `0x${string}`)]
+      }
+      return [hash]
+    })
   }, [credentials])
 
   if (isLoading) {
@@ -79,7 +85,9 @@ export function Leaderboard({
                 <XStack ai="center" jc="space-between">
                   <XStack gap="$2" ai="center">
                     <PostCredential credential={credential} />
-                    {hashes.includes(credential.hash) && <Badge highlight>You</Badge>}
+                    {hashes.includes(credential.hash as `0x${string}`) && (
+                      <Badge highlight>You</Badge>
+                    )}
                   </XStack>
                   <XStack gap="$2" ai="center">
                     {timeframe === 'week' && hasRewards && i < recipients && (

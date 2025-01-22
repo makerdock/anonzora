@@ -7,14 +7,25 @@ import {
   NewCredential,
   NewVault,
   useAuth,
+  useClaims,
   useCredentials,
   Vault,
   VaultAvatar,
   VaultSettings,
 } from '@anonworld/react'
-import { Dialog, Separator, Spinner, Text, View, XStack, YStack } from '@anonworld/ui'
+import {
+  Button,
+  Dialog,
+  Separator,
+  Spinner,
+  Text,
+  View,
+  XStack,
+  YStack,
+} from '@anonworld/ui'
 import { Content } from '@/components/content'
-import { Plus, Settings } from '@tamagui/lucide-icons'
+import { Gift, Plus, Settings } from '@tamagui/lucide-icons'
+import Link from 'next/link'
 
 export default function Credentials() {
   const { vaults, localCredentials, isInitialized } = useCredentials()
@@ -30,6 +41,7 @@ export default function Credentials() {
 
   return (
     <Content>
+      <ClaimsDisplay />
       <XStack ai="center" jc="space-between" $xs={{ px: '$2' }}>
         <View />
         <XStack gap="$2" ai="center">
@@ -129,5 +141,52 @@ function VaultDisplay({
         </>
       )}
     </YStack>
+  )
+}
+
+function ClaimsDisplay() {
+  const { data } = useClaims()
+  if (!data || data.length === 0) return null
+
+  return (
+    <View bg="$green1" p="$3" br="$4" bc="$green8" bw="$0.5" gap="$3" $xs={{ mx: '$3' }}>
+      <XStack ai="center" gap="$2">
+        <Gift size={16} color="$green12" />
+        <Text fos="$2" fow="600" color="$green12">
+          Rewards
+        </Text>
+      </XStack>
+      <Text fos="$2" fow="600" color="$green12">
+        You've earned {data.length * 0.1} ETH in rewards from your posts last week.
+      </Text>
+      <Text fos="$2" fow="400" color="$green12">
+        Rewards are anonymously claimable in 0.1 ETH increments through Veil.
+      </Text>
+      <XStack ai="center" gap="$2" jc="flex-end">
+        {data.map((c, i) => (
+          <Link
+            key={c.credential_id}
+            href={`https://www.veil.cash/link#${c.note}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button
+              size="$2"
+              bg="$green12"
+              px="$2.5"
+              br="$12"
+              bw="$0"
+              disabledStyle={{ opacity: 0.5, bg: '$green12' }}
+              hoverStyle={{ opacity: 0.9, bg: '$green12' }}
+              pressStyle={{ opacity: 0.9, bg: '$green12' }}
+            >
+              <Text fos="$2" fow="600" color="$green1">
+                {data.length > 1 ? `${i + 1}. Claim 0.1 ETH` : 'Claim 0.1 ETH'}
+              </Text>
+            </Button>
+          </Link>
+        ))}
+      </XStack>
+    </View>
   )
 }
