@@ -5,10 +5,10 @@ import { getPublicKey } from '../../utils'
 import { Circuit } from '../../utils/circuit'
 import { GetProofReturnType } from 'viem'
 import { Verifier } from '../verifier'
-import circuit from './circuit/target/0.1.1/main.json'
-import vkey from './circuit/target/0.1.1/vkey.json'
+import circuit from './circuit/target/0.1.2/main.json'
+import vkey from './circuit/target/0.1.2/vkey.json'
 
-export const NATIVE_BALANCE_VERSION = '0.1.1'
+export const NATIVE_BALANCE_VERSION = '0.1.2'
 
 export type NativeBalanceArgs = {
   chainId: number
@@ -97,7 +97,7 @@ export class NativeBalanceVerifier extends Circuit implements Verifier {
         (node) => formatHexArray(node, { length: 532, pad: 'right' }),
         { length: 10 }
       ),
-      account_leaf: formatHexArray(leaf, { length: 114, pad: 'right' }),
+      account_leaf: formatHexArray(leaf, { length: 142, pad: 'right' }),
       account_depth: args.accountProof.length,
       account_value: args.balance,
       chain_id: args.chainId,
