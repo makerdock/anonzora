@@ -638,13 +638,13 @@ function getTimeframeWindow(
     }
   }
 
-  // Find the next Wednesday 16:00 UTC
+  // Find the next Wednesday 20:00 UTC
   const currentDay = now.getUTCDay()
   const daysToWednesday = (3 - currentDay + 7) % 7 // Changed from 4 to 3 for Wednesday
 
   const nextWednesday = new Date(now)
   nextWednesday.setUTCDate(now.getUTCDate() + daysToWednesday)
-  nextWednesday.setUTCHours(16, 0, 0, 0)
+  nextWednesday.setUTCHours(20, 0, 0, 0)
 
   // Last Wednesday was 7 days before
   const lastWednesday = new Date(nextWednesday)

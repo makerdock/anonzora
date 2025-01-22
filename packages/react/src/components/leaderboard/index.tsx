@@ -16,7 +16,7 @@ export function Leaderboard({
   timeframe,
   community,
 }: { timeframe: 'all-time' | 'week' | 'last-week'; community?: Community }) {
-  const { roundedWeth, hasRewards, recipients } = getBalances(community)
+  const { hasRewards, recipients } = getBalances(community)
 
   const { data, isLoading } = useLeaderboard(timeframe, community?.id)
   const { credentials } = useCredentials()
@@ -82,7 +82,7 @@ export function Leaderboard({
                     {hashes.includes(credential.hash) && <Badge highlight>You</Badge>}
                   </XStack>
                   <XStack gap="$2" ai="center">
-                    {hasRewards && i < recipients && (
+                    {timeframe === 'week' && hasRewards && i < recipients && (
                       <Badge icon={<Gift size={12} />} highlight>
                         0.1 ETH
                       </Badge>
