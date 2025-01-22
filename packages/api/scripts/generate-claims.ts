@@ -52,9 +52,7 @@ async function main() {
       if (!credential) {
         throw new Error(`Credential not found for ${recipient.credential.hash}`)
       }
-      console.log(
-        `[${community.name}] [${i + 1}/${recipients}] ${credential.parent_id} ${recipient.score}`
-      )
+      console.log(credential.parent_id)
     }
   }
 }
