@@ -46,12 +46,18 @@ const updateCommunities = async () => {
 const updateFarcasterAccounts = async () => {
   const accounts = await db.socials.listFarcasterAccounts()
   const fids = accounts.map((account) => account.fid)
-  const users = await neynar.getBulkUsersByFids(fids)
-  for (const user of users.users) {
-    console.log(`[farcaster] updating account for ${user.fid}`)
-    await db.socials.updateFarcasterAccount(user.fid, {
-      metadata: user,
-    })
+  for (let i = 0; i < fids.length; i += 100) {
+    const batch = fids.slice(i, i + 100)
+    console.log(
+      `[farcaster] processing batch ${i / 100 + 1} of ${Math.ceil(fids.length / 100)}`
+    )
+    const users = await neynar.getBulkUsersByFids(batch)
+    for (const user of users.users) {
+      console.log(`[farcaster] updating account for ${user.fid}`)
+      await db.socials.updateFarcasterAccount(user.fid, {
+        metadata: user,
+      })
+    }
   }
 }
 

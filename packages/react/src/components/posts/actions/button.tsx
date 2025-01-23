@@ -41,7 +41,7 @@ export function ActionButton({
       cursor="pointer"
       onPress={onPress}
     >
-      <Icon size={14} fill={iconFocus ?? undefined} col={iconFocus ?? color} />
+      <Icon size={14} fill={iconFocus ?? '#232323'} col={iconFocus ?? color} />
       <Text fos="$1" col={color}>
         {children}
       </Text>
