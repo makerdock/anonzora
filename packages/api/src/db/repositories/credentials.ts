@@ -52,6 +52,15 @@ export class CredentialsRepository {
     return cred as DBCredential | null
   }
 
+  async getByHashes(hashes: string[]) {
+    const creds = await this.db
+      .select()
+      .from(credentialsTable)
+      .where(inArray(credentialsTable.hash, hashes))
+
+    return creds as DBCredential[]
+  }
+
   async getChildren(parentId: string) {
     const creds = await this.db
       .select()

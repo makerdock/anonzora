@@ -2,10 +2,17 @@ import { CredentialWithId } from '@anonworld/common'
 import { db } from '../src/db'
 import { redis } from '../src/services/redis'
 
-const DISTRIBUTOR_ADDRESS = '0x8117efF53BA83D42408570c69C6da85a2Bb6CA05'
+const COMMUNITIES_WITH_REWARDS: Record<string, number> = {
+  'd38d04da-59f6-4b6c-8dc9-7ac910514866': 11,
+  '47624f32-6536-402a-b1b0-d2affb549d9b': 10,
+  '96a8a286-7ef1-4b69-a0e1-298d0c41bda6': 1,
+}
 
 async function main() {
   const communities = await db.communities.list()
+
+  const ids: string[] = []
+
   for (const community of communities) {
     if (!community.wallet_metadata) continue
 
@@ -26,11 +33,13 @@ async function main() {
     const rewards = Math.floor(collectedWeth * 10) / 10
     const diff = collectedWeth - rewards
 
-    if (diff + uncollectedWeth >= 0.1) {
+    const shouldReward = !!COMMUNITIES_WITH_REWARDS[community.id]
+
+    if (diff + uncollectedWeth >= 0.1 && !shouldReward) {
       throw new Error(`Collect rewards for ${community.id}`)
     }
 
-    if (rewards < 0.1) continue
+    if (rewards < 0.1 && !shouldReward) continue
 
     const cachedLeaderboard = await redis.getLeaderboard(`last-week:${community.id}`)
     if (!cachedLeaderboard) {
@@ -45,15 +54,18 @@ async function main() {
       replies: number
     }[] = JSON.parse(cachedLeaderboard)
 
-    const recipients = Math.round(rewards / 0.1)
-    for (let i = 0; i < recipients; i++) {
+    for (let i = 0; i < COMMUNITIES_WITH_REWARDS[community.id]; i++) {
       const recipient = leaderboard[i]
       const credential = await db.credentials.getByHash(recipient.credential.hash)
       if (!credential) {
         throw new Error(`Credential not found for ${recipient.credential.hash}`)
       }
-      console.log(credential.parent_id)
+      ids.push(credential.parent_id)
     }
+  }
+
+  for (const id of ids.sort()) {
+    console.log(id)
   }
 }
 

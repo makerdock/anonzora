@@ -239,6 +239,7 @@ export const claimNotesTable = pgTable('claim_notes', {
   credential_id: varchar({ length: 255 })
     .references(() => credentialsTable.id)
     .notNull(),
+  claimed: boolean('claimed').notNull().default(false),
   created_at: timestamp().notNull().defaultNow(),
   updated_at: timestamp().notNull().defaultNow(),
 })

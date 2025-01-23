@@ -79,8 +79,6 @@ export const CredentialsProvider = ({
   const [vault, setVault] = useState<Vault | null>(getInitialVault())
   const [vaults, setVaults] = useState<Vault[]>([])
 
-  console.log(localCredentials)
-
   useEffect(() => {
     if (data && vaults.length === 0) {
       setVaults(data)

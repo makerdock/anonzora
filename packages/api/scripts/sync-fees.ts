@@ -39,6 +39,11 @@ async function getUncollectedBalance(tokenAddress: `0x${string}`) {
       },
     }
   )
+
+  if (!response.ok) {
+    return null
+  }
+
   const data: {
     lockerAddress: string
     lpNftId: number
@@ -59,6 +64,10 @@ async function getUncollectedBalance(tokenAddress: `0x${string}`) {
       name: string
     }
   } = await response.json()
+
+  if (!data?.token0 || !data?.token1) {
+    return null
+  }
 
   const wethBalance =
     data.token0.address === WETH_ADDRESS
@@ -105,6 +114,10 @@ export async function syncCommunityWallet(community: Community) {
     getUncollectedBalance(community.token.address as `0x${string}`),
   ])
 
+  if (!collected || !uncollected) {
+    return
+  }
+
   const fees = {
     collected,
     uncollected,
@@ -115,6 +128,8 @@ export async function syncCommunityWallet(community: Community) {
   })
 
   console.log(
-    `[community] [${community.name}] collected fees: ${fees.collected} uncollected fees: ${fees.uncollected}`
+    `[community] [${community.name}] collected fees: ${JSON.stringify(
+      fees.collected
+    )} uncollected fees: ${JSON.stringify(fees.uncollected)}`
   )
 }
