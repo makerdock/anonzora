@@ -86,7 +86,7 @@ export function CredentialsSelect({
                   <span className="font-semibold">
                     {`${credential.metadata?.balance ? Number.parseFloat(formatEther(BigInt(credential.metadata.balance))).toLocaleString() : 'Unknown'} ${
                       credential.metadata.tokenAddress === TOKEN_ADDRESS
-                        ? 'ANON'
+                        ? 'ZORA'
                         : credential.metadata.tokenAddress
                     }`}
                   </span>
@@ -109,7 +109,7 @@ export function CredentialsSelect({
         open={open}
         setOpen={setOpen}
         onVerify={onSelect}
-        minBalance={5000}
+        minBalance={5}
       />
     </>
   )
@@ -172,11 +172,10 @@ export function VerifyCredential({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent className="bg-black">
         <AlertDialogHeader>
-          <AlertDialogTitle>Add $ANON credential</AlertDialogTitle>
+          <AlertDialogTitle>Add $ZORA credential</AlertDialogTitle>
           <AlertDialogDescription>
             Credentials anonymously verify your onchain balance and add trusted tags to
-            your posts. For now, we only support $ANON - 5K ANON to post, 2M ANON to
-            promote.
+            your posts. For now, we only support $ZORA - 5 ZORA to post.
             <br />
             <br />
             Important: While you can verify any balance amount, please note that higher
@@ -197,7 +196,7 @@ export function VerifyCredential({
           </div>
         </div>
         <div className="flex flex-row gap-2 items-center mt-2">
-          <span className="text-sm whitespace-nowrap">$ANON</span>
+          <span className="text-sm whitespace-nowrap">$ZORA</span>
           <Input
             className="w-32"
             value={balance.toString()}

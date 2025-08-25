@@ -136,7 +136,7 @@ function TokenRequirement({
             <span>{'  '}</span>
           </>
         )}
-        {`${tokenNeeded.toLocaleString()} $ANON: ${string}`}
+        {`${tokenNeeded.toLocaleString()} $ZORA: ${string}`}
       </p>
     </li>
   )

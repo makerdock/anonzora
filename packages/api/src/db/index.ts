@@ -1,6 +1,12 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Load .env from packages directory or root
+config({ path: resolve(__dirname, '../../.env') })
+config({ path: resolve(__dirname, '../../../../.env') })
 
 import { drizzle } from 'drizzle-orm/node-postgres'
+import { Client } from 'pg'
 import { PostsRepository } from './repositories/posts'
 import { VaultsRepository } from './repositories/vaults'
 import { CredentialsRepository } from './repositories/credentials'
@@ -13,6 +19,7 @@ import { ActionsRepository } from './repositories/actions'
 
 export class Repositories {
   public db: ReturnType<typeof drizzle>
+  private client: Client
 
   public posts: PostsRepository
   public vaults: VaultsRepository
@@ -25,7 +32,24 @@ export class Repositories {
   public actions: ActionsRepository
 
   constructor() {
-    this.db = drizzle(process.env.DATABASE_URL as string)
+    const databaseUrl = process.env.DATABASE_URL
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL environment variable is not set')
+    }
+    
+    // Create and connect PostgreSQL client
+    this.client = new Client({
+      connectionString: databaseUrl,
+    })
+    
+    this.client.connect().catch(err => {
+      console.error('Failed to connect to database:', err)
+      throw err
+    })
+    
+    // Initialize Drizzle with the connected client
+    this.db = drizzle(this.client)
+    
     this.posts = new PostsRepository(this.db)
     this.vaults = new VaultsRepository(this.db)
     this.credentials = new CredentialsRepository(this.db)

@@ -38,49 +38,41 @@ class TokensService {
   }
 
   async updateERC20(token: DBToken) {
-    const zerionToken = await zerion.getFungible(token.chain_id, token.address)
-    const simpleHashToken = await simplehash.getToken(token.chain_id, token.address)
-
-    const totalSupply = Number.parseInt(
-      formatUnits(
-        BigInt(
-          simpleHashToken?.supply ?? zerionToken?.attributes.market_data.total_supply ?? 0
-        ),
-        token.decimals
-      )
-    )
-
-    const prices = [
-      simpleHashToken?.prices?.[0]?.value_usd_string,
-      zerionToken?.attributes.market_data.price?.toFixed(10),
-      '0',
-    ]
-
-    for (const price of prices) {
-      if (!price) continue
-
-      const marketCap = totalSupply * Number(price)
-      const fields = {
-        price_usd: price,
-        market_cap: Math.round(marketCap),
-        total_supply: Math.round(totalSupply),
-        holders: simpleHashToken?.holder_count ?? 0,
-      }
-
-      try {
-        await db.tokens.update(token.id, fields)
-      } catch (e) {
-        continue
-      }
-
-      const result = {
-        ...token,
-        ...fields,
-      }
-      await redis.setToken(token.chain_id, token.address, JSON.stringify(result))
-
-      return result
+    let zapperToken = null
+    
+    try {
+      zapperToken = await this.getZapperTokenData(token.chain_id, token.address)
+    } catch (error) {
+      console.warn(`Failed to fetch Zapper token data for ${token.chain_id}:${token.address}:`, error.message)
     }
+
+    if (!zapperToken) {
+      // Return existing token data if API call fails
+      return token
+    }
+
+    const fields = {
+      price_usd: zapperToken.priceData?.price?.toFixed(8) ?? token.price_usd,
+      market_cap: Math.round(zapperToken.priceData?.marketCap ?? 0),
+      total_supply: Math.round(zapperToken.priceData?.totalSupply ?? 0),
+      holders: 0, // Zapper requires separate query for holders count
+    }
+
+    try {
+      await db.tokens.update(token.id, fields)
+    } catch (e) {
+      console.error(`Failed to update token ${token.id}:`, e)
+      return token
+    }
+
+    const result = {
+      ...token,
+      ...fields,
+    }
+
+    await redis.setToken(token.chain_id, token.address, JSON.stringify(result))
+
+    return result
   }
 
   async updateNative(token: DBToken) {
@@ -115,29 +107,27 @@ class TokensService {
 
   async createERC20(chainId: number, tokenAddress: string) {
     const id = `${chainId}:${tokenAddress}`
-    const zerionToken = await zerion.getFungible(chainId, tokenAddress)
-    const simpleHashToken = await simplehash.getToken(chainId, tokenAddress)
-
-    const impl = zerionToken.relationships.chain
-      ? zerionToken.attributes.implementations.find(
-          (i) =>
-            i.chain_id === zerionToken.relationships.chain.data.id &&
-            i.address === tokenAddress
-        )
-      : zerionToken.attributes.implementations[0]
+    
+    let zapperToken = null
+    
+    try {
+      zapperToken = await this.getZapperTokenData(chainId, tokenAddress)
+    } catch (error) {
+      console.warn(`Failed to fetch Zapper token data for ${chainId}:${tokenAddress}:`, error.message)
+    }
 
     const token = {
       id: id.toLowerCase(),
       chain_id: chainId,
       address: tokenAddress.toLowerCase(),
-      symbol: zerionToken.attributes.symbol,
-      name: zerionToken.attributes.name,
-      decimals: impl?.decimals ?? simpleHashToken?.decimals ?? 18,
-      image_url: zerionToken.attributes.icon?.url,
-      price_usd: zerionToken.attributes.market_data.price?.toFixed(8) ?? 0,
-      market_cap: Math.round(zerionToken.attributes.market_data.market_cap ?? 0),
-      total_supply: Math.round(zerionToken.attributes.market_data.total_supply ?? 0),
-      holders: simpleHashToken?.holder_count ?? 0,
+      symbol: zapperToken?.symbol ?? 'UNKNOWN',
+      name: zapperToken?.name ?? 'Unknown Token',
+      decimals: zapperToken?.decimals ?? 18,
+      image_url: zapperToken?.imageUrlV2,
+      price_usd: zapperToken?.priceData?.price?.toFixed(8) ?? 0,
+      market_cap: Math.round(zapperToken?.priceData?.marketCap ?? 0),
+      total_supply: Math.round(zapperToken?.priceData?.totalSupply ?? 0),
+      holders: 0, // We can get this from holders query if needed
       balance_slot: null,
       type: tokenAddress === zeroAddress ? 'NATIVE' : 'ERC20',
     }
@@ -255,6 +245,61 @@ class TokensService {
     await redis.setToken(chainId, tokenAddress, JSON.stringify(token))
 
     return token
+  }
+
+  async getZapperTokenData(chainId: number, tokenAddress: string) {
+    const ZAPPER_API_URL = "https://public.zapper.xyz/graphql"
+    const ZAPPER_API_KEY = "0e23c091-27ef-48e2-9e88-bfa19363a320" // Public demo key
+
+    const query = `
+      query TokenData($address: Address!, $chainId: Int!) {
+        fungibleTokenV2(address: $address, chainId: $chainId) {
+          address
+          symbol
+          name
+          decimals
+          imageUrlV2
+          priceData {
+            price
+            marketCap
+            volume24h
+            totalLiquidity
+            priceChange24h
+          }
+        }
+      }
+    `
+
+    const variables = {
+      address: tokenAddress,
+      chainId: chainId,
+    }
+
+    const response = await fetch(ZAPPER_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-zapper-api-key": ZAPPER_API_KEY,
+      },
+      body: JSON.stringify({
+        query,
+        variables,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Zapper API error: ${response.status} ${response.statusText}`, errorText)
+      throw new Error(`Zapper API HTTP error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    
+    if (data.errors) {
+      throw new Error(`Zapper GraphQL error: ${data.errors[0]?.message || 'Unknown error'}`)
+    }
+
+    return data.data?.fungibleTokenV2
   }
 }
 

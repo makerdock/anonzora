@@ -705,7 +705,7 @@ function Credential() {
           Post Credential <span className="text-red-500">*</span>
         </span>
         <span className="text-sm text-zinc-400">
-          @anoncast requires a verified credential for at least 5,000 $ANON.
+          @anoncast requires a verified credential for at least 5 $ZORA.
         </span>
       </div>
       <CredentialsSelect selected={credential} onSelect={setCredential} />

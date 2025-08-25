@@ -1,4 +1,9 @@
+import { config } from 'dotenv'
+import { resolve } from 'path'
 import { createElysia } from './utils'
+
+// Load .env from packages directory
+config({ path: resolve(__dirname, '../../.env') })
 import { actionsRoutes } from './routes/actions'
 import { postsRoutes } from './routes/posts'
 import { feedsRoutes } from './routes/feeds'
@@ -30,6 +35,6 @@ const app = createElysia()
   .use(nftRoutes)
   .use(leaderboardRoutes)
 
-app.listen(3001)
+app.listen(process.env.PORT || 3001)
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)

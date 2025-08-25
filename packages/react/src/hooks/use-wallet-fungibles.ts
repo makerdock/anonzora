@@ -9,9 +9,15 @@ export function useWalletFungibles() {
     queryKey: ['wallet-fungibles', address],
     queryFn: async () => {
       if (!address) return []
-      const data = await sdk.getWalletFungibles(address)
-      return data.data?.data ?? []
+      try {
+        const data = await sdk.getWalletFungibles(address)
+        return data.data?.data ?? []
+      } catch (error) {
+        console.warn('Failed to fetch wallet fungibles:', error)
+        return [] // Return empty array on error to not block UI
+      }
     },
     enabled: !!address,
+    retry: false, // Don't retry on failure
   })
 }
